@@ -2,15 +2,18 @@
 
 Code-reading review (2026-09-20) of the state-space exploration hot path, looking for
 performance headroom at every level: algorithms, data structures, allocation, and
-JIT-friendliness. Nothing here has been implemented or measured; the note is a
-consolidated finding list to plan work from. One item found on the way, a null
-dereference in `Proof.equals`, is already fixed on master (`9ff9fb4d5`) and is not
-repeated here.
+JIT-friendliness, together with the throughput harness and the grammar set built to
+measure it. One item found on the way, a null dereference in `Proof.equals`, is already
+fixed on master (`9ff9fb4d5`) and is not repeated here.
 
-Paths below are relative to `src/main/java/nl/utwente/groove/`. Each finding carries an
-expected impact (high/medium/low), an effort estimate (small/medium/large) and how
-confident the reviewer is that the code is really on the hot path. All of it was
-verified by reading; inferences are marked as such.
+**Status (2026-09-23).** The harness (`test/performance/ExplorationBenchmark`), the
+`junit/performance` grammar set and baselines of its quick and long tiers are done.
+Finding 3.11 is fixed as gh #919 and finding 3.12 as gh #924, each on its own branch;
+nothing else in the finding list is implemented. The transient handoff state (what is
+next, in which order) lives in `claude/exploration-performance-state.md`.
+
+The note runs from the test cases to the numbers to the findings: the grammar set, the
+harness, the runs and their outcomes, the finding list, and the coverage of the set.
 
 ## Method and caveats
 
@@ -23,34 +26,781 @@ always-on `Reporter`, `Factory.get` monitor, `CHECK_IMAGES`, certifier array siz
 eager certificate map, refinement loop, weak certifier reference) were re-verified in
 the source by the orchestrating session.
 
-**There is no exploration benchmark in the repository.** The only timing instrument is
-`util.Reporter`, whose output is printed at `Generator -v 3` only; `test/performance`
-holds collection micro-benchmarks, and `ExplorationTest` asserts state counts without
-timing. So every impact rating below is an expectation, not a measurement. See
-[Building a throughput harness](#building-a-throughput-harness) for what the first
-implementation step should be.
+Paths in the findings are relative to `src/main/java/nl/utwente/groove/`. Each finding
+carries an expected impact (high/medium/low), an effort estimate (small/medium/large)
+and how confident the reviewer is that the code is really on the hot path. All of it was
+verified by reading; inferences are marked as such. The impact ratings are expectations,
+not measurements, except where a row of the grammar set has since measured a finding
+(3.7, 3.11, 3.12, and the outcomes under "Runs and outcomes").
 
-## Suggested order of attack
+## The performance grammar set
 
-1. Build the throughput harness, so the rest can be measured. Done 2026-09-20.
-2. Fix the `Factory` user leak (3.11): a genuine unbounded leak, found by the harness,
-   which also caps how long any benchmark run can be. Its own branch, since it is a
-   bug fix independent of the rest.
-3. Section 1 (always-on instrumentation and locks): two-line changes in the innermost
-   loops, no design risk.
-3. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
-   certifier reference; each restores an optimisation that exists but does not work.
-4. Section 3 (costs scaling with the wrong quantity): the certifier array, the eager
-   certificate map, the interning edge probe. Each is small and independently measurable.
-5. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
-   `Search` reuse, NAC context maps, algebra reflection, `Valuator` lambdas, match-set
-   sizing.
-6. Section 5 (structural) needs design discussions, not commits.
+`junit/performance/` holds the grammars the harness runs, kept apart from
+`junit/samples` so that the correctness fixtures and their test expectations stay
+untouched and the performance copies can drift freely; only the harness reads it. Each
+grammar holds its default start graph and the start graphs of its rows; the other sample
+start graphs were dropped. `junit/performance/generate-starts.py` generates the start
+graphs of the regular families (named per grammar below); its `SIZES` table is the
+record of what is generated, and regenerating overwrites those files and nothing else.
 
-Any change to matching or certificates must pass `DeterminismTest` and the
-`grammar-smoke` state counts (see the gates at the end).
+The sizes are chosen per tier (see "The harness"): smoke rows run in at most a few
+seconds, quick rows up to about a minute at `-Xmx4g`, long rows two to five minutes at
+`-Xmx8g`. The calibration tables below are single cold runs on the desktop (20 cores,
+32 GB), through the headless `Generator` or through the harness one JVM per row, at
+`-Xmx8g -da -XX:+UseParallelGC` unless noted; they list the kept sizes and the boundary
+sizes that show why the next one was not kept. The timings of the kept rows are in the
+baselines under "Runs and outcomes".
 
-## 1. Always-on instrumentation and uncontended locks
+### As-and-Bs (`As-and-Bs-reg-exp-benchmark.gps`)
+
+Regular-expression matching with a path cache, NACs. Generated start graphs
+`start-N-M`: complete bipartite `b` edges.
+
+| start graph | config | states | transitions | kept |
+|---|---|---|---|---|
+| `start` | | 8 240 | 44 774 | smoke |
+| `start` | `collapse=equality` | 262 144 | 1 413 120 | quick (7.8 s) |
+| `start-4-3` | | 131 505 | 947 824 | quick |
+| `start-4-3` | `collapse=equality` | | | out of heap at 8 GB |
+| `start-5-3` | | > 1.7 M | > 15 M | too large, stopped |
+| `start-4-4` | | > 2.2 M | > 16 M | too large, stopped |
+
+Growth is steep in both directions, so there is no long-tier size; an intermediate edge
+density is untried. The equality rows cover 4.4.4.
+
+### Mark-Unmark (`Mark-Unmark-List-regexp-benchmark.gps`)
+
+Regular expressions with a high transition-to-state ratio. Generated `tree-N`: a
+complete binary `next`-tree. States grow about 2.3-fold per two levels, but the count is
+not monotonic in the size: the generator's tree shape depends on the number.
+
+| start graph | states | transitions | kept |
+|---|---|---|---|
+| `start` | 24 576 | 368 640 | quick |
+| `tree-18` | 48 384 | 870 912 | quick |
+| `tree-21` | 169 344 | 3 556 224 | upper quick |
+| `tree-22` | 338 688 | 7 451 136 | long (122 s) |
+| `tree-23` | 151 704 | 3 489 192 | dropped: smaller than `tree-21` |
+
+### append (`append.gps`)
+
+The largest breadth-first run among the original samples, also run under equality
+collapse (4.4.4). Generated `append-A-list-L`: a longer list with more appenders.
+
+| start graph | config | states | transitions | kept |
+|---|---|---|---|---|
+| `append-4-list-8` | | 31 104 | 114 008 | quick |
+| `append-4-list-8` | `collapse=equality` | 73 792 | 268 912 | quick |
+| `append-4-list-10` | | 1 077 000 | 4 008 820 | long |
+| `append-5-list-6` | | > 1.5 M | > 6.4 M | too large, stopped |
+| `append-4-list-12` | | > 1.5 M | > 5.7 M | too large, stopped |
+
+### inheritance (`inheritance.gps`)
+
+A diamond-rich lattice of commuting rule applications, the ground for the dead
+confluent-diamond shortcut (2.1): `confl` must turn non-zero when that is fixed. Also
+subtyping. Generated `start-N`: a typed ring with chords.
+
+| start graph | states | transitions | kept |
+|---|---|---|---|
+| `start` | 756 | 5 374 | smoke |
+| `start-11` | 74 868 | 939 355 | dropped |
+| `start-12` | 297 212 | 4 317 133 | quick |
+| `start-13` | 552 824 | 8 148 238 | dropped: 41 s and 3.3 GB retained, between the tiers |
+
+### pacman (`pacman.gps`)
+
+Quantified rules over a small graph. The sample's `start_four_ghosts` explored to a
+handful of states and was replaced by a hand-made maze of 24 nodes, 37 transitions per
+state; a four-ghost maze of 20 positions was far too large (beyond 247 k states and
+5.2 M transitions, 67 k of them open, when stopped).
+
+| start graph | states | transitions | kept |
+|---|---|---|---|
+| `start` | 256 | 1 536 | smoke |
+| `start_four_ghosts` | 210 102 | 7 819 623 | long |
+
+### car-platooning (`car-platooning.gps`)
+
+NACs and rule priorities, twenty rules (the largest rule set), isomorphism checking
+switched off by the grammar (`checkIsomorphism=false`), so the rows spend their time in
+matching and `gen`; the factory edge count shows the interning probe edges of 3.3.
+Hand-made start graphs; `start-18` is in the directory but no row uses it.
+
+| start graph | states | transitions | kept |
+|---|---|---|---|
+| `start-05` | 110 366 | 369 601 | quick |
+| `start-06` | 2 988 061 | 11 929 077 | long (170 s, the largest breadth-first run) |
+
+### sierpinsky (`sierpinsky.gps`)
+
+Linear exploration over graphs growing to hundreds of thousands of elements: the
+large-graph case for the certifier array (3.1) and the per-node edge sets (4.3.2),
+dominated by `gen`. Collapse is off in the record, so 2.5 applies. Hand-made start graphs.
+
+| start graph | states | factory nodes, edges | s | retMB | kept |
+|---|---|---|---|---|---|
+| `start11` | 12 | 265 734, 841 476 | | | smoke |
+| `start12` | 13 | 797 176, 2 524 375 | 3.6 | 1 234 | quick |
+| `start13` | 14 | | 10.8 | 3 805 | dropped: too short for long, too heavy for quick |
+
+### generate-binary-tree (`generate-binary-tree.gps`)
+
+Depth-first with a depth bound: long delta chains, certifying-heavy. The same unstored
+(`persistence=none`) explores the full tree unfolding, transitions = states − 1, about
+tenfold per level; the chain findings 2.6 and 2.7 apply. The GTS keeps only the
+written-back trace (9 to 11 states), so the discovered counts describe the work, and the
+retained heap is the softly reachable state caches of 3.6. Default start graph only.
+
+| row | depth | discovered states | s | retMB | kept |
+|---|---|---|---|---|---|
+| `binary-tree-dfs12` (stored) | 12 | 4 012 | | | smoke |
+| `binary-tree-dfs-unstored` | 8 | 409 114 | | | smoke |
+| `binary-tree-dfs-unstored-9` | 9 | 4 037 914 | 14 | 1 826 | quick |
+| `binary-tree-dfs-unstored-10` | 10 | 43 954 714 | 131 | 4 975 | long |
+
+### leader-election (`leader-election.gps`)
+
+The symmetric-ring case of finding 5.6. The sample's hand-drawn `-init` start graphs,
+meant to skip the factorial number-picking stage, carry `type:` and `flag:` prefixes
+that the rules do not use and explore to a single state; they were dropped from the
+copy. Generated `ring-N`: the plain start graph after number picking, the values
+assigned around the ring in a fixed pseudo-random order, the `Numbers` pool empty.
+States and time grow about fourfold per two processes, so `ring-20` would take some ten
+minutes.
+
+| start graph | states | transitions | s | kept |
+|---|---|---|---|---|
+| `ring-8` | 820 | 3 405 | 0.3 | smoke |
+| `ring-14` | 49 620 | 386 295 | 7.7 | quick |
+| `ring-16` | 197 404 | 1 772 291 | 31 | upper quick |
+| `ring-18` | 787 648 | 7 737 099 | 156 | long |
+
+### attribute-count-to-n (`attribute-count-to-n.gps`)
+
+A counter from 0 to a bound and back, one state per value: the attribute path of
+findings 4.2.1 to 4.2.3 without matching or isomorphism costs. Generated `bound-N`: the
+counter at 0, the bound N as a `let:` attribute. The BigInteger rows run the same start
+graphs under `algebra=big` (the exploration key was broken until gh #923; since the fix
+the harness builds its GTS through `ExploreType.newGTS`). The `probe-odd` rule
+(2026-09-22) puts `ErrorValue` construction on the path, for 4.2.3: it divides 1 by
+`value mod 2`, so every even state constructs an error (the algebra's
+`ArithmeticException` plus the `ErrorValue` wrapping it, two stack traces) and every odd
+state gets a self-loop. States are unchanged, transitions rose by half the states.
+
+| start graph | states | transitions | s | kept |
+|---|---|---|---|---|
+| `bound-10000` | 10 001 | 25 001 | 0.6 | smoke |
+| `bound-100000` | 100 001 | 250 001 | 5.9 | quick, plain and `algebra=big` |
+| `bound-300000` (at `-Xmx4g`) | 300 001 | 750 001 | 34 | quick, plain and `algebra=big` |
+| `bound-600000` | 600 001 | 1 500 001 | 131 | long |
+| `bound-1000000` | | | out of heap | too large |
+
+Times except `bound-600000` predate `probe-odd`. The million is about 7 GB of live GTS,
+the ordinary per-state cost, not a leak. The allocation is superlinear: 0.4 MB per state
+at 100 k, 1.2 MB at 300 k, 2.3 MB at 600 k (1.4 TB), so something on the state-generation
+path allocates in proportion to the states so far on every step (the value-node factory
+is the first suspect; unmeasured).
+
+Cost of the probe, `count-100000` and its BigInteger twin with and without the rule,
+2 warm-ups and 3 runs at `-Xmx8g`, one JVM per pair, the with-probe pair run before and
+after the without-probe pair:
+
+| | without | with, before | with, after |
+|---|---|---|---|
+| `count-100000` med ms | 5 145 | 5 518 | 5 328 |
+| `count-100000` match ms | 301 | 504 | 451 |
+| `count-100000` allocMB | 41 126 | 41 581 | 41 583 |
+| `count-100000-big` med ms | 5 598 | 5 936 | 6 211 |
+| `count-100000-big` match ms | 257 | 646 | 605 |
+| `count-100000-big` allocMB | 41 157 | 41 656 | 41 655 |
+
+So the probe costs 4 to 11 % of the row, 150 to 350 ms of matching and some 9 KB of
+allocation per error (the two stack traces): the size of the signal a fix of 4.2.3 can
+show here. BigInteger's extra cost is small and unstable: none in the cold calibration
+runs (6.4 s against 7.3 s for the plain row), 13 to 25 % in the quick baseline, all of it
+in `gen` at equal allocation.
+
+### fibonacci (`fibonacci.gps`)
+
+The naive exponential recursion on purpose: states grow with fib(x), about 1.6-fold per
+step. Generated `fib-N`, the argument as a `let:` attribute. The default program
+`fibonacci-recipe` wraps the recursion in a recipe, so the stored GTS has three states
+and the work is in transient states, which the harness counts as discovered;
+`fibonacci-function` runs it as a function over the same rules, so the same states are
+plain stored states (one transition fewer): the control for the transience cost (4.3.1).
+(`fibonacci-expressions` hard-codes its argument.) The recipe path was once superlinear
+in the transient prefix; that was finding 3.12, fixed as gh #924.
+
+State counts, `-D controlProgram=fibonacci-function`:
+
+| start graph | states | transitions | s | kept |
+|---|---|---|---|---|
+| `fib-15` | 4 934 | 4 933 | 0.30 | smoke |
+| `fib-22` | 143 284 | 143 283 | 2.6 | quick |
+| `fib-25` | 606 964 | 606 963 | 10.4 | fits 8 GB only (5.2 GB retained) |
+| `fib-27` | | | out of heap at 8 GB | too large |
+
+Recalibration after gh #924, through the harness, one JVM per row, JDK 25.0.4.1, with
+the function program in the same session:
+
+| start graph | discovered states | recipe s | function s | recipe retMB | kept |
+|---|---|---|---|---|---|
+| `fib-15` | 4 934 | 0.29 | 0.30 | 42 | smoke (both) |
+| `fib-17` | 12 919 | 0.52 | | 111 | |
+| `fib-20` | 54 729 | 1.13 | | 474 | |
+| `fib-22` | 143 284 | 2.49 | 2.21 | 1 256 | quick (both) |
+| `fib-25` | 606 964 | 12.3 | | 5 429 | fits 8 GB only |
+
+A transient state costs the same as a plain state (the `gen` column of `fib-22` is 1.7 s
+against 1.4 s, matching and isomorphism under 100 ms in both), and the recipe rows mirror
+the function rows. Neither family has a long-tier size: `fib-27` is about 1.6 million
+states and does not fit 8 GB of live GTS.
+
+### hub (`hub.gps`)
+
+Arend's grammar for the large-graph axis: a star of `Leaf` nodes around one `Hub`,
+tokens as flags on the leaves, a `build` program growing the star from a proto graph
+(`proto-1000-10`), and `run`, which moves a token from its leaf to any empty leaf through
+the hub. The type graph also has `from` edges from `Leaf` to `Hub`, a `pos` attribute on
+`Leaf`, a `token` flag and a `moves` attribute on `Hub`, and `Stub` nodes linked to `Hub`
+both ways. The rows' start graphs are generated. As built (1 000 leaves, 10 tokens) it
+explores to one state, since the leaves are interchangeable: 295 s, of which
+certification 219 s, 22 ms per certificate of a 1 001-node graph with a 990-fold
+symmetric leaf class, which is finding 5.6 measured; the 1.3 MB allocated per transition
+is 4.3.2.
+
+Stored rows: `star-300-3` under `run`, the symmetry row (5.6, 2.4); `chain-N-k`,
+consecutive leaves linked by `next` and a `chain` program whose `moveNext` moves a token
+one step along the chain, never onto an occupied leaf, so the states are the token
+placements (n for one token, about n²/2 for two), each a graph of n+1 nodes: the
+many-states, large-graph rows for 3.1, 4.3.2 and the certifier without symmetry.
+
+| row | states | transitions | s | cert ms | kept |
+|---|---|---|---|---|---|
+| `hub-1000-10` (as built) | 1 | 9 900 | 295 | 218 769 | not kept |
+| `hub-star-300-3` | 1 | 891 | 2.4 | 1 521 | smoke |
+| `hub-chain-1000-1` | 1 000 | 999 | 7.4 | 7 247 | quick |
+| `hub-chain-200-2` | 19 900 | 39 402 | 10.9 | 10 092 | quick |
+| `hub-chain-300-2` | 44 850 | 89 102 | 54.6 | 51 459 | next size, not kept |
+
+Matching is 4 to 200 ms in every row; certification is the whole cost, and superlinear
+in the graph on the chain too: 0.5 ms per certificate at 201 nodes, 1.15 ms at 301,
+7.2 ms at 1 001, about quadratic, the refinement running one round per step of the
+chain's diameter with each round a pass over the graph. So the chain rows measure the
+certifier's dependence on diameter, the star row its dependence on symmetry.
+
+Unstored rows, for 5.1, 5.2 and 3.7, on deterministic systems (one successor per state)
+explored `next=newest cost=uniform bound=cost:N persistence=none`, a single path of N
+steps with nothing certified:
+
+- `field-2-100-2500`: two stars, each hub with 100 leaves linked both ways and numbered
+  by `pos`, plus 2 500 untouched stubs, half pointing at the hub and half away; 5 202
+  nodes, 10 810 edges, the largest fixture in the set. `hop` moves the leaf token to the
+  leaf at `(pos + 1) % leaves`; its plan (printed by flipping `PlanSearchEngine.PRINT`)
+  binds the second `from` edge with the *target* bound, and that item enumerates the
+  hub's whole incident set of 2 703 edges (the target branch never consults the label
+  set), 100 of which carry the label, for one match: finding 5.1 as stated. `jump` moves
+  the hub token to the other hub, a typed node without edges in the rule, found by
+  `Find node n1:[Hub]` over the node set of 5 400 (nodes plus value nodes): finding 5.2,
+  two hits.
+- `ring-1000-1`: the chain closed, a single token walking for ever; `chain` (`moveNext`)
+  against `counted` (`moveCounted`, the same plus `let:moves = moves + 1` on the hub), the
+  `let:` per move of 3.7.
+
+| row | steps | s | match ms | gen ms | allocMB | retMB |
+|---|---|---|---|---|---|---|
+| `hub-field-hop` | 100 000 | 6.08 | 5 557 | 230 | 13 504 | 263 |
+| `hub-field-jump` | 200 000 | 5.49 | 4 375 | 631 | 1 686 | 522 |
+| `hub-ring-1000-unstored` | 200 000 | 1.39 | 162 | 756 | 1 651 | 523 |
+| `hub-ring-1000-counted` | 200 000 | 2.21 | 581 | 1 000 | 2 733 | 1 068 |
+
+`hop` is 61 µs per step, 91 % of it matching: 2 703 candidates for one match. Under 5.1(b)
+(the size comparison restored) the label route offers 200 candidates, under (a) the 1 350
+in-edges, under (c) the 100 `from` edges. The row carries a second lead: it allocates
+135 KB per step, and since `jump` allocates 8 bytes per visited node, the garbage is on
+the attribute path, about 1.3 KB per leaf candidate that reaches the `pos` test
+(`Compute add`, `mod`, `eq` and the value-node lookups behind them). Not yet a numbered
+finding. `jump` is 27 µs per step, 80 % matching, 4 ns per visited node; a type index
+makes the 5 400 visits two.
+
+The ring pair measures the `let:` at 4 µs on a 7 µs step, split evenly between matching
+and generation, and none of it is 3.7: in the exploration's swing mode
+(`Record.copyGraphs` false) the in-edge store, once built by the first attribute erase,
+moves along the materialisation chain with the other stores (`SwingTarget` takes over the
+parent's references), so the O(V+E) walk runs once per chain, recurring only after a
+reconstruction from the delta chain. In copy mode (the Simulator, `randomAccess`) every
+child copies all four stores anyway. Hence the demotion of 3.7 to Low for exploration.
+The counted row also retains 5 KB per step: the host factory keeps every value node and
+`moves` edge it ever made (200 k and 400 k by `fNodes`/`fEdges`), the counter grammar's
+growth too.
+
+### petrinet (`petrinet.gps`)
+
+Arend's copy of the sample: one rule, `smartRule`, a transition firing when every input
+place holds a token, consuming one per input place and producing one per output place,
+as two `forall:` levels with an `exists:` token level inside the first. Of the five
+hand-drawn nets (1 to 38 states) only `start2` stays, as the readable default. Two
+generated families:
+
+- `pipe-k-n`: k transitions in a row between k+1 places, n tokens on the first. Every
+  token moves forward independently, so the states are the distributions of n tokens
+  over k+1 places, C(n+k, k) of them, all distinguishable since the pipeline has a
+  direction, on a graph of 2k+n+1 nodes. Each token on an input place is a separate
+  `exists:` match, so a place holding m tokens gives its transition m parallel
+  transitions to isomorphic targets: transitions run seven to ten times the states, and
+  the rows are iso-check and generation rows more than matching rows. The family grows
+  about 3.8-fold per step of k = n.
+- `join-f`: one transition with f input places, each holding a token, and f output
+  places; a second transition fires the tokens back. Exactly one of the two is enabled
+  at any time, so an unstored bounded depth-first run is a single path alternating
+  them, and every step matches a universal domain of f places on each side, 2f
+  sub-matches each with its own context map (4.1.2), then applies a composite event of
+  2f deletions and creations (4.2.4, 4.2.6).
+
+| row | states | transitions | s | match ms | iso ms | cert ms | gen ms | allocMB | retMB | kept |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `pipe-8-8` | 12 870 | 91 520 | 3.3 | 417 | 1 906 | 906 | 2 499 | 4 029 | 85 | quick |
+| `pipe-9-9` | 48 620 | 393 822 | 12.0 | 1 272 | 8 240 | 4 666 | 9 731 | 17 829 | 341 | quick |
+| `pipe-10-10` | 184 756 | 1 679 600 | 58.2 | 5 546 | 42 681 | 24 075 | 49 423 | 80 646 | 1 296 | not kept |
+| `pipe-11-11` | 705 432 | 7 113 106 | 248.9 | 21 122 | 188 283 | 111 583 | 214 524 | 366 535 | 5 240 | long |
+| `join-100`, 20 000 steps | 20 002 | 20 001 | 9.0 | 4 827 | 0 | 0 | 1 998 | 22 765 | 484 | quick |
+| `join-1000`, 2 000 steps | 2 002 | 2 001 | 10.8 | 5 747 | 0 | 0 | 2 570 | 22 316 | 419 | quick |
+
+`join-100` is 450 µs and 1.1 MB per step for 200 sub-matches, `join-1000` 5.4 ms and
+11 MB per step: linear in f, so the nested search has no superlinear term, only a heavy
+constant of about 2.5 µs and 5.5 KB per sub-match, which is where 4.1.2 (a
+`RuleToHostMap` per candidate) and the composite-event path will show. The pipeline's
+cost per state is a constant 250 to 350 µs across the sizes, and its GTS retains 7.4 KB
+per state at the long size, the transition-heavy shape.
+
+### parallel-pump (`parallel-pump.gps`)
+
+Arend's copy under DPO semantics, the multigraph rows: `pump` turns one of the hub's
+parallel `c` loops into an `a` edge to a `b`-target, `drain` deletes one, `trim` deletes
+one of two parallel `a` edges to the same target and flags the hub, `fold` merges two
+targets. Generated `pump-k-m`: the hub with a `mult=k:c` loop and m targets, so the
+states are the distributions of the pumped edges over the remaining targets, on a graph
+of at most m+1 nodes, with 24 to 51 transitions per state: parallel edges in matching,
+in the deltas and in the certifier's edge bundles (gh #906). The iso check and
+generation are the main costs, matching under 3 %. States grow 3.7-fold and time 4.6-fold
+per step of k+2, m+1. The SPO-multi twin (a property override) differs by under one per
+cent in states (the `trim` matches that identify its deleted with its preserved `a` edge,
+which DPO's identification condition forbids) and by nothing in time, since no rule
+erases a node: the dangling check of 4.1.6 never runs here; the mergers DPO row covers it.
+
+| row | states | transitions | s | match ms | iso ms | gen ms | allocMB | retMB | kept |
+|---|---|---|---|---|---|---|---|---|---|
+| `pump-8-4` (DPO) | 2 143 | 38 891 | 0.55 | 25 | 134 | 390 | 347 | 14 | smoke |
+| `pump-12-6-dpo` | 36 894 | 1 231 379 | 6.7 | 125 | 2 726 | 5 907 | 11 945 | 345 | quick |
+| `pump-12-6-spo` | 37 026 | 1 267 481 | 6.9 | 163 | 2 891 | 6 108 | 12 154 | 352 | quick |
+| `pump-14-7-dpo` | 136 731 | 5 731 438 | 31.4 | 621 | 13 850 | 28 253 | 59 169 | 1 502 | dropped |
+| `pump-16-8-dpo` | 479 787 | 24 438 977 | 168.6 | 3 845 | 76 288 | 152 314 | 268 792 | 6 010 | long |
+
+### mergers (`mergers.gps`)
+
+The sample copied by hand, its `system.properties` rewritten to 3.12 with the explicit
+`semantics=SPO-simple` the version conversion would give it. Generated `ring-n`: n nodes
+flagged a, b, c in turn, each with an edge to its successor and every second one with a
+chord to the node three further on, edges labelled by the flags of their endpoints. The
+rules merge a-nodes into b- and c-nodes (`merge-a-b`, `merge-and-merge`) and delete an
+a-node while merging (`merge-and-del`), so the states are the reachable quotients of the
+ring, about 8.5 times more per node: the merge path (`MergeMap`, the merge branch of
+4.2.13). Under SPO-multi the parallel edges that merging creates survive: 4 % more states,
+5 to 10 % more time than simple, a third more distinct factory edges. Under DPO the
+identification condition rules out the matches that identify a deleted with a preserved
+element (presumably the bulk: `merge-and-del`'s deleted a-node with the merged one), a
+tenth of the states, and the dangling check runs per candidate of `merge-and-del`.
+
+| row | states | transitions | s | match ms | iso ms | gen ms | allocMB | retMB | kept |
+|---|---|---|---|---|---|---|---|---|---|
+| `start` (simple) | 66 | 143 | 0.08 | 2 | 6 | 32 | 5 | 0 | default graph |
+| `mergers-6` (simple and multi alike) | 202 | 681 | 0.10 | 5 | 8 | 50 | 12 | 1 | smoke (multi) |
+| `mergers-9-simple` | 25 145 | 255 596 | 2.2 | 94 | 478 | 1 793 | 2 832 | 172 | quick |
+| `mergers-9-multi` | 26 217 | 259 850 | 2.4 | 123 | 605 | 1 875 | 3 015 | 181 | quick |
+| `mergers-10-multi` | 222 508 | 3 320 992 | 25.2 | 875 | 7 071 | 21 932 | 38 966 | 1 791 | upper quick |
+| `mergers-11-dpo` | 70 065 | 735 888 | 7.2 | 281 | 1 435 | 5 889 | 10 463 | 517 | quick |
+| `mergers-11-multi` | 1 084 025 | 19 356 013 | 456 | 7 638 | 127 947 | 398 622 | 240 387 | 5 640 | too large |
+
+The family has no long-tier size: `ring-11` under SPO-multi is a million states and 19
+million transitions, 5.6 GB retained and 7.6 minutes, and under simple it did not finish
+in ten minutes at fewer states, which at that heap is the collector rather than the
+semantics. `ring-6` explores to the same 202 states under simple and multi, so the smoke
+row runs it under multi for the code path alone.
+
+### All rows
+
+57 rows: 13 smoke, 35 quick, 9 long. The explore configuration is the default
+(breadth-first, full) where the column is empty; `dfs(N)` abbreviates
+`next=newest cost=uniform bound=cost:N`, `unstored(N)` the same plus `persistence=none`,
+`linear` is `frontier=single successor=single`.
+
+| row | grammar | start graph | program / properties / config | tier |
+|---|---|---|---|---|
+| `inheritance` | inheritance | `start` | | smoke |
+| `pacman` | pacman | `start` | | smoke |
+| `as-and-bs` | As-and-Bs | `start` | | smoke |
+| `sierpinsky-11` | sierpinsky | `start11` | linear | smoke |
+| `binary-tree-dfs12` | generate-binary-tree | `start` | dfs(12) | smoke |
+| `append-4-list-8` | append | `append-4-list-8` | | quick |
+| `append-4-list-8-equality` | append | `append-4-list-8` | `collapse=equality` | quick |
+| `mark-unmark` | Mark-Unmark | `start` | | quick |
+| `car-platooning-05` | car-platooning | `start-05` | | quick |
+| `binary-tree-dfs-unstored` | generate-binary-tree | `start` | unstored(8) | smoke |
+| `mark-unmark-18` | Mark-Unmark | `tree-18` | | quick |
+| `mark-unmark-21` | Mark-Unmark | `tree-21` | | quick |
+| `as-and-bs-4-3` | As-and-Bs | `start-4-3` | | quick |
+| `inheritance-12` | inheritance | `start-12` | | quick |
+| `append-4-list-10` | append | `append-4-list-10` | | long |
+| `pacman-four-ghosts` | pacman | `start_four_ghosts` | | long |
+| `leader-election-8` | leader-election | `ring-8` | | smoke |
+| `leader-election-14` | leader-election | `ring-14` | | quick |
+| `leader-election-16` | leader-election | `ring-16` | | quick |
+| `leader-election-18` | leader-election | `ring-18` | | long |
+| `count-10000` | attribute-count-to-n | `bound-10000` | | smoke |
+| `count-100000` | attribute-count-to-n | `bound-100000` | | quick |
+| `count-300000` | attribute-count-to-n | `bound-300000` | | quick |
+| `fib-15` | fibonacci | `fib-15` | | smoke |
+| `fib-22` | fibonacci | `fib-22` | | quick |
+| `fib-function-15` | fibonacci | `fib-15` | program `fibonacci-function` | smoke |
+| `fib-function-22` | fibonacci | `fib-22` | program `fibonacci-function` | quick |
+| `count-100000-big` | attribute-count-to-n | `bound-100000` | `algebra=big` | quick |
+| `count-300000-big` | attribute-count-to-n | `bound-300000` | `algebra=big` | quick |
+| `as-and-bs-equality` | As-and-Bs | `start` | `collapse=equality` | quick |
+| `sierpinsky-12` | sierpinsky | `start12` | linear | quick |
+| `binary-tree-dfs-unstored-9` | generate-binary-tree | `start` | unstored(9) | quick |
+| `car-platooning-06` | car-platooning | `start-06` | | long |
+| `binary-tree-dfs-unstored-10` | generate-binary-tree | `start` | unstored(10) | long |
+| `mark-unmark-22` | Mark-Unmark | `tree-22` | | long |
+| `count-600000` | attribute-count-to-n | `bound-600000` | | long |
+| `hub-star-300-3` | hub | `star-300-3` | program `run` | smoke |
+| `hub-chain-1000-1` | hub | `chain-1000-1` | program `chain` | quick |
+| `hub-chain-200-2` | hub | `chain-200-2` | program `chain` | quick |
+| `hub-field-hop` | hub | `field-2-100-2500` | program `hop`, unstored(100000) | quick |
+| `hub-field-jump` | hub | `field-2-100-2500` | program `jump`, unstored(200000) | quick |
+| `hub-ring-1000-unstored` | hub | `ring-1000-1` | program `chain`, unstored(200000) | quick |
+| `hub-ring-1000-counted` | hub | `ring-1000-1` | program `counted`, unstored(200000) | quick |
+| `petrinet-pipe-8-8` | petrinet | `pipe-8-8` | | quick |
+| `petrinet-pipe-9-9` | petrinet | `pipe-9-9` | | quick |
+| `petrinet-join-100` | petrinet | `join-100` | unstored(20000) | quick |
+| `petrinet-join-1000` | petrinet | `join-1000` | unstored(2000) | quick |
+| `petrinet-pipe-11-11` | petrinet | `pipe-11-11` | | long |
+| `pump-8-4` | parallel-pump | `pump-8-4` | | smoke |
+| `pump-12-6-dpo` | parallel-pump | `pump-12-6` | | quick |
+| `pump-12-6-spo` | parallel-pump | `pump-12-6` | `semantics=SPO-multi` | quick |
+| `mergers-6` | mergers | `ring-6` | `semantics=SPO-multi` | smoke |
+| `mergers-9-simple` | mergers | `ring-9` | | quick |
+| `mergers-9-multi` | mergers | `ring-9` | `semantics=SPO-multi` | quick |
+| `mergers-10-multi` | mergers | `ring-10` | `semantics=SPO-multi` | quick |
+| `mergers-11-dpo` | mergers | `ring-11` | `semantics=DPO` | quick |
+| `pump-16-8-dpo` | parallel-pump | `pump-16-8` | | long |
+
+## The harness
+
+`test/performance/ExplorationBenchmark` (built 2026-09-20) runs the rows of the grammar
+set: grammar files loaded once per row, a fresh grammar, `GTS` and `Exploration` per run,
+`play()` on a watchdog-timed thread, warm-ups discarded, median/min/max wall time over the
+measured runs. The pinned state and transition counts are asserted on every measured
+run, so the harness doubles as a regression check. There is no JMH dependency; the
+plain runner reuses the `ExplorationTest` plumbing.
+
+### Entry points and properties
+
+- `main`, with row names as arguments, and the Eclipse launch `GROOVE - exploration
+  benchmark` (`-da -Xmx4g -XX:+UseParallelGC`). Without names, the tier property selects
+  the rows.
+- `@Test smoke()`: every row of the `SMOKE` tier once, no warm-up; runs in the full suite.
+- `@Test benchmark()`: inert unless `-Dgroove.bench.run=<names|true>`; the Maven route,
+  `mvn -q test "-Dexcluded.test.groups=" -Dtest=ExplorationBenchmark
+  -DenableAssertions=false "-Dgroove.bench.run=true" > bench.log 2>&1`. Surefire honours
+  `enableAssertions=false` (the header line says `Assertions: disabled`); the pom's
+  `argLine` is untouched.
+
+System properties: `groove.bench.warmups` (default 2), `groove.bench.runs` (default 5;
+the baselines use 3 or 2), `groove.bench.timeout` (seconds per run, default 300),
+`groove.bench.tier=quick|long|all` (default `quick`, which is everything but `LONG`),
+`groove.bench.csv=<file>` (rows appended in CSV form as well) and `groove.bench.run`
+(the JUnit route's selector, above).
+
+### What a run measures
+
+A row is a `Config` record: `name`, `grammar` (directory under `junit/performance`),
+`startGraph` and `controlProgram` (null for the grammar's defaults), `properties`
+(grammar property overrides as space-separated `key=value` pairs like the `Generator`'s
+`-D` option, applied to a copy of the grammar's own properties through
+`GrammarModel.setProperties`, so one directory serves the DPO, SPO-multi and SPO-simple
+rows), `exploreConfig` (in `ExploreConfig` text form, `""` for the default breadth-first
+full exploration), the expected *discovered* state and transition counts (`-1` for
+unknown, which is how a new row is calibrated) and the `Tier`.
+
+The columns of the table: `states` and `trans`, the stored counts; `disc.st` and
+`disc.tr`, the discovered ones, counted through a `GTSListener` registered before the
+start state materialises (under `persistence=none` the GTS keeps only the written-back
+trace, so its own counts describe the storage policy, not the work; for persistent rows
+the two coincide); `med ms`, `min ms`, `max ms`;
+`states/s` and `trans/s`; `match`, `iso`, `cert` (the certification part of `iso`),
+`gen` (state generation after matching) and `rep` (the `Reporter`'s self-time), all in
+ms, as deltas of the static `Reporter` counters that `StatisticsReporter` also prints at
+`Generator -v 3` (they accumulate over the JVM's lifetime and are never reset); `confl`,
+the confluent-diamond count of 2.1; `allocMB`, the per-thread allocated bytes of the
+exploring thread; `retMB`, the retained heap after two GCs with the GTS still referenced;
+`fNodes` and `fEdges`, the host factory's node and edge counts, which are the elements it
+ever made, not the final graph's (the signal for 3.3 and for value-node growth).
+Non-timing columns come from the median run.
+
+The harness reaches the two management beans it uses (`RuntimeMXBean.getInputArguments`
+for the JVM flags, `com.sun.management.ThreadMXBean.getThreadAllocatedBytes` for the
+allocation column) reflectively, in a small helper that degrades to "n/a" and -1. The
+test tree is patched into the product module, so direct use would have needed
+`requires java.management; requires jdk.management;` in the product `module-info` for a
+test-only purpose (tried, rejected). Reflective access needs the packages exported,
+which they are, but no readability. At run time both modules resolve under Surefire and
+under a plain class-path launch without flags, since the booter starts from the class
+path and `java.se` is then a root; only the Eclipse launch, where the application module
+is the root, carries `--add-modules=java.management,jdk.management`.
+
+The harness loads the `SystemStore` once per row and builds a fresh `new
+GrammarModel(store)` for every run, which `ExploreType.newGTS` compiles under the
+type's overrides (the algebra family, gh #923), outside the timed region.
+`GrammarModel.toGrammar()` caches its `Grammar`, and the `RuleModel`s cache their
+`Rule`s for the model's lifetime, so a fresh model is the only unit that isolates runs.
+Consequence: search plans, built lazily on first match, are built inside the timed region
+on every run; milliseconds against seconds, equal for all runs, accepted.
+
+The harness found finding 3.11: every rule application was retained for the lifetime of
+the `Grammar` through `Factory`'s dependency tracking, so retention grew across runs. It
+is gh #919, fixed 2026-09-21; the write-up is `claude/factory-user-leak.md`. Since then,
+with a fresh grammar per run and the fix together, the retained heap of a run consists of
+the GTS plus the softly reachable state caches (3.6).
+
+### Tiers and run shapes
+
+`Tier` is three-valued: `SMOKE` within `QUICK` within everything, `LONG` apart.
+`smoke()` runs the `SMOKE` rows, a plain `main` run the quick tier (smoke included), and
+`-Dgroove.bench.tier=long` (or `all`) the rest, names given as arguments overriding the
+tier. Quick rows run at `-Xmx4g`; long rows are sized for two to five minutes at
+`-Xmx8g`.
+
+Two run shapes, for two purposes:
+
+- **The table run**: the whole quick tier in one JVM in table order, two warm-ups and
+  three measured runs, the launch flags. It yields pinned counts, the breakdown columns
+  and the order of magnitude of every row; it cannot decide whether a change of under
+  about 10 % helped (see the quick baseline).
+- **One JVM per row**: for decisions and for the long tier. A fix is measured on the rows
+  it targets, before and after alternating per row (the A/B shape of the quick
+  baseline), and the table is re-run only to refresh the breakdown. The long tier runs
+  this way with one warm-up and two measured runs, which also lets a row that does not
+  fit fail alone:
+
+```
+for c in $(names); do java -da -Xmx8g -XX:+UseParallelGC \
+  --add-modules=java.management,jdk.management -Dgroove.bench.warmups=1 \
+  -Dgroove.bench.runs=2 -Dgroove.bench.timeout=1200 -cp "<cp>" \
+  nl.utwente.groove.test.performance.ExplorationBenchmark $c; done
+```
+
+Calibration of a new row uses the same loop: `-1` counts, no warm-up, one run.
+
+Profiling a row: a JFR profile of a single run of one row (no warm-up) is how 3.12 was
+located; the search plans of a row are printed by flipping the compile-time constant
+`PlanSearchEngine.PRINT`, as for `hub-field-hop`. Once 1.1 lands (the `Reporter` gated on
+a property), each measurement wants two runs, with the property on for the breakdown and
+off for the headline number.
+
+### Calibration facts
+
+- **There is no `collapse=none` value, by design.** The collapse feature
+  (`explore/feature/Collapse`) offers `grammar|equality|isomorphism|hash`, where `hash`
+  is still converter-rejected as unsupported. Not collapsing is a consequence of other
+  features, not a choice (feature-model decisions of 2026-07-31, see
+  `claude/archive/exploration-feature-model-plan.md`): the linear strategies
+  (`frontier=single successor=single`) switch the record's collapse flag off in
+  `LinearStrategy.prepare`, and `persistence=none` never enters discovered states into
+  the state set, so there is no revisit detection at all. `GTS.CollapseMode.COLLAPSE_NONE`
+  is the internal state those two produce; `ConfiguredExploreType.stateExploration`
+  throws on it only because it reconstructs a configuration from a GTS and no
+  configuration expresses that mode.
+- **`persistence=none` only flips the GTS storing switch**: `setPersistent` leaves the
+  record's collapse flag on, so freezing stays enabled (2.6 and 2.7 apply, 2.5 does not);
+  under the linear strategies the flag is off and 2.5 applies.
+- **Depth-first rejects a node bound** (`ExploreTypeConverter:168`); the only DFS-compatible
+  bound is `next=newest cost=uniform bound=cost:N`. `bound=size:` is unsupported. The
+  linear traversal admits no depth bound at all (`Traversal.isSearch`).
+- **Unstored runs need deterministic systems with a cost bound.** `bound=cost:N`
+  terminates a run under `persistence=none`; on a grammar with branching it explores the
+  full tree unfolding, on a system with one successor per state a single path of N
+  steps.
+- **`retMB` includes the soft caches** of 3.6 and is unstable in the long tier; a row
+  retaining over about 2 GB at `-Xmx4g` measures the collector (both under "Runs and
+  outcomes"). A row that does not fit the heap does not reliably hit the timeout: under
+  collector thrash the watchdog thread is starved too.
+- **Run order and machine load.** Row position in the table run was checked and found
+  innocent (`mark-unmark` measured 2 332 ms in its tier position against 2 350 on a
+  different day), with one small unexplained exception (`fib-15`, see "Runs and
+  outcomes"). Machine load is not innocent: a table run during an Eclipse rebuild on the
+  same machine made three rows 11 to 21 % slower, which looked like a regression. Run on
+  a quiet machine, and confirm any apparent change one JVM per row.
+
+## Runs and outcomes
+
+### Quick-tier baseline (2026-09-23)
+
+All 48 smoke and quick rows. Desktop, JDK 25.0.4.1, the launch flags
+`-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and three measured runs, all rows in one
+JVM in table order, fresh grammar per run, at `dd4c851e0` (after grammar-set item 6 and
+the gh #924 merge), on a quiet machine, 34 minutes:
+
+```
+config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+inheritance                756     5374      756      5374     39.9     30.5     50.7     18952    134723       4       7       6      29      0       0     44.3      2.8       7       10
+pacman                     256     1536      256      1536     32.1     25.9     38.1      7979     47874       7      10       5      17      1       0     37.7      1.2      20      228
+as-and-bs                 8240    44774     8240     44774    196.5    196.3    218.8     41939    227886      39      54      29     117      0       0    468.2     34.0       6       27
+sierpinsky-11               12       11       12        11    680.1    677.0    730.6        18        16      69       0       0     540      0       0    900.7    418.2  265734   841476
+binary-tree-dfs12         4012    22188     4012     22188    558.1    558.0    568.3      7188     39755       5     435     323     541      1       0    545.8     16.5     239      596
+append-4-list-8          31104   114008    31104    114008   1669.0   1634.6   1683.9     18636     68308     434     578     541    1139      0       0   2941.1    228.5      67      293
+append-4-list-8-equality   73792   268912    73792    268912   3394.4   3387.4   3408.9     21740     79223     806       0       0    2311      3       0   5170.9    526.8      74      357
+mark-unmark              24576   368640    24576    368640   2315.9   2311.6   2364.2     10612    159175     414     730     649    1718      8       0   5573.0    145.1      15       30
+car-platooning-05       110366   369601   110366    369601   3048.4   3027.7   3104.0     36205    121244     971       0       0    1539      7       0   7448.4    539.0       5      215
+binary-tree-dfs-unstored       9        8   409114    409113   1097.1   1096.1   1107.8    372905    372904      72       0       0     838      1       0   2651.2   1041.5    1023     2556
+mark-unmark-18           48384   870912    48384    870912  12148.2  12074.0  13433.6      3983     71690    1249    7611    5887   10296     19       0  15376.0    364.8      18       36
+mark-unmark-21          169344  3556224   169344   3556224  62388.8  61206.9  63436.2      2714     57001    5020   44737   34428   55184     60       0  74327.7   1272.4      21       42
+as-and-bs-4-3           131505   947824   131505    947824   5120.3   5099.1   5130.8     25683    185110     731    2067    1201    3804     18       0  10842.8    568.4       7       35
+inheritance-12          297212  4317133   297212   4317133  20019.5  19861.1  20133.3     14846    215646     668    5147    4089   17385     43       0  36727.0   1734.7      12       21
+leader-election-8          820     3405      820      3405    286.2    249.4    325.1      2865     11899     106      47      47     131      1       0     86.9      4.5      39      196
+leader-election-14       49620   386295    49620    386295   5379.2   5350.1   5411.5      9224     71813    1005    1498    1498    3950      5       0  11229.9    400.9      63      375
+leader-election-16      197404  1772291   197404   1772291  28803.3  28749.0  28927.3      6854     61531    4416    7995    7995   22504     33       0  56720.4   1635.3      71      414
+count-10000              10001    25001    10001     25001    486.8    455.9    495.5     20545     51359     178      32      32     357      0       0    723.4     79.7   10008    10005
+count-100000            100001   250001   100001    250001   4151.8   4130.8   4154.7     24086     60215     402     136     136    3787      3       0  41576.3    836.3  100008   100005
+count-300000            300001   750001   300001    750001  34096.9  33461.2  37094.0      8798     21996    1374     453     433   32784     11       0 353954.8   2641.5  300008   300005
+fib-15                       3        2     4934      4934    388.0    312.6    427.2     12716     12716      15       6       6     221      1       0    111.8     41.9      27        2
+fib-22                       3        2   143284    143284   2011.9   2007.0   2130.2     71219     71219      70      44      44    1259      1       0   3097.2   1256.2      40        2
+fib-function-15           4934     4933     4934      4933     42.2     37.1     42.3    116791    116767       1       2       2      30      0       0     98.8     40.4      27        2
+fib-function-22         143284   143283   143284    143283   1777.7   1731.4   1779.0     80600     80599      41      48      48    1089      1       0   2972.6   1212.7      40        2
+count-100000-big        100001   250001   100001    250001   5214.0   5041.5   5311.0     19179     47948     406     137     137    4805      4       0  41618.1    840.9  100008   100005
+count-300000-big        300001   750001   300001    750001  38689.5  35440.6  38690.9      7754     19385    1554     455     432   37281     11       0 354279.4   2655.2  300008   300005
+as-and-bs-equality      262144  1413120   262144   1413120   9164.6   9152.7   9474.6     28604    154193    1196       0       0    6712     20       0  16464.6   1171.4       6       27
+sierpinsky-12               13       12       13        12   2665.5   2639.0   2733.6         5         5     339       0       0    2112      0       0   2572.3   1233.9  797176  2524375
+binary-tree-dfs-unstored-9      10        9  4037914   4037913  28909.2  28633.7  29745.0    139676    139676    1503       0       0   21913     23       0  25164.0   1709.5    2047     5116
+hub-star-300-3               1      891        1       891   2557.6   2439.5   2724.9         0       348      13    2423    1654    2513      3       0    365.4      1.3     303     1200
+hub-chain-1000-1          1000      999     1000       999   7958.3   7867.3   8113.2       126       126      12    7769    7769    7909      1       0    317.4      4.6    1003     3005
+hub-chain-200-2          19900    39402    19900     39402  10707.3  10640.9  11347.0      1859      3680      59    9956    9956   10584      0       0   2857.9     80.8     203      606
+hub-field-hop           100001   100000   100002    100001   6490.9   6455.0   6580.5     15407     15406    6026       0       0     273      0       0  13487.5    262.4    5405     5914
+hub-field-jump          200001   200000   200002    200001   7541.6   7536.1   7572.2     26520     26520    6590       0       0     572      1       0   1688.5    521.8    5404     5816
+hub-ring-1000-unstored  200001   200000   200002    200001   1242.7   1179.0   1263.2    160943    160942     216       0       0     600      3       0   1686.3    521.2    1003     3007
+hub-ring-1000-counted   200001   200000   200002    200001   1488.0   1457.9   1503.9    134408    134407     379       0       0     690      0       0   2736.3   1066.5  201004   402009
+petrinet-pipe-8-8        12870    91520    12870     91520   2955.4   2450.6   3035.9      4355     30968     326    1964     980    2385      2       0   4020.1     85.1      89      177
+petrinet-pipe-9-9        48620   393822    48620    393822  12547.1  12397.9  12635.5      3875     31388    1190    8988    5110   10553     22       0  18274.3    340.3     109      217
+petrinet-join-100        20001    20000    20002     20001   8012.2   7958.7   8143.7      2496      2496    4353       0       0    1806     19       0  22950.0    483.2     502     1202
+petrinet-join-1000        2001     2000     2002      2001   9294.9   9189.2   9306.9       215       215    4866       0       0    2117     11       0  22490.1    418.4    5002    12002
+pump-8-4                  2143    38891     2143     38891    758.1    189.9    791.4      2827     51303      15     319     259     672      6       0    337.1     13.5       5       82
+pump-12-6-dpo            36894  1231379    36894   1231379   6581.6   6570.4   6585.0      5606    187095     121    2787    2026    5880     17       0  11962.3    344.8       7      180
+pump-12-6-spo            37026  1267481    37026   1267481   7310.0   7304.4   7347.2      5065    173389     155    3161    2176    6545     18       0  12215.3    351.2       7      180
+mergers-6                  202      681      202       681     85.8     62.3    108.5      2355      7939       9       9       6      57      2       0      9.4      0.8       6       83
+mergers-9-simple         25145   255596    25145    255596   1632.1   1609.2   1695.4     15407    156606     102     410     278    1368      4       0   2875.7    181.9       9      245
+mergers-9-multi          26217   259850    26217    259850   1771.4   1759.0   1790.0     14800    146689     105     528     377    1492      2       0   3055.9    190.2       9      314
+mergers-10-multi        222508  3320992   222508   3320992  27814.1  27615.5  27890.6      8000    119400     963    7590    5496   24197     66       0  40352.3   1791.3      10      520
+mergers-11-dpo           70065   735888    70065    735888   7657.5   7601.2   7781.7      9150     96100     311    1493    1493    6478     14       0  10999.0    555.0      11      208
+```
+
+Every count asserted. What the table is good for: pinned counts, the breakdown columns,
+and the order of magnitude of every row; not for deciding whether a change of under about
+10 % helped, since two clean runs of the table a day apart differ by that much on
+individual rows (two sub-second rows by about 30 %, and `petrinet-pipe-8-8` by 22 %,
+cause unknown). A fix is measured one JVM per row on the rows it targets, in the A/B
+shape used for the gh #924 merge: two warm-ups and three runs at `-Xmx4g`, the pre-merge tip `2546ab571`
+against `fe5a2887e`, alternating per row: `mark-unmark` 2 204 against 2 205 ms,
+`car-platooning-05` 3 411 against 3 409, `binary-tree-dfs-unstored` 1 033 against 962,
+`append-4-list-8` 1 702 against 1 699, `fib-15` as a recipe 16 701 against 63,
+`fib-function-15` 56 against 55. So gh #924 costs nothing on the non-recipe path and the
+fixed recipe path is 265 times faster at `fib-15`, level with the function twin. (A first
+run of this table, during an Eclipse rebuild on the same machine, had made three rows
+look 11 to 21 % slower; the A/B is what showed it was load, not the merge.)
+
+### Long-tier baseline (2026-09-22)
+
+Desktop, one JVM per row, `-da -Xmx8g -XX:+UseParallelGC`, one warm-up and two measured
+runs, fresh grammar per run, Oracle JDK 26.0.2.1 (the machine's default `java`; the
+quick-tier baseline ran on 25.0.4.1, so the two tables are not to be compared across).
+44 minutes in all. `count-600000` predates the `probe-odd` rule (with it: 131 s in a
+single cold run, 1 500 001 transitions); `petrinet-pipe-11-11` and `pump-16-8-dpo` were
+added to the tier afterwards and have calibration runs only (249 s and 169 s, see the
+grammar set).
+
+```
+config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
+append-4-list-10       1077000  4008820  1077000   4008820  76373.1  75683.3  76373.1     14102     52490   16248   24277   24272   53902     49       0 122216.4   2260.7     253     1599
+pacman-four-ghosts      210102  7819623   210102   7819623 135428.6 135387.7 135428.6      1551     57740    3162   73996   36642  117800    170       0 216911.7   1891.5      24      441
+leader-election-18      787648  7737099   787648   7737099 147697.0 146645.4 147697.0      5333     52385   20590   40043   40041  118437    105       0 277825.0   2765.6      79      472
+car-platooning-06      2988061 11929077  2988061  11929077 159772.4 155247.2 159772.4     18702     74663   44930       0       0   81919    160       0 222765.0   6205.6       6      306
+binary-tree-dfs-unstored-10      11       10 43954714  43954713 131190.0 125844.2 131190.0    335046    335046    7376       0       0   98668    190       0 271707.9   4974.7    4095    10236
+mark-unmark-22          338688  7451136   338688   7451136 135934.8 128748.0 135934.8      2492     54814   10750   97749   76504  120865    146       0 152759.1   2333.0      22       44
+count-600000            600001  1200001   600001   1200001 107110.1 106639.8 107110.1      5602     11203    1191     862     851  104407     15       0 1391868.9    461.4  600008   600005
+```
+
+What it says:
+
+- **A quick-tier figure for `append-4-list-10` was collector-bound.** Alone at 8 GB it
+  takes 76 s; inside a table run at 4 GB it took 206 s, with 2.3 GB retained and the soft
+  caches on top. `pacman-four-ghosts` (1.9 GB retained) moved only from 143 to 135 s, so
+  the cliff sits between those two retentions: a row that retains over about 2 GB at
+  `-Xmx4g` measures the collector, not the exploration. Read the quick table's `retMB`
+  column next to its times.
+- **Isomorphism checking dominates where it runs**: 72 % of `mark-unmark-22`, 55 % of
+  `pacman-four-ghosts`, 32 % of `append-4-list-10`, 27 % of `leader-election-18`, with
+  certification about a third to all of it. `car-platooning-06` (the grammar switches
+  isomorphism checking off) and the unstored tree (nothing collapses) spend it in `gen`
+  and matching instead.
+- **`count-600000` is `gen`**: 104 of 107 s, with 1.4 TB allocated; the superlinear
+  allocation of the counter lives in state generation, not in matching or the state set.
+- **`retMB` is not a stable figure in this tier.** `car-platooning-06` retained 6.2 GB
+  here against 1.3 GB in its calibration run, and `count-600000` 0.5 GB against 2.5 GB:
+  the softly reachable caches of 3.6 survive or not depending on how hard the collector
+  was pressed during the run. Compare `med ms`; treat `retMB` as a lower bound on the
+  live set only.
+- The spread is small: every `max ms` is within 6 % of `min ms` over the two measured
+  runs, which is what the tier was for.
+
+### Outcomes across both tiers
+
+- **Isomorphism and certification dominate the large stored rows.** Certification is the
+  whole of the hub chain rows (98 % of `hub-chain-1000-1` and 93 % of `hub-chain-200-2`);
+  `iso` is about 70 % of `mark-unmark-21` and `mark-unmark-22`, two thirds of the petrinet
+  pipeline, 55 % of `pacman-four-ghosts`, 40 % of the pump rows, and a quarter to a third
+  of the append and leader-election rows. This puts sections 2.3, 2.4, 4.4 and 5.5 to 5.8
+  ahead of the matching items for the large-state-space rows.
+- **`gen` dominates the counter and the fibonacci rows**: 91 to 97 % of the counter rows of
+  100 000 states and more (104 of 107 s at `count-600000`, with the superlinear
+  allocation), and about 60 % of both fibonacci families at `fib-22`, where matching and
+  isomorphism are under 100 ms; also 79 % of `sierpinsky`, the large-graph linear case.
+- **Matching dominates the hub field and petrinet join rows**: 93 and 87 % of
+  `hub-field-hop` and `hub-field-jump` (5.1, 5.2), and over half of the petrinet join rows
+  (4.1.2).
+- **The collector cliff.** A row retaining over about 2 GB at `-Xmx4g` measures the
+  collector. `binary-tree-dfs-unstored-9` is the quick row affected: 28.9 s in the table
+  against 14 s in its cold calibration at 8 GB, with 1.7 GB retained plus the soft caches
+  of 4 M discovered states; it belongs in the long tier or at a larger heap. The other
+  quick rows above 1 GB retained (`count-300000` and its BigInteger twin at 2.6 GB,
+  `mergers-10-multi`, `inheritance-12`, `leader-election-16`, `as-and-bs-equality`,
+  `fib-22`, `sierpinsky-12`) are within 15 % of their calibration at 8 GB, so for stored
+  runs the cliff sits above 2.6 GB, and lower for unstored ones, whose live set is all
+  soft.
+- **Confluence is always zero** (`confl` on every row of both tables), as finding 2.1
+  predicts.
+- **Factory edge growth** (3.3): `car-platooning-05` mints 215 edges for a 5-node factory,
+  `car-platooning-06` 306, `pacman` 228 and `pacman-four-ghosts` 441.
+- **One order effect, unexplained**: `fib-15` measures 388 ms in the table against 42 ms
+  for `fib-function-15` two rows later and 44 to 48 ms in its own JVM, presumably JIT
+  state left behind by the twenty preceding rows (the recipe branches of the state cache
+  are first taken there); a 0.4 s row, noted, not pursued.
+
+## Findings
+
+The finding list of the review, unchanged in numbering: commits, issues and other
+notes refer to the numbers.
+
+### 1. Always-on instrumentation and uncontended locks
 
 Biased locking is gone since JDK 15, so an uncontended `synchronized` is a real CAS pair
 and blocks inlining of the method that carries it.
@@ -117,7 +867,7 @@ smell rather than perf. `util/collect/Pool.java:30-42`. Used per transition via
 `RuleTransitionLabel.createLabel:227-229`. Either declare it single-threaded and drop the
 lock on the miss path, or use `ConcurrentHashMap`.
 
-## 2. Dead or broken optimisations
+### 2. Dead or broken optimisations
 
 **2.1 The confluent-diamond shortcut can never fire.** High / small / high (verified).
 `lts/AbstractGraphState.java:79-91`: `getOutStub` tests `rule.getKey(this) == match` by
@@ -182,7 +932,7 @@ not one that *has a graph*; a cached-but-graphless ancestor (e.g. type policy OF
 at `:200` re-enters `computeGraph` recursively. Use `getCache(false)` plus
 `StateCache.hasGraph()` (`:128`) in the stop condition.
 
-## 3. Costs that scale with the wrong quantity
+### 3. Costs that scale with the wrong quantity
 
 **3.1 Every certifier allocates an array sized by the global node counter.** High /
 small / high (verified). `graph/iso/CertificateStrategy.java:45`:
@@ -254,11 +1004,11 @@ a materialised `nodeInEdgeStore` that runs `computeInEdgeStore`
 `e.target() == node`. Related: `computeInEdgeStore`/`computeOutEdgeStore` (`:258-311`)
 use `equals` where `==` suffices for canonical host nodes, and size per-node sets at the
 default capacity. *Measured 2026-09-22* (`hub-ring-1000-counted` against `-unstored`,
-section "The hub field and ring rows"): in the exploration's swing mode the store, once
-built, travels along the materialisation chain, so the walk runs once per chain rather
-than once per erase, and a `let:` per move costs 4 µs on a 7 µs step with nothing of it
-attributable to the store. Demoted to Low for exploration; the filter remains a
-simplification worth making when the file is touched.
+the hub grammar under "The performance grammar set"): in the exploration's swing mode
+the store, once built, travels along the materialisation chain, so the walk runs once per
+chain rather than once per erase, and a `let:` per move costs 4 µs on a 7 µs step with
+nothing of it attributable to the store. Demoted to Low for exploration; the filter
+remains a simplification worth making when the file is touched.
 
 **3.8 `StatisticsReporter.GraphCounter` materialises every state's graph at add time.**
 Medium / small / medium. `explore/util/StatisticsReporter.java:487-490`, registered at
@@ -301,7 +1051,9 @@ not take part. Either give `RuleApplication` plain lazily-initialised fields, or
 `Factory` variant that neither registers as a builder nor records users, and use it for
 every factory whose owner is shorter-lived than the factories it reads. Also worth a
 `DEBUG`-guarded size assertion on `users`, since the leak was invisible at test scale.
-Related: 1.3 (the same `get()` also takes the global lock).
+Related: 1.3 (the same `get()` also takes the global lock). *Fixed 2026-09-21* as gh #919
+on its own branch (weak user sets plus plain fields in `RuleApplication`); the write-up is
+`claude/factory-user-leak.md`.
 
 **3.12 `StateCache` keeps the transitive closure of every transient region.** High
 (time and memory, quadratic) / medium (design) / verified by profile.
@@ -346,10 +1098,13 @@ if no open state is found, mark the whole visited set full. 9495647a2 (2025-03-2
 without a message; the bug it fixed must be identified before a redesign, since the
 local rule may be what it replaced. Gates: `grammar-smoke`, the `control` and
 `transactions` tests, `DeterminismTest`, and the fibonacci and `recipes` rows.
+*Fixed 2026-09-22* as gh #924 (branch `statecache-transient-closures`, merged into this
+branch at `da54faa44`) by local propagation over direct predecessor edges; the figures
+above are pre-fix, and the fibonacci recipe rows now cost the same as their function twins.
 
-## 4. Allocation on the per-state and per-match path
+### 4. Allocation on the per-state and per-match path
 
-### 4.1 Matching
+#### 4.1 Matching
 
 **4.1.1 A fresh `Search` plus one `Record` and influence array per plan item, on every
 traversal.** High / medium / high. `match/plan/PlanSearchStrategy.java:151-163`
@@ -425,7 +1180,7 @@ whole `parentTransMap` is iterated and filtered on `getAction().equals(rule)`, O
 parent out-degree) per state where O(out-degree) would do. Build a rule-indexed map
 lazily on first use; the collector is per state.
 
-### 4.2 Events, transformation, algebra, control
+#### 4.2 Events, transformation, algebra, control
 
 **4.2.1 Every algebra operation goes through core reflection with a boxed list.** High /
 medium / high. `algebra/AlgebraFamily.java:184-188,362-369`, `algebra/Operation.java:29-46`,
@@ -540,7 +1295,7 @@ DefaultHostNodeFactory(type)` uncached (only the top type is cached, `:102-110`)
 `BasicEvent.createNode` (`transform/BasicEvent.java:616-620`) calls it per created node.
 A `Map<TypeNode,NodeFactory>` is determinism-safe (keyed lookup, never iterated).
 
-### 4.3 LTS and state cache
+#### 4.3 LTS and state cache
 
 **4.3.1 `StateCache.init` allocates three `HashSet`s per state unconditionally.** Medium
 / small / high. `lts/StateCache.java:485,491,492` (`backTransient`, `forwTransient`,
@@ -609,7 +1364,7 @@ eight references plus two ints, about 56 bytes on compressed oops, plus the stub
 in a side map; `addedEdges` (`DefaultGraphNextState:95`) is worth checking for a shared
 empty array as `addedNodes`/`callStack` have via `MatchApplier.EMPTY_NODE_ARRAY`.
 
-### 4.4 Isomorphism
+#### 4.4 Isomorphism
 
 **4.4.1 `getCertEqualNodeMap` allocates an unsized `HashMap` and does 2·E puts per
 positive answer.** Medium / small / high. `graph/iso/IsoChecker.java:388-414`, the path
@@ -671,7 +1426,7 @@ root a `put` takes about log4(n/1024) dependent loads: 5 to 6 levels at a millio
 states. Raising `STATE_SET_RESOLUTION` to 3 or 4 halves the pointer chasing at the cost
 of wider records; measure on the state set alone.
 
-### 4.5 Exploration driver
+#### 4.5 Exploration driver
 
 **4.5.1 Listener notification allocates an iterator and makes megamorphic calls per
 state and per transition.** Medium / medium / high. `lts/GTS.java:830-836,856,863-868,
@@ -700,7 +1455,7 @@ Low / medium / high. `lts/MatchCollector.java:144-181`: a capturing inner-class 
 per `collectMatches`, handed to `Prover.traverseMatches`. Could be a per-collector
 instance with mutable fields reset per step.
 
-## 5. Structural and algorithmic
+### 5. Structural and algorithmic
 
 These need a design discussion before any commit.
 
@@ -781,7 +1536,7 @@ then number of pre-matched endpoints; missing are endpoint degrees and node cand
 set sizes, the standard first-fail signals. `computePlan` re-sorts a `TreeSet` while
 mutating keys of removed elements only (`:828-845`), correct but fragile.
 
-## 6. Assertion-only costs
+### 6. Assertion-only costs
 
 Not production costs, but they distort every timing taken under `-ea`, which includes
 the test suite and Eclipse launches.
@@ -801,7 +1556,7 @@ the test suite and Eclipse launches.
   record step, used in asserts at `AbstractSearchItem.java:327,472`; make the nine
   results `static final`.
 
-## 7. Checked and found fine
+### 7. Checked and found fine
 
 `Frame` and `Step` are canonicalised once per automaton (`control/instance/Automaton.java:74-78`);
 no `Frame` is allocated per transition. `Step`, `AbstractRuleEvent` and `MatchResult`
@@ -818,7 +1573,7 @@ are `static final … = false`; no `System.Logger` use under `lts`, `explore/eng
 read on JDK 21. `CacheReference.updateCleared` (`:182-194`) locks the holder but runs on
 the exploration thread itself, uncontended.
 
-## Gates when implementing
+### Gates when implementing
 
 - Anything touching `match`, `graph/iso`, `lts`, `transform` or `control/instance`:
   `determinism-check` skill and `grammar-smoke` skill (state and transition counts must
@@ -830,909 +1585,31 @@ the exploration thread itself, uncontended.
 - Before-and-after numbers from the throughput harness, and `Generator -v 3` to confirm
   "Confluent:" becomes non-zero after 2.1.
 
-## Building a throughput harness
-
-### What exists
-
-`ExplorationTest` drives `Exploration` directly on `junit/samples` grammars and asserts
-state and transition counts; it carries `SlowTest` and runs under Surefire, i.e. with
-assertions enabled, so its timings include the section 6 costs. `StatisticsReporter`
-already computes a time breakdown from the static `Reporter` counters (matching from
-`PlanSearchStrategy.searchFindReporter`, iso checking from `IsoChecker.getTotalTime()`,
-generation from `MatchApplier.getGenerateTime()`, self-time from
-`Reporter.getReportTime()`, `StatisticsReporter.java:325-350`), printed by
-`Generator -v 3`. `test/performance` holds collection micro-benchmarks with hand-rolled
-`currentTimeMillis` loops. There is no JMH dependency.
-
-### The harness (built 2026-09-20)
-
-`test/performance/ExplorationBenchmark` implements the shape described below: a fixed
-list of configurations over `junit/samples`, grammar compiled once per configuration,
-a fresh `GTS` and `Exploration` per run, `play()` on a watchdog-timed thread, warm-ups
-discarded, median/min/max wall time over the measured runs, deltas of the static
-`Reporter` counters, per-thread allocated bytes, retained heap after two GCs with the
-GTS still referenced, and the per-GTS `HostFactory` node and edge counts (the signal for
-3.3). Expected counts are asserted on every measured run. Three entry points:
-
-- `main` (config names as arguments, `-Dgroove.bench.warmups`, `-Dgroove.bench.runs`,
-  `-Dgroove.bench.timeout` in seconds, optional `-Dgroove.bench.csv=<file>`), with the
-  Eclipse launch `GROOVE - exploration benchmark` (`-da -Xmx4g -XX:+UseParallelGC`).
-  Without names, `-Dgroove.bench.tier=quick|long|all` selects the tier (added
-  2026-09-22, see "The long-run tier" below); `quick` is the default and excludes the
-  long tier.
-- `@Test smoke()`: every configuration of the `SMOKE` tier once, no warm-up; runs in
-  the full suite.
-- `@Test benchmark()`: inert unless `-Dgroove.bench.run=<names|true>`; the Maven route,
-  `mvn -q test "-Dexcluded.test.groups=" -Dtest=ExplorationBenchmark
-  -DenableAssertions=false "-Dgroove.bench.run=true" > bench.log 2>&1`. Surefire honours
-  `enableAssertions=false` (the header line says `Assertions: disabled`); the pom's
-  `argLine` is untouched.
-
-The harness reaches the two management beans it uses (`RuntimeMXBean.getInputArguments`
-for the JVM flags, `com.sun.management.ThreadMXBean.getThreadAllocatedBytes` for the
-allocation column) reflectively, in a small helper that degrades to "n/a" and -1. The
-test tree is patched into the product module, so direct use would have needed
-`requires java.management; requires jdk.management;` in the product `module-info` for a
-test-only purpose (tried, rejected). Reflective access needs the packages exported,
-which they are, but no readability. At run time both modules resolve under Surefire and
-under a plain class-path launch without flags, since the booter starts from the class
-path and `java.se` is then a root; only the Eclipse launch, where the application module
-is the root, carries `--add-modules=java.management,jdk.management`.
-
-The harness loads the `SystemStore` once per configuration and builds a fresh `new
-GrammarModel(store)` for every run, which `ExploreType.newGTS` compiles under the
-type's overrides (the algebra family, gh #923; since 2026-09-22, before that the
-harness compiled the model itself and built the `GTS` directly, which the fixed
-`algebra` key rejects), outside the timed region, so each run starts without the state
-that 3.11 leaks into the `Rule` objects. `GrammarModel.toGrammar()`
-caches its `Grammar`, and the `RuleModel`s cache their `Rule`s for the model's lifetime,
-so a fresh model is the only unit that isolates runs. Consequence: search plans, built
-lazily on first match, are built inside the timed region on every run; milliseconds
-against seconds, equal for all runs, accepted.
-
-Calibration facts, single cold runs at `-Xmx2g` unless noted:
-
-- **There is no `collapse=none` value, by design.** The collapse feature
-  (`explore/feature/Collapse`) offers `grammar|equality|isomorphism|hash`, where `hash`
-  is still converter-rejected as unsupported. Not collapsing is a consequence of other
-  features, not a choice (feature-model decisions of 2026-07-31, see
-  `claude/archive/exploration-feature-model-plan.md`): the linear strategies
-  (`frontier=single successor=single`) switch the record's collapse flag off in
-  `LinearStrategy.prepare`, and `persistence=none` never enters discovered states into
-  the state set, so there is no revisit detection at all. `GTS.CollapseMode.COLLAPSE_NONE`
-  is the internal state those two produce; `ConfiguredExploreType.stateExploration`
-  throws on it only because it reconstructs a configuration from a GTS and no
-  configuration expresses that mode. Consequences for the findings: `sierpinsky-11`
-  (linear) runs with collapse off in the record, so `StateCache.freezeGraphs` is false
-  there and 2.5 applies; `binary-tree-dfs-unstored` (`persistence=none`) explores the
-  full tree unfolding, but `setPersistent` only flips the GTS storing switch and leaves
-  the record's collapse flag on, so freezing stays enabled and only the chain findings
-  2.6 and 2.7 apply to it.
-- **Depth-first rejects a node bound** (`ExploreTypeConverter:168`); the only DFS-compatible
-  bound is `next=newest cost=uniform bound=cost:N`. `bound=size:` is unsupported.
-- **Dead candidates**: every `leader-election` start graph except `start-2` (including
-  all `-init` graphs), `pacman start_four_ghosts`, `recipes`, `transactions`,
-  `attribute-count-to-n`, `fibonacci` and both `exploreCache` grammars explore to one to
-  six states. So the attribute-heavy, symmetric and recipe-transience cases are still
-  uncovered and need new grammars, as anticipated above.
-- **Heap**: `car-platooning start-06`, `sierpinsky start13`, `generate-binary-tree` at
-  depth 14 or more and `bound=nodes:40` thrash at 2 GB and never finish; under GC thrash
-  the watchdog thread is starved too, so the timeout does not fire. The launch uses 4 GB.
-- **Run order matters**: `car-platooning-05` measures 5.2 s as the first configuration in
-  a JVM and 12 s as the ninth, consistent with the megamorphic dispatch of 4.1.9 being
-  polluted by the preceding grammars. Compare like-for-like orderings only, or one
-  configuration per JVM. (Part of the effect measured before the fresh-`Grammar`-per-run
-  change was the 3.11 leak accumulating across configurations; re-measure.)
-- **A long-run tier is wanted but blocked by 3.11.** Runs of two to five minutes would
-  show the wrong-quantity findings (3.1, 3.3, 3.4) and average out GC and JIT noise
-  better than repeated short runs; candidates are `car-platooning start-06`,
-  `sierpinsky start12`, the unstored binary tree at depth 9 (about 140 s) and As-and-Bs
-  under `collapse=equality` (223 k states in 60 s). But at 1.4 KB leaked per rule
-  application a 3 M-application run leaks over 4 GB before it ends, so the tier is
-  added once the leak is fixed, calibrated at a larger heap, with fewer repetitions.
-
-Baseline on the desktop (the measurement machine: 20 cores, 32 GB), 2 warm-ups and 3
-measured runs, OpenJDK 25.0.4.1, `-da -Xmx4g -XX:+UseParallelGC`, all sixteen
-configurations in one JVM in table order, fresh grammar per run, taken 2026-09-21 at
-`4f9f63bc5`, after the gh #919 fix (non-timing columns from the median run; `states` and
-`trans` are the stored counts, `disc.st` and `disc.tr` the discovered ones):
-
-```
-config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-inheritance                756     5374      756      5374     30.9     30.3     43.0     24494    174113       2       3       3      18      0       0     44.6      2.8       7       10
-pacman                     256     1536      256      1536     33.7     30.4     35.1      7588     45528       3      15       6      25      0       0     38.4      1.2      20      228
-as-and-bs                 8240    44774     8240     44774    226.7    204.8    233.5     36352    197528      28      90      43     166      3       0    480.8     34.1       6       27
-sierpinsky-11               12       11       12        11    688.5    682.0    795.1        17        16      85       0       0     531      0       0    876.4    418.2  265734   841476
-binary-tree-dfs12         4012    22188     4012     22188    568.8    566.9    597.6      7053     39005       9     461     333     550      0       0    547.4     16.9     239      596
-append-4-list-8          31104   114008    31104    114008   1755.1   1729.9   1773.8     17722     64958     455     600     551    1191      1       0   2954.9    228.8      67      293
-append-4-list-8-equality   73792   268912    73792    268912   3546.5   3520.8   3623.2     20807     75824     815       0       0    2387      7       0   5195.1    527.3      74      357
-mark-unmark              24576   368640    24576    368640   2350.4   2314.4   2629.9     10456    156840     414     712     616    1711      2       0   5496.9    146.4      15       30
-car-platooning-05       110366   369601   110366    369601   3212.5   3164.8   3544.5     34355    115050     953       0       0    1671      6       0   7449.7    539.9       5      215
-binary-tree-dfs-unstored       9        8   409114    409113   1331.0   1320.0   1477.7    307377    307377     108       0       0     963      1       0   2719.5   1111.1    1023     2556
-mark-unmark-18           48384   870912    48384    870912  11554.7  11261.0  11823.8      4187     75373    1103    7414    5695    9904     21       0  15650.7    366.4      18       36
-mark-unmark-21          169344  3556224   169344   3556224  61375.0  60199.0  62614.6      2759     57943    5069   43363   33369   54135     72       0  74976.7   1277.7      21       42
-as-and-bs-4-3           131505   947824   131505    947824   5724.5   5605.1   5818.8     22972    165574     868    2286    1280    4142     17       0  11029.6    569.7       7       35
-inheritance-12          297212  4317133   297212   4317133  21113.4  20954.1  21234.5     14077    204473     690    5061    4016   18449     63       0  37537.0   1738.1      12       21
-append-4-list-10       1077000  4008820  1077000   4008820 206111.9 205904.5 218017.8      5225     19450   30015   59844   59839  157800     49       0 123451.0    434.5     253     1599
-pacman-four-ghosts      210102  7819623   210102   7819623 143143.1 141930.7 143631.3      1468     54628    3057   78126   39730  124697    196       0 226271.6   1892.5      24      441
-```
-
-The whole run took 39 minutes, 29 of them in the two long-tier rows `append-4-list-10`
-and `pacman-four-ghosts` (five runs each of 206 s and 143 s); the long tier of the next
-step should therefore run with fewer repetitions. Against the laptop table this
-replaces (in the history of this file, before `4f9f63bc5`), three things changed:
-
-- **The spread is gone.** The maxima of `append-4-list-8-equality`, `car-platooning-05`
-  and `binary-tree-dfs-unstored`, previously two to eight times the median, are now within
-  about 10 % of it; every row's `max ms` is within 12 % of `med ms`, and the ten shared
-  rows are 2.5 to 4 times faster, which is the machine, not the fix.
-- **Retained heap dropped by a third to two thirds on the heavy rows** (`mark-unmark`
-  472 to 146 MB, `append-4-list-8-equality` 812 to 527 MB, `car-platooning-05` 817 to
-  540 MB, `binary-tree-dfs-unstored` 1416 to 1111 MB), not to nothing: the remainder is
-  the softly reachable caches of finding 3.6, which the unstored row's retention
-  investigation below already put at about 60 % of its figure.
-- **Isomorphism checking dominates the large runs**: `iso` is 70 % of `mark-unmark-21`,
-  55 % of `pacman-four-ghosts` and 29 % of `append-4-list-10`, with certificates
-  (`cert`) about half to two thirds of that. This puts sections 2.3, 2.4 and 4.4 ahead of
-  the matching items for the large-state-space rows; `confl` is zero on every row, as
-  finding 2.1 predicts.
-
-With `persistence=none` the GTS retains only the nine states of the written-back trace,
-so the harness counts discovered states and transitions through a `GTSListener`
-registered before the start state materialises, reports stored and discovered side by
-side, and asserts the pinned counts against the discovered ones; for the nine
-persistent configurations the two are equal.
-
-**The maxima of the last three rows of the laptop table were GC thrash, not noise.** Before
-the gh #919 fix, a single run of `binary-tree-dfs-unstored` made about 1.4 GB live (the
-3.11 leak plus soft caches) in a 3.6 GB heap; `-Xlog:gc` showed 48 full collections and
-26 s of pause in a 40 s JVM, no single pause above a second. The fresh grammar per run
-stopped the leak accumulating across runs, but did not make one run fit. The desktop
-table above, taken after the fix, has the maxima back within noise.
-`bound=cost:N` still terminates the run under `persistence=none`, at a pure tree unfolding
-(transitions = states − 1), growing about eightfold per level: depth 8 takes 3 s, depth 9
-about 140 s, so there is nothing in between.
-
-**The 1.44 GB retained by that row** (after two GCs, GTS referenced, nine stored states)
-was investigated with a three-point retention measurement and a class histogram. It is
-not the frontier pool (empty after `play()`), not the event pool (511 entries), not the
-created-node map of 3.4 (511 entries) and not `ExploreResult` (empty). Every one of the
-409 114 discovered states is alive with its cache, plus one `RuleApplication` and
-`RuleEffect` per transition. Two holders, independent of each other:
-
-- **Soft, about 880 MB, rooted in the surviving states** (`Exploration.lastState` and the
-  trace tip). `AbstractGraphState.setClosed` correctly skips storing transition stubs
-  under `persistence=none`, so a closed state does not pin its successors. Its cache
-  does: `StateCache.stateMatches` → `StateMatches.matcher` → `MatchCollector.parentTransMap`
-  (finding 3.6) holds the parent's whole transition map, so from one surviving leaf the
-  path climbs via `source`, fans out through the parent's map to every sibling, and
-  descends through each sibling's cache: the entire tree. All links are soft
-  (`setFull` → `setCacheCollectable`), and forcing soft-reference clearing drops the
-  figure from 1416 MB to 536 MB, so this is reclaimable, but it is exactly the waste
-  3.6 describes, kept for a diamond check that 2.1 shows never fires.
-- **Hard, about 537 MB, rooted in the `Grammar`: finding 3.11 below.** Survives the
-  GTS and the exploration; grows linearly with rule applications across every run that
-  shares the `Grammar`.
-
-Per state the two runs are alike: 2.3 KB per stored state in `binary-tree-dfs12`
-(of whose 40 MB, 31 MB is the same hard leak) against 2.25 KB per discovered state
-unstored. The harness's `retMB` column therefore overstates hard retention by the
-softly reachable part, and the run-to-run spread of the unstored row (2.4 s to 25 s)
-is the leak accumulating over seven runs on one compiled grammar; the harness now
-compiles a fresh `Grammar` per run.
-
-The confluent-diamond count is 0 in every row, as 2.1 predicts. The factory edge count
-of `car-platooning-05` (215 edges minted for a 5-node factory) and `pacman` (196) is
-3.3 showing. `sierpinsky-11` is the large-graph case (265 k nodes, 841 k edges in the
-final graph) and is dominated by `gen`, i.e. transformation and reconstruction, not
-matching.
-
-### The performance grammar set (2026-09-21)
-
-The harness now reads `junit/performance/`, a copy of the eight sample grammars it used,
-kept apart from `junit/samples` so that the correctness fixtures and their test
-expectations stay untouched and the performance copies can drift freely. Each copy holds
-its default start graph, the largest one the samples had, and the generated larger ones;
-the other sample start graphs were dropped. `junit/performance/generate-starts.py`
-generates the larger start graphs of the four grammars whose start graphs are regular
-(Mark-Unmark: a complete binary `next`-tree; As-and-Bs: complete bipartite `b` edges;
-inheritance: a typed ring with chords; append: a longer list with more appenders); its
-`SIZES` table is the record of what is generated.
-
-Calibration on the laptop (JDK 25, `-Xmx8g -da -XX:+UseParallelGC`, headless
-`Generator`, one run each, wall time including JVM start; the machine was shared with
-other builds, so the times are indicative only and the desktop baseline is the one to
-record):
-
-| start graph | states | transitions | s | kept |
-|---|---|---|---|---|
-| Mark-Unmark `tree-18` | 48 384 | 870 912 | 19 | quick tier |
-| Mark-Unmark `tree-20` | 112 896 | 2 257 920 | 55 | dropped |
-| Mark-Unmark `tree-21` | 169 344 | 3 556 224 | 84 | upper quick tier |
-| As-and-Bs `start-4-3` | 131 505 | 947 824 | 12 | quick tier |
-| As-and-Bs `start-5-3` | > 1.7 M | > 15 M | killed at 360 | too large |
-| As-and-Bs `start-4-4` | > 2.2 M | > 16 M | killed at 360 | too large |
-| inheritance `start-10` | 36 193 | 418 212 | 6 | dropped |
-| inheritance `start-11` | 74 868 | 939 355 | 10 | dropped |
-| inheritance `start-12` | 297 212 | 4 317 133 | 40 | quick tier |
-| append `append-4-list-10` | 1 077 000 | 4 008 820 | 153 | long tier |
-| append `append-5-list-6` | > 1.5 M | > 6.4 M | killed at 360 | too large |
-| append `append-5-list-8` | | | killed at 480 | too large |
-| append `append-4-list-12` | > 1.5 M | > 5.7 M | killed at 360 | too large |
-| pacman `start_four_ghosts` (hand-made, 24 nodes) | 210 102 | 7 819 623 | 203 | long tier |
-
-Growth is steep in every family: As-and-Bs jumps from 12 s to beyond 6 minutes at the
-next size in either direction, so the tiers cannot both be served from one family
-without an intermediate edge density; Mark-Unmark grows about 2.3 times in states and
-2.9 times in time per two levels, so `tree-22` (about 2 minutes) or `tree-23` would
-serve the long tier, unmeasured. The pacman four-ghost graph at 20 positions was far
-too large (247 k states and 5.2 M transitions after 3 minutes, 67 k open; about 21
-transitions per state against 3.3 for `car-platooning-05`).
-
-**leader-election (added 2026-09-21)**, the symmetric-ring case of finding 5.6. The
-sample's hand-drawn `-init` start graphs, meant to skip the factorial number-picking
-stage of the plain ones, carry `type:` and `flag:` prefixes that the rules do not use
-(the rules and the plain graphs have unprefixed `Process` and `active` self-loops), so
-they explore to a single state, in `junit/samples` as well; only `start-2` is pinned by
-a test. `generate-starts.py` now produces `ring-N`: the plain start graph after number
-picking, with the values assigned around the ring in a fixed pseudo-random order and the
-`Numbers` pool empty. The hand-drawn graphs were dropped from the copy. Desktop
-calibration, single cold runs at `-Xmx8g -da -XX:+UseParallelGC`, headless `Generator`,
-exploration time as reported:
-
-| start graph | states | transitions | s | kept |
-|---|---|---|---|---|
-| `ring-8` | 820 | 3 405 | 0.3 | smoke |
-| `ring-10` | 3 142 | 16 491 | 0.7 | dropped |
-| `ring-12` | 12 560 | 82 529 | 2.0 | dropped |
-| `ring-14` | 49 620 | 386 295 | 7.7 | quick tier |
-| `ring-16` | 197 404 | 1 772 291 | 31 | upper quick tier |
-| `ring-18` | 787 648 | 7 737 099 | 156 | long tier |
-
-States and time both grow about fourfold per two processes, so `ring-20` would take
-some ten minutes.
-
-**attribute-count-to-n and fibonacci (added 2026-09-21)**, the attribute path of
-findings 4.2.1 to 4.2.3 and the recipe transience of 4.3.1. Arend's copies carry the
-size as a `let:` attribute of the start graph, so `generate-starts.py` produces
-`bound-N` (the counter at 0 with bound N) and `fib-N` (the argument node). Desktop
-calibration, single cold runs, headless `Generator`, `-Xmx8g` unless noted:
-
-| start graph | states | transitions | s | kept |
-|---|---|---|---|---|
-| `bound-10000` | 10 001 | 20 001 | 0.6 | smoke |
-| `bound-100000` | 100 001 | 200 001 | 5.9 | quick tier |
-| `bound-300000` (at `-Xmx4g`) | 300 001 | 600 001 | 34 | upper quick tier |
-| `bound-1000000` | | | out of heap | too large |
-| `fib-12` | 3 | 2 | 0.9 | smoke |
-| `fib-15` | 3 | 2 | 19 (same at `-Xmx4g`) | quick tier |
-| `fib-17` | | | out of heap at 8 GB | too large |
-| `fib-20` | | | out of heap after 8 500 transient states | too large |
-
-The counter is linear in states and cheap per state; the million is about 7 GB of live
-GTS, which is the ordinary per-state cost, not a leak. Its allocation is not linear,
-though: the harness reports 41 GB allocated for `bound-100000` and 352 GB for
-`bound-300000`, 0.4 against 1.2 MB per state, so something on the path allocates in
-proportion to the state count per step (the value-node factory, at 300 008 nodes, is the
-first suspect; unmeasured). A BigInteger row was planned on the same start graph, but
-**the exploration key `algebra=big` is broken**: with it the `Generator` explores
-`bound-10000` to a single state, while `-D algebraFamily=big` (the grammar property)
-gives the full 10 001; presumably the start graph keeps the grammar family's value nodes
-and the rules' constants are re-interpreted, so nothing matches. Filed as gh #923, fixed the same
-day; the rows are in (see "The long-run tier").
-
-**The `probe-odd` rule (added 2026-09-22)** puts `ErrorValue` construction on the path
-of every counter row, for 4.2.3. It tests that the value is odd by dividing 1 by
-`value mod 2`, so every even state constructs an error (a division by zero: the
-`ArithmeticException` thrown by the algebra plus the `ErrorValue` wrapping it, two stack
-traces) and every odd state gets a self-loop, the rule modifying nothing. States are
-unchanged, transitions rose by half the states (re-pinned). Cost of the probe:
-`count-100000` and its BigInteger twin with and without the rule, desktop, 2 warm-ups
-and 3 runs at `-Xmx8g`, one JVM per pair, the with-probe pair run before and after the
-without-probe pair:
-
-| | without | with, before | with, after |
-|---|---|---|---|
-| `count-100000` med ms | 5 145 | 5 518 | 5 328 |
-| `count-100000` match ms | 301 | 504 | 451 |
-| `count-100000` allocMB | 41 126 | 41 581 | 41 583 |
-| `count-100000-big` med ms | 5 598 | 5 936 | 6 211 |
-| `count-100000-big` match ms | 257 | 646 | 605 |
-| `count-100000-big` allocMB | 41 157 | 41 656 | 41 655 |
-
-So the probe costs 4 to 11 % of the row: 150 to 350 ms in the matching column for
-100 000 match attempts and 50 000 errors, and 450 to 500 MB of allocation, some 9 KB
-per error, which is the two stack traces. That is the size of the signal a fix of 4.2.3
-can show here, a few per cent of time and half a gigabyte per 50 000 errors; the rest
-of the probe's cost is the 50 000 extra transitions. Every counter figure earlier in
-this note, including the `count-600000` row of the long-tier baseline, predates the
-probe (`count-600000` with it: 131 s in a single cold run, transitions 1 500 001); the
-quick-tier re-baseline of the state file replaces them. **Fibonacci's transience cost is a
-finding; its state count is not.** The grammar computes fib(x) by the naive exponential recursion on purpose, so the
-number of states grows with fib(x), about 1.6-fold per step, under any of its three
-control programs. The default, `fibonacci-recipe`, wraps the recursion in a recipe: the
-stored GTS has three states and all the work is in transient states, which the harness
-counts as discovered states (1 164 for `fib-12`, 4 934 for `fib-15`; the `fib-N` rows
-above are this program). `fibonacci-function` runs the same recursion as a function, so
-the same states are plain stored states, and it is the control experiment for the
-transience cost (Arend's suggestion, 2026-09-21): same rules, same start graphs, the
-same state count and one transition fewer, no transience. (The third program,
-`fibonacci-expressions`, hard-codes its argument.) Desktop calibration as above, single
-cold runs at `-Xmx8g`, `-D controlProgram=fibonacci-function`, with the recipe program
-rerun in the same session for the ratio:
-
-| start graph | states | transitions | s | recipe s | kept |
-|---|---|---|---|---|---|
-| `fib-12` | 1 164 | 1 163 | 0.19 | 0.84 | |
-| `fib-15` | 4 934 | 4 933 | 0.30 | 17.9 | smoke |
-| `fib-17` | 12 919 | 12 918 | 0.57 | out of heap | |
-| `fib-20` | 54 729 | 54 728 | 1.2 | out of heap | |
-| `fib-22` | 143 284 | 143 283 | 2.6 | | quick tier |
-| `fib-25` | 606 964 | 606 963 | 10.4 | | fits 8 GB only |
-| `fib-27` | | | out of heap at 8 GB | | too large |
-
-`fib-25` is out of heap at `-Xmx4g` (the harness retains 5.2 GB after the run), so the
-quick-tier row is `fib-22`. The harness breakdown says where the recipe's time goes: of
-`fib-15`'s 17.7 s, 13.7 s is in the `gen` column (state generation, after matching),
-against 0.1 s for the function program; matching and isomorphism are under 40 ms in
-either. So a transient state costs 4.5 times a plain state at `fib-12` and 60 times at `fib-15`,
-and the ratio grows with the size: something on the recipe path is superlinear in the
-transient prefix. The recipe's time does not change between 4 and 8 GB, so it is not
-collector thrash. This was the ground of 4.3.1 (and possibly 3.6, the parent transition
-map); the investigation of 2026-09-22 found it in the transient closures of
-`StateCache`, finding 3.12, which must be fixed before a long-tier size exists for the
-recipe family. The function family has no long-tier size either, for the ordinary reason:
-`fib-27` is about 1.6 million states and, like the counter's million, does not fit 8 GB
-of live GTS.
-
-**After gh #924 (2026-09-22 evening).** The parallel session that took finding 3.12
-replaced the transient closures of `StateCache` by local propagation over direct
-predecessor edges (branch `statecache-transient-closures`, merged to master and into this
-branch at `da54faa44`; the design and gates are in gh #924 and the commit body). The
-recipe family recalibrated on the desktop, single cold runs through the harness, one JVM
-per row, JDK 25.0.4.1, `-Xmx8g`, with the function program in the same session for the
-ratio:
-
-| start graph | discovered states | recipe s | function s | recipe retMB | kept |
-|---|---|---|---|---|---|
-| `fib-15` | 4 934 | 0.29 (was 19) | 0.30 | 42 | smoke (both) |
-| `fib-17` | 12 919 | 0.52 (was out of heap) | | 111 | |
-| `fib-20` | 54 729 | 1.13 | | 474 | |
-| `fib-22` | 143 284 | 2.49 | 2.21 | 1 256 | quick tier (both) |
-| `fib-25` | 606 964 | 12.3 | | 5 429 | fits 8 GB only |
-
-So the transient state now costs the same as a plain state (the `gen` column of `fib-22`
-is 1.7 s against 1.4 s, matching and isomorphism under 100 ms in both), and the recipe
-rows mirror the function rows: `fib-15` smoke and `fib-22` quick, the `fib-12` row
-dropped. Neither family has a long-tier size, for the ordinary reason above. Every
-fibonacci figure earlier in this note, and the recipe rows of the quick-tier table before
-the re-baseline below, predate the fix.
-
-**hub (added 2026-09-22)**, Arend's grammar for the large-graph axis: a star of `Leaf`
-nodes around one `Hub`, tokens as flags on the leaves, a `build` program that grows the
-star from a proto graph carrying the wanted sizes as attributes, and `run`, which moves
-a token from its leaf to any empty leaf through the hub. As built at 1 000 leaves and
-10 tokens it explores to one state: the leaves are interchangeable, so all 9 900
-moves yield isomorphic graphs, and the run took 295 s (linear or breadth-first alike,
-the linear strategy still applying every match), of which matching was 22 ms and
-certification 219 s, 22 ms per certificate of a 1 001-node graph with a 990-fold
-symmetric leaf class. That is finding 5.6 measured, not the hub findings it was meant
-for: with every incident edge of the hub a `to` edge in one direction there is nothing
-for 5.1 to discard, the plan starts from the ten `token` flags so 5.2 never enumerates
-nodes, and `run` erases no attribute edge (3.7). The 1.3 MB allocated per transition is
-4.3.2, the per-node edge sets of each materialised graph.
-
-Two shapes were kept, both generated by `generate-starts.py` (the built graph is not
-checked in): the star sized down to 300 leaves and 3 tokens as the 5.6 row, and a
-*chain* variant, consecutive leaves linked by `next` and a `chain` program whose
-`moveNext` rule moves a token one step along the chain and never onto an occupied
-leaf, so the leaves are distinguishable and the states are the token placements, n for
-one token and about n²/2 for two, every state a graph of n+1 nodes: the many-states,
-large-graph rows for 3.1, 4.3.2 and the certifier without symmetry. Desktop
-calibration, single cold runs through the harness, `-Xmx8g`:
-
-| row | states | transitions | s | cert ms | kept |
-|---|---|---|---|---|---|
-| `hub-1000-10` (as built) | 1 | 9 900 | 295 | 218 769 | not kept |
-| `hub-star-300-3` | 1 | 891 | 2.4 | 1 521 | smoke |
-| `hub-chain-1000-1` | 1 000 | 999 | 7.4 | 7 247 | quick tier |
-| `hub-chain-200-2` | 19 900 | 39 402 | 10.9 | 10 092 | quick tier |
-| `hub-chain-300-2` | 44 850 | 89 102 | 54.6 | 51 459 | next size, not kept |
-
-Matching is 4 to 200 ms in every row; certification is the whole cost, and it is
-superlinear in the graph on the chain too: 0.5 ms per certificate at 201 nodes, 1.15 ms
-at 301, 7.2 ms at 1 001, about quadratic, which is the refinement running one round per
-step of the chain's diameter with each round a pass over the graph. So the chain rows
-measure the certifier's dependence on graph diameter, the star row its dependence on
-symmetry (5.6, 2.4), and neither measures 5.1, 5.2 or 3.7; those are the field and ring
-rows below.
-
-**The hub field and ring rows (added 2026-09-22)**, the 5.1, 5.2 and 3.7 rows on
-unstored runs where nothing is certified. The linear traversal admits no depth bound
-(`Traversal.isSearch`), so the rows use the recipe of `binary-tree-dfs-unstored`
-(`next=newest cost=uniform bound=cost:N persistence=none`) on *deterministic* systems,
-one successor per state, so that the depth-first run is a single path of N steps with
-collapsing off. The type graph grew a `from` edge from `Leaf` to `Hub`, a `pos` attribute
-on `Leaf`, a `token` flag and a `moves` attribute on `Hub`, and a `Stub` type linked to
-`Hub` by `stub` edges in both directions; the generated graphs of the earlier rows were
-regenerated with `let:moves=0` on the hub (their counts are unchanged). Two new shapes:
-
-- `field-2-100-2500`: two stars, each hub with 100 leaves linked both ways and numbered by
-  `pos`, plus 2 500 stubs, half pointing at the hub and half away from it, which nothing
-  ever touches; a token on the first leaf of the first hub and one on that hub. 5 202
-  nodes, 10 810 edges, 2.3 MB of GXL, the largest fixture in the set. `hop` moves the leaf
-  token to the leaf at `(pos + 1) % leaves`, both leaves bound to the hub by `from`; the
-  plan (printed by flipping `PlanSearchEngine.PRINT`) is token, `from` n1 to hub with the
-  source bound, `from` n2 to hub with the *target* bound, the NAC, then the `pos` test per
-  leaf. The target-bound item enumerates the hub's whole incident set of 2 703 edges (the
-  target branch never consults the label set), 100 of which carry the label, for one
-  match: finding 5.1 as stated. `jump` moves the hub token to the other hub, a typed
-  node without edges in the rule; the plan is token, `Find node n1:[Hub]` over the node
-  set of 5 400 (nodes plus value nodes), then the NAC: finding 5.2, two hits.
-- `ring-1000-1`: the chain closed, so that a single token walks for ever. `chain`
-  (`moveNext`) against `counted` (`moveCounted`: the same rule plus `let:moves = moves + 1`
-  on the hub, bound through `to`), the `let:` per move of 3.7.
-
-Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`:
-
-| row | steps | s | match ms | gen ms | allocMB | retMB |
-|---|---|---|---|---|---|---|
-| `hub-field-hop` | 100 000 | 6.08 | 5 557 | 230 | 13 504 | 263 |
-| `hub-field-jump` | 200 000 | 5.49 | 4 375 | 631 | 1 686 | 522 |
-| `hub-ring-1000-unstored` | 200 000 | 1.39 | 162 | 756 | 1 651 | 523 |
-| `hub-ring-1000-counted` | 200 000 | 2.21 | 581 | 1 000 | 2 733 | 1 068 |
-
-`hop` is 61 µs per step, 91 % of it matching: 2 703 candidates for one match. Under 5.1(b)
-(the size comparison restored) the label route offers 200 candidates, under (a) the 1 350
-in-edges, under (c) the 100 `from` edges. The row carries a second lead: it allocates
-135 KB per step, and since `jump` allocates 8 bytes per visited node, the garbage is on
-the attribute path, about 1.3 KB per leaf candidate that reaches the `pos` test
-(`Compute add`, `mod`, `eq` and the value-node lookups behind them). Not yet a numbered
-finding. `jump` is 27 µs per step, 80 % matching, 4 ns per visited node; a type index
-makes the 5 400 visits two.
-
-The ring pair measures the `let:` at 4 µs on a 7 µs step, split evenly between matching
-(the `to`, `moves` and `add` items) and generation (the erase, the fresh value node, the
-factory), and none of it is 3.7: in the exploration's swing mode (`Record.copyGraphs`
-false) the in-edge store, once built by the first attribute erase, moves along the
-materialisation chain with the other three stores (`SwingTarget` takes over the parent's
-references), so the O(V+E) walk runs once per chain, not once per erase; it recurs only
-after a reconstruction from the delta chain, whose root graph has no store. In copy mode
-(the Simulator, `randomAccess`) every child copies all four stores anyway. So 3.7 is
-demoted to Low for exploration; the suggested filter stands as a simplification. The
-counted row also retains 5 KB per step: the host factory keeps every value node and
-`moves` edge it ever made (200 k and 400 k by the `fNodes`/`fEdges` columns, which are
-the factory's counts, not the final graph's), which is the counter grammar's growth too.
-
-**petrinet (added 2026-09-22)**, Arend's copy of the sample: one rule, `smartRule`, a
-transition firing when every input place holds a token, consuming one per input place
-and producing one per output place, as two `forall:` levels with an `exists:` token level
-inside the first. The five hand-drawn nets explore to 1 to 38 states; four were deleted
-and `start2` stays as the readable default start graph. Two generated families:
-
-- `pipe-k-n`: k transitions in a row between k+1 places, n tokens on the first. Every
-  token moves forward independently, so the states are the distributions of n tokens
-  over k+1 places, C(n+k, k) of them, all distinguishable since the pipeline has a
-  direction, on a graph of 2k+n+1 nodes. Each token on an input place is a separate
-  `exists:` match, so a place holding m tokens gives its transition m parallel
-  transitions to isomorphic targets: transitions run seven to ten times the states, and
-  the rows are iso-check and generation rows more than matching rows (matching is 13 %
-  of `pipe-8-8`). The family grows about 3.8-fold per step of k = n.
-- `join-f`: one transition with f input places, each holding a token, and f output
-  places; a second transition fires the tokens back. Exactly one of the two is enabled
-  at any time, so an unstored bounded depth-first run is a single path alternating
-  them, and every step matches a universal domain of f places on each side, 2f
-  sub-matches each with its own context map (4.1.2), then applies a composite event of
-  2f deletions and creations (4.2.4, 4.2.6).
-
-Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`:
-
-| row | states | transitions | s | match ms | iso ms | cert ms | gen ms | allocMB | retMB | kept |
-|---|---|---|---|---|---|---|---|---|---|---|
-| `pipe-8-8` | 12 870 | 91 520 | 3.3 | 417 | 1 906 | 906 | 2 499 | 4 029 | 85 | quick |
-| `pipe-9-9` | 48 620 | 393 822 | 12.0 | 1 272 | 8 240 | 4 666 | 9 731 | 17 829 | 341 | quick |
-| `pipe-10-10` | 184 756 | 1 679 600 | 58.2 | 5 546 | 42 681 | 24 075 | 49 423 | 80 646 | 1 296 | not kept |
-| `pipe-11-11` | 705 432 | 7 113 106 | 248.9 | 21 122 | 188 283 | 111 583 | 214 524 | 366 535 | 5 240 | long |
-| `join-100`, 20 000 steps | 20 002 | 20 001 | 9.0 | 4 827 | 0 | 0 | 1 998 | 22 765 | 484 | quick |
-| `join-1000`, 2 000 steps | 2 002 | 2 001 | 10.8 | 5 747 | 0 | 0 | 2 570 | 22 316 | 419 | quick |
-
-`join-100` is 450 µs and 1.1 MB per step for 200 sub-matches, `join-1000` 5.4 ms and
-11 MB per step: linear in f, so the nested search has no superlinear term, only a heavy
-constant of about 2.5 µs and 5.5 KB per sub-match, which is where 4.1.2 (a
-`RuleToHostMap` per candidate) and the composite-event path will show. The pipeline's
-cost per state is a constant 250 to 350 µs across the sizes, and its GTS retains 7.4 KB
-per state at the long size, the transition-heavy shape.
-
-**parallel-pump and mergers (added 2026-09-22)**, the multigraph and merging rows of
-grammar-set item 6. Their variants come from a new per-row grammar-property override in
-the harness: `Config.properties` takes space-separated `key=value` pairs like the
-`Generator`'s `-D` option, applied to a copy of the grammar's own properties through
-`GrammarModel.setProperties`, so one directory serves the DPO, SPO-multi and SPO-simple
-rows where the samples keep a second copy (`parallel-pump-spo`) for the purpose.
-
-- **parallel-pump**, Arend's copy under DPO semantics: `pump` turns one of the hub's
-  parallel `c` loops into an `a` edge to a `b`-target, `drain` deletes one, `trim` deletes
-  one of two parallel `a` edges to the same target and flags the hub, `fold` merges two
-  targets. `generate-starts.py` produces `pump-k-m`, the hub with a `mult=k:c` loop and
-  m targets, so the states are the distributions of the pumped edges over the targets
-  that are left, on a graph of at most m+1 nodes, and the transitions run 24 to 51 per
-  state: parallel edges in matching, in the deltas and in the certifier's edge bundles
-  (gh #906), with the iso check and generation as the main costs and matching under 3 %.
-  States grow 3.7-fold and time 4.6-fold per step of k+2, m+1. The SPO-multi twin differs
-  by under one per cent in states (the `trim` matches that identify its deleted with its
-  preserved `a` edge, which DPO's identification condition forbids) and by nothing in
-  time, since no rule erases a node: the dangling check of finding 4.1.6 never runs on
-  this grammar. The mergers DPO row covers that.
-- **mergers**, the sample copied by hand (its `system.properties` rewritten to 3.12 with
-  the explicit `semantics=SPO-simple` that the version conversion would give it; the
-  sample's `enableControl` is no longer a key), scaled to `ring-n`: n nodes flagged a, b, c
-  in turn, every node with an edge to its successor and every second node with a chord to
-  the node three further on, the edges labelled by the flags of their endpoints as in the
-  sample. The rules merge a-nodes into b- and c-nodes (`merge-a-b`, `merge-and-merge`) and
-  delete an a-node while merging (`merge-and-del`), so every step shrinks the graph and
-  the states are the reachable quotients of the ring: the merge path of the rule
-  application (`MergeMap`, the merge branch of 4.2.13), and about 8.5 times more states
-  per node. Under SPO-multi the parallel edges that merging nodes with shared neighbours
-  creates survive: 4 % more states and 5 to 10 % more time than under simple, and a third
-  more distinct edges in the factory (`fEdges`). Under DPO the identification condition
-  rules out the non-injective matches that identify a deleted with a preserved element
-  (`merge-and-del`'s deleted a-node with the merged one, presumably the bulk), a tenth of
-  the states, and the dangling check runs per candidate of `merge-and-del`.
-
-Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`
-(the rows marked "shared" ran while a stray second harness loop was competing for the
-machine and are indicative only):
-
-| row | states | transitions | s | match ms | iso ms | gen ms | allocMB | retMB | kept |
-|---|---|---|---|---|---|---|---|---|---|
-| `pump-6-3-dpo` | 431 | 5 091 | 0.28 | 20 | 60 | 159 | 48 | 2 | dropped |
-| `pump-6-3-spo` | 449 | 5 523 | 0.27 | 17 | 41 | 166 | 51 | 2 | dropped |
-| `pump-8-4` (DPO) | 2 143 | 38 891 | 0.55 | 25 | 134 | 390 | 347 | 14 | smoke |
-| `pump-8-4-spo` (shared) | 2 183 | 40 988 | 0.73 | 26 | 242 | 535 | 369 | 14 | dropped |
-| `pump-10-5-dpo` (shared) | 9 274 | 236 314 | 1.55 | 61 | 494 | 1 251 | 2 250 | 74 | dropped |
-| `pump-10-5-spo` (shared) | 9 344 | 245 191 | 1.65 | 55 | 604 | 1 357 | 2 250 | 75 | dropped |
-| `pump-12-6-dpo` | 36 894 | 1 231 379 | 6.7 | 125 | 2 726 | 5 907 | 11 945 | 345 | quick |
-| `pump-12-6-spo` | 37 026 | 1 267 481 | 6.9 | 163 | 2 891 | 6 108 | 12 154 | 352 | quick |
-| `pump-14-7-dpo` | 136 731 | 5 731 438 | 31.4 | 621 | 13 850 | 28 253 | 59 169 | 1 502 | dropped |
-| `pump-14-7-spo` | 136 941 | 5 870 069 | 32.0 | 594 | 14 454 | 28 917 | 60 505 | 1 518 | dropped |
-| `pump-16-8-dpo` | 479 787 | 24 438 977 | 168.6 | 3 845 | 76 288 | 152 314 | 268 792 | 6 010 | long |
-| mergers `start` (simple) | 66 | 143 | 0.08 | 2 | 6 | 32 | 5 | 0 | default graph |
-| `mergers-6` (simple and multi alike) | 202 | 681 | 0.10 | 5 | 8 | 50 | 12 | 1 | smoke (multi) |
-| `mergers-9-simple` | 25 145 | 255 596 | 2.2 | 94 | 478 | 1 793 | 2 832 | 172 | quick |
-| `mergers-9-multi` | 26 217 | 259 850 | 2.4 | 123 | 605 | 1 875 | 3 015 | 181 | quick |
-| `mergers-9-dpo` | 2 818 | 18 693 | 0.52 | 43 | 63 | 331 | 275 | 20 | dropped |
-| `mergers-10-simple` | 213 582 | 3 226 347 | 23.0 | 822 | 6 132 | 19 935 | 36 009 | 1 711 | dropped |
-| `mergers-10-multi` | 222 508 | 3 320 992 | 25.2 | 875 | 7 071 | 21 932 | 38 966 | 1 791 | upper quick |
-| `mergers-10-dpo` | 11 085 | 81 084 | 1.1 | 69 | 159 | 826 | 1 270 | 86 | dropped |
-| `mergers-11-simple` | | | timeout at 600, 977 878 states | | | | | | too large |
-| `mergers-11-multi` | 1 084 025 | 19 356 013 | 456 | 7 638 | 127 947 | 398 622 | 240 387 | 5 640 | too large |
-| `mergers-11-dpo` | 70 065 | 735 888 | 7.2 | 281 | 1 435 | 5 889 | 10 463 | 517 | quick |
-| `mergers-12-simple` | | | timeout at 600, 1 480 776 states | | | | | | too large |
-
-The mergers family has no long-tier size: `ring-11` is a million states and 19 million
-transitions, 5.6 GB retained and 7.6 minutes under SPO-multi, and under simple it did not
-finish in ten minutes at fewer states, which at that heap is the collector rather than the
-semantics (the run alive at the timeout was well into its second half). So the pump at
-`pump-16-8` (three minutes, 6 GB) is the item's long row, next to `pipe-11-11` the second
-transition-heavy one; `ring-11-dpo` at 7 s and `ring-10-multi` at 25 s bound the quick
-tier for mergers. `ring-6` explores to the same 202 states under simple and multi, so the
-smoke row runs it under multi for the code path alone.
-
-### The long-run tier (2026-09-22)
-
-The tier the note asked for once 3.11 was fixed. `Config.smoke` became a three-valued
-`Tier` (`SMOKE` within `QUICK` within everything; `LONG` apart): `smoke()` runs the
-`SMOKE` rows, a plain `main` run the quick tier (that is, everything but `LONG`), and
-`-Dgroove.bench.tier=long` (or `all`) the rest, names given as arguments overriding the
-tier. The long rows are sized for two to five minutes at `-Xmx8g`, and are meant to run
-with one warm-up, two measured runs and one row per JVM, which sidesteps the run-order
-effect and lets a row that does not fit fail alone:
-
-```
-for c in $(names); do java -da -Xmx8g -XX:+UseParallelGC \
-  --add-modules=java.management,jdk.management -Dgroove.bench.warmups=1 \
-  -Dgroove.bench.runs=2 -Dgroove.bench.timeout=1200 -cp "<cp>" \
-  nl.utwente.groove.test.performance.ExplorationBenchmark $c; done
-```
-
-Calibration on the desktop, single cold runs through the harness (no warm-up) at
-`-Xmx8g`, one JVM per row; `retMB` is the harness's retained heap after the run:
-
-| row | states | transitions | s | retMB | kept |
-|---|---|---|---|---|---|
-| `car-platooning-06` | 2 988 061 | 11 929 077 | 170 | 1 310 | long tier |
-| `sierpinsky-12` (linear) | 13 | 12 | 3.6 | 1 234 | quick tier |
-| `sierpinsky-13` (linear) | 14 | 13 | 10.8 | 3 805 | dropped: too short for long, too heavy for quick |
-| `binary-tree-dfs-unstored-9` | 4 037 914 discovered | | 14 | 1 826 | quick tier |
-| `binary-tree-dfs-unstored-10` | 43 954 714 discovered | | 131 | 4 975 | long tier |
-| `as-and-bs-equality` (`start`) | 262 144 | 1 413 120 | 7.8 | 1 174 | quick tier |
-| `as-and-bs-4-3-equality` | | | out of heap at 8 GB | | too large |
-| `mark-unmark-22` | 338 688 | 7 451 136 | 122 | 2 388 | long tier |
-| `mark-unmark-23` | 151 704 | 3 489 192 | 72 | 1 271 | dropped: smaller than `tree-21` |
-| `count-600000` | 600 001 | 1 200 001 | 106 | 2 544 | long tier |
-| `count-100000-big` | 100 001 | 200 001 | 6.4 | 834 | quick tier |
-| `count-300000-big` | 300 001 | 600 001 | 38 | 2 634 | quick tier |
-| `inheritance-13` | 552 824 | 8 148 238 | 41 | 3 288 | dropped: between the tiers at 3.3 GB |
-
-With the three rows already in the set that were long-tier sized (`append-4-list-10`,
-`pacman-four-ghosts`, `leader-election-18`) the long tier has seven rows. Surprises:
-
-- The note's 140 s for the unstored tree at depth 9 was a laptop figure; here it is 14 s,
-  so the tier takes depth 10. Its 5 GB retained after a run whose GTS holds 11 states is
-  the softly reachable state caches of 3.6 at the scale of 44 M discovered states, and
-  the reason the row needs the 8 GB heap.
-- **BigInteger costs nothing extra on the counter**: 6.4 s against 7.3 s for the plain
-  row in the same session. The counter's time is allocation, not arithmetic, which is
-  consistent with 4.2.1 to 4.2.3 being about boxing and lookups rather than the
-  operations.
-- **The counter's allocation is superlinear at a third point**: 1.4 TB for
-  `bound-600000`, 2.3 MB per state, after 0.4 MB at 100 k and 1.2 MB at 300 k; the total
-  grows about quadratically, so something allocates in proportion to the states so far
-  on every step. Unmeasured beyond that; the value-node factory is the first suspect.
-- Mark-Unmark's state count is not monotonic in the tree size: `tree-23` is smaller than
-  `tree-21`, the generator's tree shape depending on the number. `tree-22` is twice
-  `tree-21` and serves.
-- As-and-Bs still has no long-tier size: `start-4-3` under equality collapse does not
-  fit 8 GB, and the intermediate edge densities of the calibration note remain untried.
-
-**Long-tier baseline**, desktop, 2026-09-22, one JVM per row, `-da -Xmx8g
--XX:+UseParallelGC`, one warm-up and two measured runs, fresh grammar per run, Oracle JDK
-26.0.2.1 (the machine's default `java`; the quick-tier baseline above ran on 25.0.4.1,
-so the two tables are not to be compared across). 44 minutes in all:
-
-```
-config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
-append-4-list-10       1077000  4008820  1077000   4008820  76373.1  75683.3  76373.1     14102     52490   16248   24277   24272   53902     49       0 122216.4   2260.7     253     1599
-pacman-four-ghosts      210102  7819623   210102   7819623 135428.6 135387.7 135428.6      1551     57740    3162   73996   36642  117800    170       0 216911.7   1891.5      24      441
-leader-election-18      787648  7737099   787648   7737099 147697.0 146645.4 147697.0      5333     52385   20590   40043   40041  118437    105       0 277825.0   2765.6      79      472
-car-platooning-06      2988061 11929077  2988061  11929077 159772.4 155247.2 159772.4     18702     74663   44930       0       0   81919    160       0 222765.0   6205.6       6      306
-binary-tree-dfs-unstored-10      11       10 43954714  43954713 131190.0 125844.2 131190.0    335046    335046    7376       0       0   98668    190       0 271707.9   4974.7    4095    10236
-mark-unmark-22          338688  7451136   338688   7451136 135934.8 128748.0 135934.8      2492     54814   10750   97749   76504  120865    146       0 152759.1   2333.0      22       44
-count-600000            600001  1200001   600001   1200001 107110.1 106639.8 107110.1      5602     11203    1191     862     851  104407     15       0 1391868.9    461.4  600008   600005
-```
-
-What it says:
-
-- **The quick-tier figure for `append-4-list-10` was collector-bound.** Alone at 8 GB it
-  takes 76 s; inside the quick-tier run at 4 GB it took 206 s, with 2.3 GB retained and
-  the soft caches on top. `pacman-four-ghosts` (1.9 GB retained) moved from 143 to
-  135 s, so the cliff sits between those two retentions: a quick-tier row that retains
-  over about 2 GB at `-Xmx4g` measures the collector, not the exploration. That is one
-  more reason for the quick-tier re-baseline before the first fix, and for reading the
-  quick table's `retMB` column next to its times.
-- **Isomorphism checking dominates where it runs**: 72 % of `mark-unmark-22`, 55 % of
-  `pacman-four-ghosts`, 32 % of `append-4-list-10`, 27 % of `leader-election-18`, with
-  certification about a third to all of it. `car-platooning-06` (the grammar switches
-  isomorphism checking off) and the unstored tree (nothing collapses) spend it in `gen`
-  and matching instead.
-- **`count-600000` is `gen`**: 104 of 107 s, with 1.4 TB allocated; the superlinear
-  allocation of the counter lives in state generation, not in matching or the state set.
-- **`retMB` is not a stable figure in this tier.** `car-platooning-06` retained 6.2 GB
-  here against 1.3 GB in its calibration run, and `count-600000` 0.5 GB against 2.5 GB:
-  the softly reachable caches of 3.6 survive or not depending on how hard the collector
-  was pressed during the run. Compare `med ms`; treat `retMB` as a lower bound on the
-  live set only.
-- The spread is small: every `max ms` is within 6 % of `min ms` over the two measured
-  runs, which is what the tier was for.
-
-### Quick-tier re-baseline (2026-09-23)
-
-The quick tier as it stands after grammar-set item 6 and the gh #924 merge, replacing
-the sixteen-row table of 2026-09-21 above (whose rows it repeats in the same order, so
-the two are comparable row by row; the counter rows carry the `probe-odd` transitions
-now, the fibonacci rows the fixed recipe path). Desktop, JDK 25.0.4.1, the launch flags
-`-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and three measured runs, all rows in one
-JVM in table order, fresh grammar per run, at `dd4c851e0`, on a quiet machine, 34 minutes:
-
-```
-config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-inheritance                756     5374      756      5374     39.9     30.5     50.7     18952    134723       4       7       6      29      0       0     44.3      2.8       7       10
-pacman                     256     1536      256      1536     32.1     25.9     38.1      7979     47874       7      10       5      17      1       0     37.7      1.2      20      228
-as-and-bs                 8240    44774     8240     44774    196.5    196.3    218.8     41939    227886      39      54      29     117      0       0    468.2     34.0       6       27
-sierpinsky-11               12       11       12        11    680.1    677.0    730.6        18        16      69       0       0     540      0       0    900.7    418.2  265734   841476
-binary-tree-dfs12         4012    22188     4012     22188    558.1    558.0    568.3      7188     39755       5     435     323     541      1       0    545.8     16.5     239      596
-append-4-list-8          31104   114008    31104    114008   1669.0   1634.6   1683.9     18636     68308     434     578     541    1139      0       0   2941.1    228.5      67      293
-append-4-list-8-equality   73792   268912    73792    268912   3394.4   3387.4   3408.9     21740     79223     806       0       0    2311      3       0   5170.9    526.8      74      357
-mark-unmark              24576   368640    24576    368640   2315.9   2311.6   2364.2     10612    159175     414     730     649    1718      8       0   5573.0    145.1      15       30
-car-platooning-05       110366   369601   110366    369601   3048.4   3027.7   3104.0     36205    121244     971       0       0    1539      7       0   7448.4    539.0       5      215
-binary-tree-dfs-unstored       9        8   409114    409113   1097.1   1096.1   1107.8    372905    372904      72       0       0     838      1       0   2651.2   1041.5    1023     2556
-mark-unmark-18           48384   870912    48384    870912  12148.2  12074.0  13433.6      3983     71690    1249    7611    5887   10296     19       0  15376.0    364.8      18       36
-mark-unmark-21          169344  3556224   169344   3556224  62388.8  61206.9  63436.2      2714     57001    5020   44737   34428   55184     60       0  74327.7   1272.4      21       42
-as-and-bs-4-3           131505   947824   131505    947824   5120.3   5099.1   5130.8     25683    185110     731    2067    1201    3804     18       0  10842.8    568.4       7       35
-inheritance-12          297212  4317133   297212   4317133  20019.5  19861.1  20133.3     14846    215646     668    5147    4089   17385     43       0  36727.0   1734.7      12       21
-leader-election-8          820     3405      820      3405    286.2    249.4    325.1      2865     11899     106      47      47     131      1       0     86.9      4.5      39      196
-leader-election-14       49620   386295    49620    386295   5379.2   5350.1   5411.5      9224     71813    1005    1498    1498    3950      5       0  11229.9    400.9      63      375
-leader-election-16      197404  1772291   197404   1772291  28803.3  28749.0  28927.3      6854     61531    4416    7995    7995   22504     33       0  56720.4   1635.3      71      414
-count-10000              10001    25001    10001     25001    486.8    455.9    495.5     20545     51359     178      32      32     357      0       0    723.4     79.7   10008    10005
-count-100000            100001   250001   100001    250001   4151.8   4130.8   4154.7     24086     60215     402     136     136    3787      3       0  41576.3    836.3  100008   100005
-count-300000            300001   750001   300001    750001  34096.9  33461.2  37094.0      8798     21996    1374     453     433   32784     11       0 353954.8   2641.5  300008   300005
-fib-15                       3        2     4934      4934    388.0    312.6    427.2     12716     12716      15       6       6     221      1       0    111.8     41.9      27        2
-fib-22                       3        2   143284    143284   2011.9   2007.0   2130.2     71219     71219      70      44      44    1259      1       0   3097.2   1256.2      40        2
-fib-function-15           4934     4933     4934      4933     42.2     37.1     42.3    116791    116767       1       2       2      30      0       0     98.8     40.4      27        2
-fib-function-22         143284   143283   143284    143283   1777.7   1731.4   1779.0     80600     80599      41      48      48    1089      1       0   2972.6   1212.7      40        2
-count-100000-big        100001   250001   100001    250001   5214.0   5041.5   5311.0     19179     47948     406     137     137    4805      4       0  41618.1    840.9  100008   100005
-count-300000-big        300001   750001   300001    750001  38689.5  35440.6  38690.9      7754     19385    1554     455     432   37281     11       0 354279.4   2655.2  300008   300005
-as-and-bs-equality      262144  1413120   262144   1413120   9164.6   9152.7   9474.6     28604    154193    1196       0       0    6712     20       0  16464.6   1171.4       6       27
-sierpinsky-12               13       12       13        12   2665.5   2639.0   2733.6         5         5     339       0       0    2112      0       0   2572.3   1233.9  797176  2524375
-binary-tree-dfs-unstored-9      10        9  4037914   4037913  28909.2  28633.7  29745.0    139676    139676    1503       0       0   21913     23       0  25164.0   1709.5    2047     5116
-hub-star-300-3               1      891        1       891   2557.6   2439.5   2724.9         0       348      13    2423    1654    2513      3       0    365.4      1.3     303     1200
-hub-chain-1000-1          1000      999     1000       999   7958.3   7867.3   8113.2       126       126      12    7769    7769    7909      1       0    317.4      4.6    1003     3005
-hub-chain-200-2          19900    39402    19900     39402  10707.3  10640.9  11347.0      1859      3680      59    9956    9956   10584      0       0   2857.9     80.8     203      606
-hub-field-hop           100001   100000   100002    100001   6490.9   6455.0   6580.5     15407     15406    6026       0       0     273      0       0  13487.5    262.4    5405     5914
-hub-field-jump          200001   200000   200002    200001   7541.6   7536.1   7572.2     26520     26520    6590       0       0     572      1       0   1688.5    521.8    5404     5816
-hub-ring-1000-unstored  200001   200000   200002    200001   1242.7   1179.0   1263.2    160943    160942     216       0       0     600      3       0   1686.3    521.2    1003     3007
-hub-ring-1000-counted   200001   200000   200002    200001   1488.0   1457.9   1503.9    134408    134407     379       0       0     690      0       0   2736.3   1066.5  201004   402009
-petrinet-pipe-8-8        12870    91520    12870     91520   2955.4   2450.6   3035.9      4355     30968     326    1964     980    2385      2       0   4020.1     85.1      89      177
-petrinet-pipe-9-9        48620   393822    48620    393822  12547.1  12397.9  12635.5      3875     31388    1190    8988    5110   10553     22       0  18274.3    340.3     109      217
-petrinet-join-100        20001    20000    20002     20001   8012.2   7958.7   8143.7      2496      2496    4353       0       0    1806     19       0  22950.0    483.2     502     1202
-petrinet-join-1000        2001     2000     2002      2001   9294.9   9189.2   9306.9       215       215    4866       0       0    2117     11       0  22490.1    418.4    5002    12002
-pump-8-4                  2143    38891     2143     38891    758.1    189.9    791.4      2827     51303      15     319     259     672      6       0    337.1     13.5       5       82
-pump-12-6-dpo            36894  1231379    36894   1231379   6581.6   6570.4   6585.0      5606    187095     121    2787    2026    5880     17       0  11962.3    344.8       7      180
-pump-12-6-spo            37026  1267481    37026   1267481   7310.0   7304.4   7347.2      5065    173389     155    3161    2176    6545     18       0  12215.3    351.2       7      180
-mergers-6                  202      681      202       681     85.8     62.3    108.5      2355      7939       9       9       6      57      2       0      9.4      0.8       6       83
-mergers-9-simple         25145   255596    25145    255596   1632.1   1609.2   1695.4     15407    156606     102     410     278    1368      4       0   2875.7    181.9       9      245
-mergers-9-multi          26217   259850    26217    259850   1771.4   1759.0   1790.0     14800    146689     105     528     377    1492      2       0   3055.9    190.2       9      314
-mergers-10-multi        222508  3320992   222508   3320992  27814.1  27615.5  27890.6      8000    119400     963    7590    5496   24197     66       0  40352.3   1791.3      10      520
-mergers-11-dpo           70065   735888    70065    735888   7657.5   7601.2   7781.7      9150     96100     311    1493    1493    6478     14       0  10999.0    555.0      11      208
-```
-
-This is the second run of the table. The first, on the evening of 2026-09-22, ran while
-the main checkout was being switched for review, so Eclipse was rebuilding the project
-on the same machine: three rows came out 11 to 21 % slower than on 2026-09-21
-(`mark-unmark` 2 852 ms, `car-platooning-05` 3 778 ms, `binary-tree-dfs-unstored`
-1 472 ms), which looked like a cost of the gh #924 merge, and was neither that nor run
-order. The checks that showed it:
-
-- **A/B one JVM per row**, two warm-ups and three runs at `-Xmx4g`, the pre-merge tip
-  `2546ab571` against `fe5a2887e`, alternating per row: `mark-unmark` 2 204 against
-  2 205 ms, `car-platooning-05` 3 411 against 3 409, `binary-tree-dfs-unstored` 1 033
-  against 962, `append-4-list-8` 1 702 against 1 699, `fib-15` as a recipe 16 701 against
-  63, `fib-function-15` 56 against 55. So gh #924 costs nothing on the non-recipe path
-  and the fixed recipe path is 265 times faster at `fib-15`, level with the function twin.
-- **The first nine rows in tier order on the quiet machine**: `mark-unmark` 2 332 ms in
-  its tier position, against 2 350 on 2026-09-21. The position was innocent.
-- **The re-run above**: every row of the first table within 10 % except the three
-  loaded ones (now 19 to 25 % faster), `leader-election-8` (−31 %, a 0.3 s row),
-  `inheritance` (+27 %, the first row, 8 ms) and `petrinet-pipe-8-8` (+22 %, cause
-  unknown).
-
-What the tier table is good for, then: pinned counts, the breakdown columns, and the
-order of magnitude of every row; not for deciding whether a change of under about
-10 % helped, since two clean runs of the table a day apart differ by that much on
-individual rows. A fix is measured one JVM per row on the rows it targets, in the A/B
-shape above, and the table is re-run only to refresh the breakdown.
-
-Read against the calibration figures:
-
-- **Collector-bound at 4 GB**: `binary-tree-dfs-unstored-9` takes 28.9 s here against
-  14 s in its cold calibration at 8 GB, with 1.7 GB retained plus the soft caches of 4 M
-  discovered states; it is the one quick row that measures the collector rather than
-  the exploration, and belongs in the long tier or at a larger heap. The other rows
-  above 1 GB retained (`count-300000` and its BigInteger twin at 2.6 GB,
-  `mergers-10-multi`, `inheritance-12`, `leader-election-16`, `as-and-bs-equality`,
-  `fib-22`, `sierpinsky-12`) are within 15 % of their calibration at 8 GB, so the cliff
-  the long tier found sits above 2.6 GB for stored runs and lower for unstored ones,
-  whose live set is all soft.
-- **One genuine order effect, unexplained**: `fib-15` measures 388 ms in the tier (426 in
-  the first run) against 42 ms for `fib-function-15` two rows later and 44 to 48 ms in
-  its own JVM, also directly after `count-100000` or `count-300000` with ten runs (where
-  only the first run is slow, at 340 to 350 ms, paying the previous row's collection).
-  All three tier runs are slow (`min ms` 380 and 420), so it is not the collection; it
-  is something the twenty preceding rows leave behind that a single preceding row does
-  not, presumably the JIT state (the recipe branches of the state cache are first taken
-  here, after fifteen minutes of compiled code built on profiles in which they were
-  never taken, and three runs of 50 ms are not long enough for the recompilation to
-  land). A 0.4 s row; noted, not pursued.
-- **Certification is the whole of the hub chain rows** (98 % of `hub-chain-1000-1` and
-  93 % of `hub-chain-200-2`), 70 % of `mark-unmark-21` and the petrinet pipeline, and
-  40 % of the pump rows; matching is the whole of the hub field rows and 60 % of the
-  petrinet join rows; `gen` is the whole of the counter rows (95 %) and the fibonacci
-  function rows. The section order of the note (isomorphism and reconstruction before
-  matching for the large-state-space rows) stands.
-- The confluence count is zero on every row, as before.
-
-### Shape of the harness (as designed)
-
-A runner in the test tree, `test/performance/ExplorationBenchmark` or similar, with a
-`main` so it runs outside Surefire (no `-ea`) and a JUnit entry under `SlowTest` for
-Eclipse. It should:
-
-- Load each grammar once and build a fresh `Exploration`/`GTS` per run, as
-  `ExplorationTest.testExploration` does, so grammar loading and plan construction stay
-  out of the measurement (plans are built per `Matcher` and survive across runs of the
-  same `Grammar`; a fresh grammar per run would measure them too, which is a separate,
-  much smaller number).
-- Per configuration: two discarded warm-up runs, then five measured runs in the same JVM,
-  reporting the median and the spread. Assert the state and transition counts on every
-  run, so the harness doubles as a regression check for the section 5 changes.
-- Report per configuration: wall time, states and transitions per second, the
-  `Reporter` breakdown (deltas of the static counters, which accumulate across runs and
-  are never reset), allocated bytes via `com.sun.management.ThreadMXBean.getThreadAllocatedBytes`
-  (the cheapest allocation-rate signal and the one most of section 4 changes), and
-  retained heap after an explicit GC with the GTS still referenced (the signal for 3.4,
-  3.5, 3.6 and 4.3.2).
-- Run with a fixed heap and GC (`-Xmx2g -XX:+UseParallelGC` or whatever is chosen, but
-  the same every time) and record the JVM flags in the output. Interleave configurations
-  across two JVM forks when comparing branches, since JIT profile pollution from one
-  grammar affects the next in the same JVM.
-- Once 1.1 lands, run each configuration twice: with the profiling property on for the
-  breakdown and off for the headline number.
-
-JMH would give the warm-up, forking and statistics for free at the cost of a test-scope
-dependency and its annotation-processor build step; the plain runner reuses the
-`ExplorationTest` plumbing and needs nothing new. Start plain, move to JMH if run-to-run
-noise turns out to be above a few percent.
-
-### Do the sample grammars cover the sensitive points?
-
-Mechanism coverage is good. Across the 57 grammars in `junit/samples` (plus 44
-single-feature grammars in `junit/rules`) there are NACs (about half), quantifiers
-(`leader-election`, `petrinet`, `pacman`, `sierpinsky`, `subsets`, `forallCount`,
-`quantifierCounter`), attributes (`fibonacci`, `attribute-count-to-n`, `attributes`,
-`control2`, `leader-election`), control programs in about ten grammars (`control`,
-`control2`, `attributes`, `fibonacci`, `recipes`, `transactions`, ...), recipes and
-priorities (`recipes`, `recipe-priorities`, `priorities`), regular expressions
-(`As-and-Bs-reg-exp-benchmark`, `regexpr`, `basic-regexp`, `Mark-Unmark-List`),
-DPO and injective matching (`car-platooning`, `simpleCheckDanglingEdges`,
-`simpleInjective`, `injective-nac`), multigraph semantics (`parallel-pump`,
-`parallel-pump-spo`), and mergers (`mergers`).
-
-Scale is the gap, on three axes:
-
-1. **State-space size.** Every `ExplorationTest` configuration except
-   `As-and-Bs-reg-exp-benchmark` (8 240 states, 44 774 transitions) is below 1 000
-   states, where warm-up dominates and per-state fixed costs are invisible. Larger start
-   graphs are already there but unused by the test: `append-4-list-8`, `car-platooning
-   start-18`, `leader-election start-10-init`, `petrinet start2`, `pacman
-   start_four_ghosts`, `sierpinsky start13`, `regexpr list-8`. Together with `bound`
-   and depth options these should give 10^4 to 10^6 states per configuration.
-2. **Graph size.** The largest start graph has 37 nodes and 83 edges (`petrinet
-   start2`); nothing has hundreds of nodes or a high-degree hub. The
-   wrong-quantity findings (3.1 certifier array, 3.7 in-edge store, 4.3.2 per-node
-   sets) and the candidate over-approximation (5.1, 5.2) only show on graphs of
-   hundreds to thousands of nodes with a few hubs. This needs one or two dedicated
-   grammars, e.g. a large grid or list with a shared hub node and rules that bind the
-   hub first. (Partly covered since 2026-09-22 by the `hub` grammar: graph size and
-   symmetry, not yet the hub-bound matching of 5.1 and 5.2.)
-3. **Symmetry.** 5.6 (individualise-and-refine without automorphism pruning) needs
-   graphs with large automorphism groups: a ring of N identical processes
-   (`leader-election` with N of 8 or more), N philosophers, or a set of N identical
-   unconnected components. The current `leader-election start-2` has none. (Covered
-   since 2026-09-21 by the generated `ring-N` graphs of the performance grammar set.)
-
-Beyond scale, some individual findings need a configuration that the samples do not
-exercise together:
-
-- **Diamond-rich lattices** for 2.1: independent rules whose applications commute
-  (`simple`, `inheritance` at 756 states / 5 374 transitions, `loose-nodes`, `counting`
-  extended); check that "Confluent:" turns non-zero and that state creation drops.
-- **Long delta chains without collapsing** for 2.5 to 2.7: DFS or linear exploration
-  on `generate-binary-tree` or `append-4-list-8` with `collapse=none`, deep enough that
-  reconstruction walks hundreds of deltas.
-- **Equality collapse mode** for 4.4.4 and the `-ea` doubling of section 6.
-- **Attribute-heavy state spaces** for 4.2.1 to 4.2.3: `attribute-count-to-n` and
-  `fibonacci` bounded to large N, plus a grammar whose guards probe undefined
-  operations (division, `ite` over errors) so `ErrorValue` construction is on the path.
-  (Covered since 2026-09-22: the counter's `probe-odd` rule, see "The performance
-  grammar set".)
-- **NAC-heavy matching** for 3.3 and 4.1.1: `car-platooning start-18`,
-  `circular-buffer`, `ferryman`; monitor `HostFactory` edge count growth across the run
-  for 3.3.
-- **Recipes with transience** for 4.3.1 and 1.5: `recipes`, `transactions`.
-
-Recommendation: a benchmark set of about ten configurations, half from existing
-grammars with the larger start graphs, plus two or three new grammars under
-`junit/performance/` (large graph with hubs, symmetric ring, attribute counter), each
-sized for 5 to 60 seconds on the development machine. Record the baseline numbers in
-this note before the first change lands.
-
-### Coverage reassessment (2026-09-22, after grammar-set item 6 and gh #924)
-
-The set is sixteen grammars and about forty rows. Mapped against the parts of state-space
-generation that run per state, per match or per transition, this is what the rows
-exercise and what they do not.
+### Suggested order of attack
+
+1. Build the throughput harness, so the rest can be measured. Done 2026-09-20.
+2. Fix the `Factory` user leak (3.11): a genuine unbounded leak, found by the harness,
+   which also caps how long any benchmark run can be. Its own branch, since it is a
+   bug fix independent of the rest. Done 2026-09-21 as gh #919.
+3. Section 1 (always-on instrumentation and locks): two-line changes in the innermost
+   loops, no design risk.
+3. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
+   certifier reference; each restores an optimisation that exists but does not work.
+4. Section 3 (costs scaling with the wrong quantity): the certifier array, the eager
+   certificate map, the interning edge probe. Each is small and independently measurable.
+5. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
+   `Search` reuse, NAC context maps, algebra reflection, `Valuator` lambdas, match-set
+   sizing.
+6. Section 5 (structural) needs design discussions, not commits.
+
+Any change to matching or certificates must pass `DeterminismTest` and the
+`grammar-smoke` state counts (see the gates above).
+
+## Coverage
+
+Reassessed 2026-09-22, after grammar-set item 6 and gh #924. The set is fifteen grammars
+and 57 rows. Mapped against the parts of state-space generation that run per state, per
+match or per transition, this is what the rows exercise and what they do not.
 
 Covered, with the row that carries the cost:
 
@@ -1814,3 +1691,11 @@ Items 1, 2 and 4 are the ones to close before the section 1 to 4 fixes are measu
 gh #924 has just rewritten that code and its own gate is a correctness test, 4 because
 it is free. Items 3 and 5 are harness or generator work of an hour each; 6 to 9 can
 wait for a finding that needs them.
+
+As of 2026-09-23 gaps 1, 2 and 4 are being closed on this branch: a harness switch for
+the random-access copy mode, the wander recipe rows on the hub chain, and the injective
+variant rows. Their results are not in this note yet.
+
+Section 6 (assertion-only costs) is outside the harness by construction, since it runs
+with assertions off; those costs show only under `-ea`, in `ExplorationTest` and in
+Eclipse launches.
