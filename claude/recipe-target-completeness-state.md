@@ -53,31 +53,74 @@ aborts on an open state marks the visited states, later searches stop there) was
 and changed nothing, so the fallback search is not the bottleneck; it was dropped.
 Master was cheap on this shape only because it was wrong.
 
-## Open decision: the quadratic shape
+## Decision (Arend, 2026-09-23): implement option 1, forward launch propagation
 
-Whether to accept N² on wander-like shapes (one recipe whose region is the whole,
-cyclic state space) or redesign. Alternatives considered, none implemented:
+The correctness fix stands; the quadratic cost of the backward target propagation on
+cyclic same-verdict regions is to be removed by propagating launches forward instead.
+Rejected: option 3 (indexed `BitSet` target sets: memory only, time stays quadratic)
+and option 2 (SCC sharing: incremental SCC detection under arbitrary exploration
+orders). Continue on this branch: the fix alone slows `hub-wander-100` two-fold, and
+the redesign replaces the very code the fix touched.
 
-1. **Forward launch propagation**: keep per region state the set of launches whose
-   runs pass through it, emit a recipe transition when a launch set meets a target,
-   deliver already-known targets to a newly arriving launch by a pruned forward walk.
-   Linear for `wander;` (one launch), N² for `wander-alap` (N² is then the output
-   size). Mirrored worst case: many launches converging on a small region.
-2. **SCC sharing**: all states of a strongly connected region component have the same
-   reachable targets and the same launches; one shared set per SCC makes wander linear
-   in both directions. Needs incremental SCC detection under arbitrary exploration
-   orders (GUI, linear), which gh #924 deliberately avoided.
-3. **Compact sets**: a global index for `RecipeTarget`s and a `BitSet` per state cuts
-   memory about 50× (chain-200-2 would fit) but keeps the quadratic time.
+### Design
+
+Per inner-prime, non-full state cache S:
+
+- `launches`: insertion-ordered set of the launch transitions whose runs pass through
+  S. Replaces the current `launches` list (direct launches into S only), `innerPreds`
+  and the `forwTarget` set of non-full states.
+- Invariant: for every L in `launches(S)` and every recipe target t reachable from S
+  over the inner non-launch steps registered so far, the recipe transition (L, t)
+  exists.
+
+Operations (all in `registerOutPartial` / `registerTransienceChange`; the absence and
+full-ness bookkeeping — `preds`, `pendingCount`, `openCount`, `isDone`, `searchFull`,
+`notifyDone` — stays as it is):
+
+1. `propagate(L)` on S, an explicit-stack forward walk: if S is full, emit (L, t) for
+   every t in `getForwTarget()` (the existing on-demand `computeForwOuter` for full
+   states) and stop; if L is already in `launches(S)`, stop (S has delivered everything
+   reachable to L and will deliver what comes later); otherwise add L, emit
+   (L, `RecipeTarget(S)`) if S is currently not inner (it left the recipe by verdict),
+   and for every registered inner non-launch step S→X: X inner-prime → continue the walk
+   at X; else emit (L, `RecipeTarget(step)`).
+2. Launch L→S registered: S not inner-prime → single-step recipe transition as now;
+   else `S.propagate(L)`.
+3. Inner non-launch step P→T registered: for each L in `launches(P)`: T inner-prime →
+   `T.propagate(L)`; else emit (L, `RecipeTarget(step)`).
+4. S turns from inner to outer (`registerTransienceChange`, `knownInner` flips): emit
+   (L, `RecipeTarget(S)`) for each L in `launches(S)`.
+5. `setFull`: drop `launches`; later arrivals go through case 1's full branch.
+   `forwTarget` survives only as the lazily computed cache of full states.
+
+Cost: each (launch, region state) pair is visited once, Σ_L |region(L)|; for `wander;`
+linear, for `wander-alap` the output size. Emission dedup is not needed (a launch enters
+a state once, a state turns outer once; `GTS.addTransition` ignores duplicates anyway).
+A cleared cache of a closed-but-not-full state loses `launches` as it loses `preds`
+today; document, do not defend. Emission order changes (by launch, then walk order):
+watch `DeterminismTest`, `CrossJvmDeterminismTest` and the `ExplorationTest` counts.
+
+### Gates and measurements
+
+`RecipeCompletenessTest` (its `getTargets` is independent of the bookkeeping),
+`RecipeTransitionTest`, `RecipeTest`, `OneStepRecipeTest`, `RecipeNullArgsTest`,
+`ParOutLivenessTest`, the transactions cases, `DeterminismTest`,
+`CrossJvmDeterminismTest`, `ExplorationTest`, `null-check`. Then time, warm JVM, against
+the table above: fib-22 (must stay 1.0 s), chain-100-2 wander (target: back near
+master's 4.4 s), chain-60-2 wander-alap (3.9 s), chain-200-2 wander (must fit in 6 GB,
+target near master's 90 s). Harness: a scratch `main` that loads the grammar with
+`SystemStore.newGrammar`, sets the host and control resources active, and plays
+`LegacySyntaxParser.parse("bfs final 0").newExploration(gts, null)` three times, run
+against `target/classes` plus the output of `mvn dependency:build-classpath`; the hub
+grammar with the `chain-*` graphs is `junit/performance/hub.gps` in the
+`exploration-performance` worktree.
 
 ## Next
 
-1. Review; merge.
-2. On branch `exploration-performance`, after merging master: re-pin the `hub-wander-*`
-   rows (their pinned counts include the shortfall; `hub-wander-100` becomes 4951 /
-   24 355, about 9 s).
-3. Decide on the open decision above; if a redesign is wanted, file it as a separate
-   issue rather than extending this branch.
+1. Implement the design above on this branch (fresh session).
+2. Review; merge.
+3. On branch `exploration-performance`, after merging master: re-pin the `hub-wander-*`
+   rows.
 
 ## Key files
 
