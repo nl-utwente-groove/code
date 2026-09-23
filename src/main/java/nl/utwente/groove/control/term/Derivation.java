@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.control.term;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -101,14 +102,14 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
 
     /** Computes the value for {@link #call}. */
     private NestedCall computeCall() {
-        var result = new NestedCall();
-        result.push(one());
+        var calls = new ArrayList<Call>();
+        calls.add(one());
         var derivation = this;
         while (derivation.getNested().isPresent()) {
             derivation = derivation.getNested().get();
-            result.push(derivation.one());
+            calls.add(derivation.one());
         }
-        return result;
+        return new NestedCall(calls);
     }
 
     /** Creates a new derivation, with the call and derivation stack of this one but another target term. */

@@ -69,16 +69,17 @@ public class Frame implements Position<Frame,Step> {
             this.prime = pred.getPrime();
             pops.addAll(pred.getPops());
         }
-        var context = new NestedSwitch(swt);
+        var contextBuilder = swt.toBuilder();
         // pop the call stack until we have a non-final location or empty stack
-        while (loc.isFinal() && !context.isEmpty()) {
-            Switch done = context.pop();
+        while (loc.isFinal() && !contextBuilder.isEmpty()) {
+            Switch done = contextBuilder.pop();
             // add pop actions if we are not a prime frame
             if (!isPrime) {
                 pops.add(done.assignFinal2Target(loc).toPop());
             }
             loc = done.onFinish();
         }
+        var context = contextBuilder.build();
         if (loc.isTrial() && loc.getAttempt().isPropertiesOnly()) {
             // we might have to use the success/failure alternate of loc,
             // if loc is a property-only trial location and we do need to test for properties
@@ -353,10 +354,11 @@ public class Frame implements Position<Frame,Step> {
 
     /** Constructs a step from this frame, based on a given nested switch. */
     private Step createStep(NestedSwitch sw) {
-        NestedSwitch targetSwitch = new NestedSwitch(getContextStack());
+        var targetSwitch = getContextStack().toBuilder();
         sw.forEach(targetSwitch::push);
         Switch callSwitch = targetSwitch.pop();
-        Frame onFinish = new Frame(getAut(), callSwitch.onFinish(), targetSwitch, null).normalise();
+        Frame onFinish
+            = new Frame(getAut(), callSwitch.onFinish(), targetSwitch.build(), null).normalise();
         return new Step(this, sw, onFinish);
     }
 

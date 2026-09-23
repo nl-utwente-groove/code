@@ -16,13 +16,11 @@
  */
 package nl.utwente.groove.control.template;
 
-import java.util.ArrayDeque;
-import java.util.Collection;
-import java.util.Deque;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -32,56 +30,47 @@ import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Stack of switches, corresponding to nested procedure and rule calls.
+ * Immutable stack of switches, corresponding to nested procedure and rule calls.
+ * Instances are created through a {@link Builder}; the derived data
+ * (nested call, transience) are computed once, at build time.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
 public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Comparable<NestedSwitch>,
     Relocatable, Iterable<Switch> {
-    /** Constructs a copy of a nested switch. */
-    public NestedSwitch(NestedSwitch other) {
-        other.forEach(this::push);
-    }
-
-    /** Constructs an initially empty switch. */
+    /** Constructs an empty nested switch. */
     public NestedSwitch() {
-        // empty
+        this(List.of());
     }
 
-    /** The stack of switches. All of them, except possibly the top, are procedure calls. */
-    private final Deque<Switch> switches = new ArrayDeque<>();
-
-    /** Pushes a new inner switch onto this nested switch. */
-    public void push(Switch swt) {
-        this.switches.push(swt);
-        if (this.nestedCall != null) {
-            this.nestedCall.push(swt.getCall());
+    /** Constructs a nested switch from an unmodifiable list of switches, from outer to inner. */
+    private NestedSwitch(List<Switch> switches) {
+        this.switches = switches;
+        this.call = new NestedCall(switches.stream().map(Switch::getCall).toList());
+        int transience = 0;
+        for (Switch swit : switches) {
+            transience += swit.getTransience() + (swit.getUnit().getKind() == Kind.RECIPE
+                ? 1
+                : 0);
         }
-        // only modify the transience if it has been computed
-        if (this.transience >= 0) {
-            this.transience += swt.getTransience();
-        }
+        this.transience = transience;
     }
 
-    /** Pops the inner switch from this nested switch and returns it. */
-    public synchronized Switch pop() {
-        Switch result = this.switches.pop();
-        if (this.nestedCall != null) {
-            this.nestedCall.pop();
-        }
-        // only modify the transience if it has been computed
-        if (this.transience >= 0) {
-            this.transience -= result.getTransience();
-        }
-        return result;
+    /** The stack of switches, from outer to inner. All of them, except possibly the inner, are procedure calls. */
+    private final List<Switch> switches;
+
+    /** Returns a builder initialised with the switches of this nested switch. */
+    public Builder toBuilder() {
+        return new Builder(this.switches);
     }
 
     /** Tests if this nested switch is empty. */
     public boolean isEmpty() {
-        return size() == 0;
+        return this.switches.isEmpty();
     }
 
     /** Returns the depth of this nested switch. */
@@ -91,34 +80,33 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
 
     /** Returns a stream over the switches in this nested switch, from outer to inner. */
     public Stream<Switch> stream() {
-        Iterable<Switch> iter = this.switches::descendingIterator;
-        return StreamSupport.stream(iter.spliterator(), false);
+        return this.switches.stream();
     }
 
     /** Returns a stream over the switches in this nested switch, from inner to outer. */
     public Stream<Switch> outStream() {
-        return this.switches.stream();
+        return this.switches.reversed().stream();
     }
 
     /** Returns an iterator over the switches in this nested switch, from outer to inner. */
     @Override
     public Iterator<Switch> iterator() {
-        return this.switches.descendingIterator();
+        return this.switches.iterator();
     }
 
     /** Returns an iterator over the switches in this nested switch, from inner to outer. */
     public Iterator<Switch> outIterator() {
-        return this.switches.iterator();
+        return this.switches.reversed().iterator();
     }
 
     /** Returns an iterable over the switches in this nested switch, from inner to outer. */
     public Iterable<Switch> outIterable() {
-        return () -> outIterator();
+        return this.switches.reversed();
     }
 
     /** Returns the outermost (initial) switch of this nested switch. */
     public Switch getOuter() {
-        return this.switches.getLast();
+        return this.switches.get(0);
     }
 
     /** Returns the outermost (initial) call of this nested switch. */
@@ -128,9 +116,8 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
 
     /** Returns the innermost switch of this nested switch. */
     public Switch getInnermost() {
-        var result = this.switches.peek();
-        assert result != null; // a nested switch is never empty
-        return result;
+        assert !isEmpty(); // a nested switch is never empty
+        return this.switches.get(this.switches.size() - 1);
     }
 
     @Override
@@ -144,40 +131,21 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
     }
 
     @Override
-    public synchronized int getTransience() {
-        if (this.transience < 0) {
-            this.transience = computeTransience();
-        }
+    public int getTransience() {
         return this.transience;
     }
 
-    private int computeTransience() {
-        int result = 0;
-        for (Switch swit : this.switches) {
-            result += swit.getTransience() + (swit.getUnit().getKind() == Kind.RECIPE
-                ? 1
-                : 0);
-        }
-        return result;
-    }
-
-    /** Transient depth entered by this switch. The initial value of -1 indicates
-     * that the proper value has not yet been computed.
-     */
-    private int transience = -1;
+    /** Transient depth entered by this switch. */
+    private final int transience;
 
     /** Returns the nested call corresponding to this nested switch. */
     @Override
-    public synchronized NestedCall getCall() {
-        var result = this.nestedCall;
-        if (result == null) {
-            var callStream = stream().map(s -> s.getCall());
-            this.nestedCall = result = new NestedCall(callStream);
-        }
-        return result;
+    public NestedCall getCall() {
+        return this.call;
     }
 
-    private @Nullable NestedCall nestedCall;
+    /** The nested call corresponding to this nested switch. */
+    private final NestedCall call;
 
     /** Indicates if this switch is part of a recipe execution. */
     public boolean inRecipe() {
@@ -191,9 +159,9 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
 
     @Override
     public NestedSwitch relocate(Relocation map) {
-        NestedSwitch result = new NestedSwitch();
+        var result = new Builder();
         stream().map(s -> s.relocate(map)).forEach(result::push);
-        return result;
+        return result.build();
     }
 
     @Override
@@ -204,43 +172,23 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
         if (!(obj instanceof NestedSwitch other)) {
             return false;
         }
-        // note: ArrayDeque doesn't do content-based equals
-        return equals(this.switches, other.switches);
+        return this.switches.equals(other.switches);
     }
 
     @Override
     public int hashCode() {
-        // note: ArrayDeque doesn't do content-based hashing
-        return hashCode(this.switches);
-    }
-
-    /** Hashcode for collections that don't do content-based hashing. */
-    static private int hashCode(Collection<?> collection) {
+        // computed from inner to outer, as the former deque-based version did
         int result = 1;
-        for (var sw : collection) {
+        for (var sw : this.switches.reversed()) {
             result = 31 * result + sw.hashCode();
         }
         return result;
     }
 
-    /** Equality method for collections that don't do content-based equality. */
-    static private boolean equals(Collection<?> coll1, Collection<?> coll2) {
-        if (coll1.size() != coll2.size()) {
-            return false;
-        }
-        var iter1 = coll1.iterator();
-        var iter2 = coll2.iterator();
-        while (iter1.hasNext()) {
-            if (!iter1.next().equals(iter2.next())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public String toString() {
-        return this.switches.toString();
+        // listed from inner to outer, as the former deque-based version did
+        return this.switches.reversed().toString();
     }
 
     @Override
@@ -252,5 +200,48 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
             result = iter.next().compareTo(oIter.next());
         }
         return result;
+    }
+
+    /**
+     * Builder for a {@link NestedSwitch}: a mutable stack of switches
+     * from which nested switches can be built.
+     * The builder stays usable after {@link #build()}, and the result
+     * shares no mutable state with it.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public static class Builder {
+        /** Constructs an initially empty builder. */
+        public Builder() {
+            // empty
+        }
+
+        /** Constructs a builder initialised with a given list of switches, from outer to inner. */
+        private Builder(List<Switch> switches) {
+            this.switches.addAll(switches);
+        }
+
+        /** The stack of switches, from outer to inner. */
+        private final List<Switch> switches = new ArrayList<>();
+
+        /** Pushes a new inner switch onto this builder. */
+        public Builder push(Switch swt) {
+            this.switches.add(swt);
+            return this;
+        }
+
+        /** Pops the inner switch from this builder and returns it. */
+        public Switch pop() {
+            return this.switches.remove(this.switches.size() - 1);
+        }
+
+        /** Tests if this builder currently holds no switches. */
+        public boolean isEmpty() {
+            return this.switches.isEmpty();
+        }
+
+        /** Builds the nested switch consisting of the switches currently in this builder. */
+        public NestedSwitch build() {
+            return new NestedSwitch(List.copyOf(this.switches));
+        }
     }
 }
