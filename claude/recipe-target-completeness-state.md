@@ -50,9 +50,9 @@ orders, which gh #924 deliberately avoided).
 
 Per inner-prime, non-full state cache S (`lts/StateCache`):
 
-- `launches` (list, arrival order) + `launchIndices` (`BitSet` over
-  `GTS.getLaunchIndex`, a GTS-wide numbering of the launches on first request):
-  the launches whose runs pass through S.
+- `launches` (`LaunchSet`: arrival-ordered list plus an open-addressing int table of
+  the launch indices, which `GTS.newLaunchIndex` hands out once per launch at
+  registration, carried in a `Launch` record): the launches whose runs pass through S.
 - `innerSteps`: the registered inner non-launch steps out of S.
 - Invariant: for every L in `launches(S)` and every recipe target t reachable from S
   over `innerSteps` transitively, the recipe transition (L, t) exists.
@@ -71,13 +71,13 @@ Operations (absence and full-ness bookkeeping unchanged):
    `launches(P)`: T inner-prime → `T.propagate(L)`, else emit (L, `RecipeTarget(step)`).
 4. S flips inner→outer (`registerTransienceChange`): emit (L, `RecipeTarget(S)`) for
    each L in `launches(S)`.
-5. `setFull`: drop `launches`, `launchIndices`, `innerSteps`.
+5. `setFull`: drop `launches` and `innerSteps`.
 
 Two constant-factor lessons from profiling `chain-60-2` under `alap wander` (six
 million (launch, state) visits): the walk must not iterate the transition map (it
 holds the state's own recipe transitions, thousands per state: factor 40), and the
 membership test must not be an allocating hash set (30% of the run time; hence the
-bit set). A cleared cache of a closed-but-not-full state loses `launches` and
+index table). A cleared cache of a closed-but-not-full state loses `launches` and
 `innerSteps` as it loses `preds`; documented in the class comment, not defended.
 
 ## Measurements (warm JVM, bfs, this machine)
@@ -103,6 +103,25 @@ step and launch of its source); numbering the launch once at registration in a
 `Launch` record replaced the GTS map by a counter, but gave no measurable wall-time
 gain either (3.8–3.9 s). Kept as a simplification. Remaining top frames are the GTS
 transition set (`TreeHashSet.put`) and `CacheReference.incFrequency`, i.e. the output.
+
+Launch index growth (Arend's question, 2026-09-23 evening): the counter advances once
+per registered launch transition, so in an extensive state space under `alap recipe`
+it reaches the number of recipe calls, the same order as the rule transitions, i.e.
+millions. The first implementation kept a `BitSet` of indices per non-full inner
+state; a bit set is sized by its highest bit, so every such state paid index/8 bytes
+(up to twice that after growth) from the first launch that reached it, however few
+launches did. Allocation churn thus grew as launches × region states / 16 bytes
+(quadratic in the launches when regions are one state each) and live memory as
+launches × long-lived non-full inner states / 8: 78 000 launches on `chain-200-2`
+under `alap` of a two-step recipe stayed below the sampling threshold of a JFR
+allocation profile (about 400 MB in a 46 GB run), a million launches with a large
+cyclic region still open would cost gigabytes. Replaced by `LaunchSet`, an
+insertion-ordered list plus an open-addressing int table of the indices (load at most
+one half, HashMap-style mixing so consecutive indices probe consecutive slots): memory
+proportional to the launches in the set. Cost on the dense extreme, `chain-60-2`
+wander-alap, where the bit set is ideal: 4.1–4.3 s against 3.7–3.9 s; a multiplicative
+scramble was 5% worse still. Other cases unchanged. Reverting to the bit set is a
+one-commit decision if the dense case is judged the only one that matters.
 
 Harness: a scratch `main` that loads the grammar with `SystemStore.newGrammar`, sets
 the host and control resources active with `setLocalActiveNames`, and plays
