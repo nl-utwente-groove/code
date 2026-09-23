@@ -39,9 +39,7 @@ public class PreviewControlAction extends SimulatorAction {
             Program program = getProgram();
             if (program != null) {
                 List<Template> templates = new ArrayList<>();
-                if (program.hasMain()) {
-                    templates.add(program.getTemplate());
-                }
+                templates.add(program.getTemplate());
                 program
                     .getProcs()
                     .values()
@@ -103,7 +101,7 @@ public class PreviewControlAction extends SimulatorAction {
         return new GraphPreviewDialog<>(getSimulator(), template.toGraph(true));
     }
 
-    /** Convenience method to obtain the currently selected (fixed) control program. */
+    /** Convenience method to obtain the currently selected control program. */
     private Program getProgram() throws FormatException {
         Program result = null;
         GrammarModel grammarModel = getGrammarModel();
@@ -116,7 +114,6 @@ public class PreviewControlAction extends SimulatorAction {
                 result = controlModel.toResource();
             }
         }
-        assert result == null || result.isFixed();
         return result;
     }
 }

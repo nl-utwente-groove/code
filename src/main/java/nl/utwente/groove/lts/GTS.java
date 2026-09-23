@@ -58,10 +58,10 @@ import nl.utwente.groove.transform.oracle.NoValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.TreeHashSet;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.collect.Pool;
 import nl.utwente.groove.util.collect.SetView;
-import nl.utwente.groove.util.collect.TreeHashSet;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;
 

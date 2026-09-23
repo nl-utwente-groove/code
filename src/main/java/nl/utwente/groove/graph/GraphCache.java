@@ -29,8 +29,8 @@ import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Reporter;
+import nl.utwente.groove.util.TreeHashSet;
 import nl.utwente.groove.util.cache.Cache;
-import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
  * Stores graph information that can be reconstructed from the actual graph, for

@@ -28,7 +28,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import nl.utwente.groove.explore.Generator;
+import nl.utwente.groove.cli.Generator;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.ExploreResult;

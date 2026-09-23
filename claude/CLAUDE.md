@@ -64,12 +64,13 @@ Thin wrappers in `src/main/java/nl/utwente/groove/` delegate to the real impleme
 |---|---|---|
 | `Simulator` | GUI | Interactive grammar editor/simulator (delegates to `gui.Simulator`) |
 | `Viewer` | GUI | Read-only graph/grammar viewer |
-| `Generator` | CLI | Headless state-space exploration (`explore.Generator`) |
-| `ModelChecker` | CLI | CTL model checking (`explore.CTLModelChecker`) |
-| `PrologChecker` | CLI | Prolog queries over a grammar/GTS (`prolog.PrologChecker`) |
+| `Generator` | CLI | Headless state-space exploration (`cli.Generator`) |
+| `ModelChecker` | CLI | CTL model checking (`cli.CTLModelChecker`) |
+| `PrologChecker` | CLI | Prolog queries over a grammar/GTS (`cli.PrologChecker`) |
 | `Imager` | GUI/CLI | Renders graphs/grammars to image files (`gui.Imager`) |
 
-CLI argument parsing uses picocli via `util.cli`.
+The command-line tools and their picocli-based argument parsing live in `cli`;
+`Imager` and `Viewer` stay in `gui` because they are Swing tools.
 
 ## Architecture
 
@@ -100,8 +101,8 @@ CLI argument parsing uses picocli via `util.cli`.
 - **Transformation** (`transform`): `RuleEvent` (rule + anchor image) → `RuleApplication` producing **deltas** (`DeltaStore`, `MergeMap`). Deltas are central to scalability: LTS states share structure and are reconstructed on demand (`lts.StateCache`, `grammar/host.DeltaHostGraph`).
 - **LTS** (`lts`): `GTS` extends `AGraph`; nodes are `GraphState`s, edges are `RuleTransition`/`RecipeTransition`.
 - **Exploration** (`explore`): `Exploration` applies an `ExploreType` to a GTS. Per grammar, the type realises a `Strategy` (`explore/engine`: `FrontierStrategy`, whose `Pool` fixes the order of the open states — queue, stack, random, beam — plus the linear variants) paired with a `ResultCollector` (`explore/result`), which halts the run once its goal has yielded the requested number of results. Most types are configuration-based: an `ExploreConfig` (`explore/config`) maps each `ExploreKey` of the exploration feature model (`explore/feature`: next state, successor, frontier, goal, outcome, count, bound, collapse, algebra, seed, …) to a setting, is stored as the grammar's `explore` settings resource, and is checked and turned into a `ConfiguredExploreType` by `ExploreTypeConverter`; the legacy `-s`/`-a`/`-r` keyword syntax of the CLI survives through `LegacySyntaxParser`. LTL model checking, which the feature model deliberately leaves out, has its own `LTLExploreType` over the nested-DFS strategies in `explore/verify`.
-- **Control language** (`control`): steers which rules fire when (sequencing, choice, loops, recipes/functions with parameters). Compiled via `control/template` into an executable automaton (`control/instance.Automaton`) that exploration walks in lock-step with matching.
-- **Verification** (`verify`): CTL checking via `CTLMarker` over a `ModelFacade` (the CLI shell is `explore.CTLModelChecker`, since it generates the state space before checking it); LTL via Büchi automata (external `ltl2buchi` lib) and a product construction.
+- **Control language** (`control`): steers which rules fire when (sequencing, choice, loops, recipes/functions with parameters). The compiler's term level `control/term` builds the `control/template` templates that the executable automaton (`control/instance.Automaton`) walks, in lock-step with matching during exploration.
+- **Verification** (`verify`): CTL checking via `CTLMarker` over a `ModelFacade` (the CLI shell is `cli.CTLModelChecker`, since it generates the state space before checking it); LTL via Büchi automata (external `ltl2buchi` lib) and a product construction.
 - **Algebras** (`algebra`): data attribute semantics. `AlgebraFamily` selects the interpretation: DEFAULT/BIG (concrete Java/BigInteger), POINT (collapsed, for abstraction), TERM (symbolic).
 - **I/O** (`io`): `io/store.SystemStore` for `.gps` bundles; `io/graph` for native formats (GXL is the native graph serialization); `io/external` for the headless `Importer`/`Exporter` framework and registries (`Exporters`/`Importers`). Exporters that work by rendering a graph via JGraph live on the GUI side (`gui/export`) and are contributed to the registry at start-up through `Exporters.register`.
 - **GUI** (`gui`): Swing `Simulator` around a central `SimulatorModel`; graphs rendered with JGraph (`gui/jgraph`, `AspectJGraph` etc.).

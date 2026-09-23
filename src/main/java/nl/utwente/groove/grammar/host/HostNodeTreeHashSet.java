@@ -18,7 +18,7 @@ package nl.utwente.groove.grammar.host;
 
 import java.util.Collection;
 
-import nl.utwente.groove.util.collect.TreeHashSet;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * Set of nodes whose storage is based on the node numbers of default nodes.

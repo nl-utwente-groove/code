@@ -10,9 +10,11 @@ module nl.utwente.groove {
     // or for a real client need. Not exported: the Simulator and its view layer
     // (gui.*, under reconstruction for gh #909), the matching engines
     // (match.plan, match.automaton), the control compiler (control.parse, with
-    // its generated ANTLR classes), the exploration engine (explore.engine,
-    // explore.util), the concrete import/export formats, the Prolog predicate
-    // implementations and the remaining utility packages.
+    // its generated ANTLR classes, and control.term as its term level), the
+    // exploration engine's internals
+    // (explore.util, explore.verify; explore.engine itself is exported as the
+    // strategy extension point), the concrete import/export formats, the
+    // Prolog predicate implementations and the remaining utility packages.
     //
     // -- the pipeline from grammar on disk to state space
     exports nl.utwente.groove;
@@ -41,10 +43,13 @@ module nl.utwente.groove {
     exports nl.utwente.groove.verify;
     exports nl.utwente.groove.prolog;
     exports nl.utwente.groove.prolog.builtin;
+    // -- command-line tools
+    exports nl.utwente.groove.cli;
     // -- graph-backend SPI: an add-on jar is loaded into the unnamed module and
     //    implements/extends these types, so they must be exported for GROOVE
-    //    to run from the module path (ExtensionsTest); GraphViewController still
-    //    leaks Simulator types into this tier, see claude/module-exports.md
+    //    to run from the module path (ExtensionsTest). The controllers reach the
+    //    hosting tool only through GraphViewContext, so no Simulator type occurs
+    //    in this tier; see claude/archive/module-exports.md
     exports nl.utwente.groove.gui.view;
     exports nl.utwente.groove.gui.view.cell;
     exports nl.utwente.groove.gui.look;
@@ -62,7 +67,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.annotation;
     // -- control programs: declarations, compiled templates, runtime automata
     exports nl.utwente.groove.control;
-    exports nl.utwente.groove.control.term;
     exports nl.utwente.groove.control.template;
     exports nl.utwente.groove.control.instance;
     exports nl.utwente.groove.control.graph;
@@ -71,8 +75,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.util.parse;
     exports nl.utwente.groove.util.line;
     exports nl.utwente.groove.util.cache;
-    exports nl.utwente.groove.util.collect;
-    exports nl.utwente.groove.util.cli;
 
     // service contributions; each provider is also declared in META-INF/services,
     // which takes over when GROOVE runs from the class path (as the installed
@@ -114,12 +116,8 @@ module nl.utwente.groove {
     requires jdk.xml.dom;
     requires fop.core;
 
-    opens nl.utwente.groove.explore to info.picocli;
-    opens nl.utwente.groove.verify to info.picocli;
     opens nl.utwente.groove.gui to info.picocli;
-    opens nl.utwente.groove.prolog to info.picocli;
-    opens nl.utwente.groove.util to info.picocli;
-    opens nl.utwente.groove.util.cli to info.picocli;
+    opens nl.utwente.groove.cli to info.picocli;
 
     // the following opens clauses are required to allow GROOVE to access
     // these resources at runtime

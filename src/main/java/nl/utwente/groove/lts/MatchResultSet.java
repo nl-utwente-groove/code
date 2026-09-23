@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.lts;
 
-import nl.utwente.groove.util.collect.TreeHashSet;
+import nl.utwente.groove.util.TreeHashSet;
 
 /** Set of {@link MatchResult}s, which only tests for code and equality of the events. */
 public class MatchResultSet extends TreeHashSet<MatchResult> {

@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import nl.utwente.groove.cli.Generator;
 import nl.utwente.groove.explore.Exploration;
-import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;

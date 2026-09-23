@@ -1,5 +1,13 @@
 # Module exports: hand-over state (2026-09-21)
 
+*Status (2026-09-22): everything this note hands over has landed. `module-exports`
+and `view-controller-context` are merged to master (both reachable from
+`14a512ad6`), session B is merged into yfiles-lib `main`, and
+`view-controller-interfaces` is deleted in both repositories. Master compiles
+with no `exports` warning. The structural items that remain (CLI package,
+`control.template` split, `util.collect`) are tracked in `module-exports.md`,
+which stays live; nothing below is.*
+
 Short state for the next session; the full account is `module-exports.md`.
 
 **Goal.** Make `module-info` a deliberate API contract for 8.0.0 (first release

@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.utwente.groove.control.template.Template;
-import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.Recipe;
@@ -92,28 +91,6 @@ public abstract class Procedure implements Callable, Fixable {
     }
 
     private final Kind kind;
-
-    /** Sets the body of the procedure.
-     * Should only be invoked once, before the procedure is fixed.
-     * The call fixes the procedure.
-     */
-    public void setTerm(Term body) {
-        assert body != null;
-        assert !isFixed();
-        // make the body atomic if it is a recipe
-        this.term = getKind() == Kind.RECIPE
-            ? body.atom()
-            : body;
-        setFixed();
-    }
-
-    /** Returns the body of this procedure. */
-    public Term getTerm() {
-        assert isFixed();
-        return this.term;
-    }
-
-    private Term term;
 
     /** Sets the control automaton of this procedure. */
     public void setTemplate(Template template) {

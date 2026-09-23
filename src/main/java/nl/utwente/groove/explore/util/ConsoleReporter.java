@@ -19,7 +19,7 @@ package nl.utwente.groove.explore.util;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.cli.Verbosity;
+import nl.utwente.groove.util.Verbosity;
 
 /**
  * Reporter that describes the exploration run on the standard output,

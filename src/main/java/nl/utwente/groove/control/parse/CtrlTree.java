@@ -16,7 +16,7 @@ import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.template.Fragment;
+import nl.utwente.groove.control.term.Fragment;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
@@ -326,7 +326,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
      */
     public Fragment toFragment() throws FormatException {
         assert getType() == CtrlParser.PROGRAM && isChecked();
-        Fragment result = new Fragment(getControlName());
+        Fragment result = new Fragment(getControlName(), getInfo().getPrototype());
         CtrlTree body = getChild(4);
         // set the main if this tree has a body
         if (body.getChildCount() > 0) {
@@ -396,7 +396,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         if (getType() == CtrlParser.RECIPE) {
             checkSuitableForAtom(bodyTerm);
         }
-        result.setTerm(bodyTerm);
+        getInfo().getPrototype().setBody(result, bodyTerm);
         return result;
     }
 

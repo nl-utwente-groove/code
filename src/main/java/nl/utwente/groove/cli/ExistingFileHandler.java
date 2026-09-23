@@ -14,24 +14,26 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.cli;
+package nl.utwente.groove.cli;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import java.io.File;
+
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.TypeConversionException;
 
 /**
- * Exception signalling an error in the command-line arguments of a tool.
+ * Checks if a file option value is an existing file.
  * @author Arend Rensink
  * @version $Revision$
  */
-@NonNullByDefault
-public class CmdLineException extends Exception {
-    /** Constructs an exception with a given message. */
-    public CmdLineException(String message) {
-        super(message);
-    }
-
-    /** Constructs an exception with a given message and cause. */
-    public CmdLineException(String message, Throwable cause) {
-        super(message, cause);
+public class ExistingFileHandler implements ITypeConverter<File> {
+    @Override
+    public File convert(String value) {
+        File result = new File(value);
+        if (!result.exists()) {
+            throw new TypeConversionException(String
+                .format("Argument '%s' is not an existing file", value));
+        }
+        return result;
     }
 }

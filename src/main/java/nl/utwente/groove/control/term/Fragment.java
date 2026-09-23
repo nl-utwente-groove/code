@@ -14,14 +14,13 @@
  *
  * $Id: Program.java 5781 2016-08-02 14:27:32Z rensink $
  */
-package nl.utwente.groove.control.template;
+package nl.utwente.groove.control.term;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -34,11 +33,21 @@ import nl.utwente.groove.util.parse.FormatException;
 public class Fragment {
     /**
      * Constructs an unnamed, initially empty program.
+     * @param prototype the prototype term of the name space against which the
+     * fragment is compiled
      */
-    public Fragment(QualName controlName) {
+    public Fragment(QualName controlName, Term prototype) {
         this.controlName = controlName;
+        this.prototype = prototype;
         this.procs = new LinkedHashMap<>();
     }
+
+    /** Returns the prototype term of the name space against which this fragment is compiled. */
+    public Term getPrototype() {
+        return this.prototype;
+    }
+
+    private final Term prototype;
 
     /** Returns the control name of this program fragment. */
     public QualName getControlName() {

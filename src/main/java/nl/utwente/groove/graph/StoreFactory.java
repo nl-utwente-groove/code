@@ -27,7 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Dispenser;
-import nl.utwente.groove.util.collect.TreeHashSet;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * Abstract factory class that stores canonical representatives

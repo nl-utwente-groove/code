@@ -18,7 +18,7 @@ package nl.utwente.groove;
 
 /**
  * Wrapper class for the generator utility.
- * @see nl.utwente.groove.explore.Generator
+ * @see nl.utwente.groove.cli.Generator
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -27,7 +27,7 @@ public class Generator {
      * Invokes the Generator with a set of command-line parameters.
      */
     public static void main(String[] args) {
-        nl.utwente.groove.explore.Generator.main(args);
+        nl.utwente.groove.cli.Generator.main(args);
     }
 
     /** Private constructor to avoid this static class from being instantiated. */

@@ -37,8 +37,8 @@ import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.DeltaMap.Delta;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.collect.DeltaMap.Delta;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Severity;
 
