@@ -102,7 +102,12 @@ import nl.utwente.groove.util.Reporter;
  * {@value #DEFAULT_TIMEOUT}). Without names, {@code groove.bench.tier} selects
  * the {@link Tier}: {@code quick} (the default: everything but the long tier),
  * {@code long} or {@code all}. If {@code groove.bench.csv} names a file, the rows
- * are appended to it in CSV form as well.
+ * are appended to it in CSV form as well. If {@code groove.bench.randomAccess}
+ * is {@code true}, every GTS is put into random-access mode before exploring, as
+ * the {@code Simulator} does ({@code SimulatorModel.resetGTS}): each state graph
+ * is then materialised as a fresh copy rather than by handing down the node and
+ * edge sets of its parent, which is what the {@code Generator} does and the
+ * harness measures by default.
  * <p>
  * From Maven the same {@code main} can be reached through the JUnit entry
  * {@link #benchmark()}, which is skipped unless {@code groove.bench.run} is set:
@@ -154,6 +159,12 @@ public class ExplorationBenchmark {
     private static final int SMOKE_TIMEOUT = 120;
     /** Grace period, in milliseconds, given to an interrupted run to wind down. */
     private static final long INTERRUPT_GRACE = 10_000L;
+    /**
+     * Flag set by the system property {@code groove.bench.randomAccess}: if
+     * {@code true}, the GTS record is put into random-access mode, as in the
+     * {@code Simulator}.
+     */
+    private static final boolean RANDOM_ACCESS = Boolean.getBoolean("groove.bench.randomAccess");
 
     /**
      * Size class of a configuration. The tiers nest: the smoke tier is the
@@ -759,11 +770,22 @@ public class ExplorationBenchmark {
     private static Measurement singleRun(GrammarModel model, ExploreType exploreType,
                                          int timeoutSeconds) throws Exception {
         GTS gts = exploreType.newGTS(model);
+        if (RANDOM_ACCESS) {
+            // before anything materialises the start state (see below)
+            gts.getRecord().setRandomAccess(true);
+        }
         long heapBefore = settledHeap();
         // registered before the exploration is created, because that
         // materialises the start state and so fires the first add update
         DiscoveryCounter counter = new DiscoveryCounter();
         gts.addLTSListener(counter);
+        if (RANDOM_ACCESS) {
+            // materialised here, as the Simulator does after its GTS reset:
+            // newExploration applies the per-GTS features again to a GTS
+            // without a start state, and setting the collapse mode fails
+            // once the record exists
+            gts.startState();
+        }
         Exploration exploration = exploreType.newExploration(gts, null);
         long runningBefore = Exploration.getRunningTime();
         long matchingBefore = PlanSearchStrategy.searchFindReporter.getTotalTime();
@@ -892,6 +914,10 @@ public class ExplorationBenchmark {
         System.out
             .printf(Locale.ROOT, "Shape:      %d warm-up(s), %d measured run(s), %d s timeout%n",
                     warmups, runs, timeout);
+        System.out
+            .printf(Locale.ROOT, "Record:     %s%n", RANDOM_ACCESS
+                ? "random access (Simulator mode)"
+                : "swing (Generator mode)");
         System.out
             .printf(Locale.ROOT, "Time:       %s%n%n",
                     LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
