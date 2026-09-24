@@ -554,9 +554,14 @@ add-on (two products to explain, macOS gap); a single installer with a yFiles qu
 6. **The website**: the download page gets the add-on next to the standard artifacts,
    with the non-commercial statement; the web manual's installation page describes the
    add-on and the extension directory, its layout section the yFiles algorithms.
-7. **At the first release**: nothing by hand; keep `release/yfiles/target/yguard.log.xml.gz`
-   from the workflow run (it is not attached) with the release, in case a user's stack
-   trace needs translating — or add an upload step for it.
+7. **At the first release**: nothing by hand; the release job records the `yfiles-lib`
+   commit it built from as an HTML comment in the release notes. The yGuard name mapping must *not* be kept with the release
+   or uploaded anywhere public: it undoes the obfuscation §2.1c requires (a workflow
+   artifact would not do either, as any signed-in user can download those on a public
+   repository). It need not be kept at all: the renaming was found deterministic on
+   2026-09-24 (logs of two runs, JDK 26 and 21, identical up to timestamp and memory
+   comments), so the mapping is regenerated from the release's inputs when a stack
+   trace needs it; see `release/README.md`, "Building".
 8. **The backend module split** (gh #887) remains independent and unblocked either way.
 
 Side issues filed along the way, independent of the phases: gh #882 (mouse
