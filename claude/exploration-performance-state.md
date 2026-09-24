@@ -38,12 +38,10 @@ and outcomes" in the note).
 1. **Finding 3.13: located 2026-09-24, it is 3.1** (the certifier's `NodeCertificate`
    array sized by the factory's node high-water mark; the counter mints a value node per
    state, so the cost was quadratic). Fix on branch `certifier-node-table` off master
-   (worktree `.claude/worktrees/certifier-node-table`): open-addressed table sized by the
-   graph. Counter rows 5.4/34/107 s -> 2.0/5.5/11.2 s, allocation flat at 33 KB/state.
-   Remaining there: null-annotation commit and gates (fast suite, `grammar-smoke`,
-   `DeterminismTest`, `null-check`), then the proper A/B (alternating builds, quiet
-   machine) on the counter rows plus a few iso-heavy rows (`leader-election`,
-   `As-and-Bs`) to confirm no regression where node counts are small, then hand over.
+   (worktree `.claude/worktrees/certifier-node-table`, three commits: probe table,
+   null annotations, probe table replaced by a per-thread scratch array after it lost
+   the A/B on `leader-election-14`). A/B done (see 3.13 in the note); gates re-run
+   pending at the time of writing, then hand over.
 2. Finding 4.3.2 (per-node edge sets): the whole of the Simulator-mode cost on large
    graphs, 11 to 33 times on the hub rows; a design discussion first (copy-on-write
    sets or sharing), since copying is what the mode asks for.

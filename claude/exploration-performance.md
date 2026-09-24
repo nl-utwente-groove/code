@@ -1293,9 +1293,9 @@ from `GTS$StateSet.getCode` through the new state's first `getCache`), which is 
 zeroing loop of the inlined array allocation attributed to a neighbouring frame even
 with `-XX:+DebugNonSafepoints`. Trust `allocation-by-site` over `hot-methods` when the
 two disagree. None of the three readings (a) to (c) was needed: with the array replaced
-by a table sized by the graph (branch `certifier-node-table` off master), the rows
-allocate a flat 33 to 34 KB per state and take about 19 µs per state, one JVM per row,
-no warm-up:
+by a lookup that does not grow with the factory (branch `certifier-node-table` off
+master), the rows allocate a flat 33 to 34 KB per state and take about 19 µs per state,
+one JVM per row, no warm-up (figures of the first, probe-table version):
 
 | row | before (tier) | after | allocMB before | allocMB after |
 |---|---|---|---|---|
@@ -1303,8 +1303,14 @@ no warm-up:
 | `count-300000` | 34 s | 5.5 s | 353 671 | 10 116 |
 | `count-600000` | 107 s | 11.2 s | about 1.4 TB | 20 727 |
 
-`gen` remains 70 to 75 % of these rows, now linear. The proper A/B (alternating builds,
-quiet machine) is still to be done on the fix branch.
+`gen` remains 70 to 75 % of these rows, now linear. Of the two remedies 3.1 suggests,
+the probe table sized by `nodeCount()` lost to master where certification dominates and
+graphs are small (`leader-election-14`: certification 12 to 25 % slower over five A/B
+pairs), since every lookup became a hash probe. The reusable scratch array won: direct
+indexing by node number in a per-thread array shared by all certifiers, grown on demand,
+its used entries cleared when `initCertificates` ends. A/B against master, alternating
+builds: `leader-election-14` level over four pairs, `as-and-bs` and `mergers-9-multi`
+level, `count-100000` 4.9 to 2.1 s, `count-300000` 28.0 to 4.9 s.
 
 ### 4. Allocation on the per-state and per-match path
 
