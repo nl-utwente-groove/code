@@ -28,8 +28,8 @@ import nl.utwente.groove.util.AIGenerated;
  * The iterator does not support removal, and {@code null} elements are not supported.
  * @param <E> the element type
  */
-@NonNullByDefault
 @AIGenerated("Claude Opus 5.5, 2026-09")
+@NonNullByDefault
 public class ForkableHashSet<E> extends AbstractSet<E> {
     /** Creates an empty set. */
     public ForkableHashSet() {

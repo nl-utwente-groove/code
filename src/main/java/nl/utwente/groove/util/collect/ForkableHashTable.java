@@ -47,8 +47,8 @@ import nl.utwente.groove.util.AIGenerated;
  * @param <K> the key type
  * @param <V> the value type; for sets, values are not stored
  */
-@NonNullByDefault
 @AIGenerated("Claude Opus 5.5, 2026-09")
+@NonNullByDefault
 final class ForkableHashTable<K,V> {
     /** Creates an empty table, with or without value storage. */
     ForkableHashTable(boolean hasValues) {

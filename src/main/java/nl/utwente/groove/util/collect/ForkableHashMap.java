@@ -34,8 +34,8 @@ import nl.utwente.groove.util.AIGenerated;
  * @param <K> the key type
  * @param <V> the value type
  */
-@NonNullByDefault
 @AIGenerated("Claude Opus 5.5, 2026-09")
+@NonNullByDefault
 public class ForkableHashMap<K,V> extends AbstractMap<K,V> {
     /** Creates an empty map. */
     public ForkableHashMap() {
