@@ -263,18 +263,24 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         boolean result;
         if (other instanceof BasicEvent event) {
             result = false;
-            // check if the other creates edges that this event erases
-            Iterator<HostEdge> myErasedEdgeIter = getErasedEdges().iterator();
-            HostEdgeSet otherCreatedEdges = event.getSimpleCreatedEdges();
-            while (!result && myErasedEdgeIter.hasNext()) {
-                result = otherCreatedEdges.contains(myErasedEdgeIter.next());
-            }
-            if (!result) {
-                // check if the other erases edges that this event creates
-                Iterator<HostEdge> myCreatedEdgeIter = getSimpleCreatedEdges().iterator();
-                HostEdgeSet otherErasedEdges = event.getErasedEdges();
-                while (!result && myCreatedEdgeIter.hasNext()) {
-                    result = otherErasedEdges.contains(myCreatedEdgeIter.next());
+            // the edge checks only apply to simple graphs: in a non-simple
+            // graph, created edges are parallel copies outside the source
+            // graph, so they never coincide with erased edges, and the
+            // created-edge sets are not computed (see #computeSimpleCreatedEdges)
+            if (getHostFactory().isSimple()) {
+                // check if the other creates edges that this event erases
+                Iterator<HostEdge> myErasedEdgeIter = getErasedEdges().iterator();
+                HostEdgeSet otherCreatedEdges = event.getSimpleCreatedEdges();
+                while (!result && myErasedEdgeIter.hasNext()) {
+                    result = otherCreatedEdges.contains(myErasedEdgeIter.next());
+                }
+                if (!result) {
+                    // check if the other erases edges that this event creates
+                    Iterator<HostEdge> myCreatedEdgeIter = getSimpleCreatedEdges().iterator();
+                    HostEdgeSet otherErasedEdges = event.getErasedEdges();
+                    while (!result && myCreatedEdgeIter.hasNext()) {
+                        result = otherErasedEdges.contains(myCreatedEdgeIter.next());
+                    }
                 }
             }
         } else {
@@ -370,21 +376,24 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         if (record.getSource().isSimple()) {
             record.addCreatedEdges(getSimpleCreatedEdges());
         } else {
-            // in a non-simple graph, the cached creator edge images may
-            // already occur in the source graph, if this event was applied
-            // before on the exploration path; each image is therefore
-            // resolved through the factory's content pool, excluding the
-            // source graph and the edges already created by this effect,
-            // so that content-equal creations across events resolve to the
-            // same edge identity (gh #905)
+            // in a non-simple graph, each created edge is resolved through
+            // the factory's content pool, excluding the source graph and the
+            // edges already created by this effect, so that content-equal
+            // creations across events resolve to the same edge identity
+            // (gh #905). Only the end node images and the label are taken
+            // from the coanchor map: mapping the creator edge itself would
+            // mint its image in the non-simple factory as a fresh parallel
+            // copy on every recomputation of the (softly cached) map, and
+            // that copy leaks as a stray whenever the pool resolves to an
+            // earlier one
             RuleToHostMap coanchorMap = getCoanchorMap();
             for (RuleEdge creatorEdge : getAction().getSimpleCreatorEdges()) {
-                HostEdge image = coanchorMap.mapEdge(creatorEdge);
-                if (image != null) {
+                HostNode sourceImage = coanchorMap.getNode(creatorEdge.source());
+                HostNode targetImage = coanchorMap.getNode(creatorEdge.target());
+                if (sourceImage != null && targetImage != null) {
                     record
-                        .addCreatedEdge(getHostFactory()
-                            .createEdge(image.source(), image.getType(), image.target(),
-                                        record.excluded()));
+                        .addCreateEdge(sourceImage, coanchorMap.mapLabel(creatorEdge.label()),
+                                       targetImage);
                 }
             }
         }
@@ -499,6 +508,11 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      * creator edges. Callback method from {@link #getSimpleCreatedEdges()}.
      */
     private HostEdgeSet computeSimpleCreatedEdges() {
+        // mapping the creator edges mints their images in the factory; in a
+        // non-simple factory that would be a fresh parallel copy per
+        // computation, so the set is only computed for simple graphs, where
+        // the images are the pooled canonical edges
+        assert getHostFactory().isSimple() : "Created edge images are only computed for simple graphs";
         HostEdgeSet result = createEdgeSet();
         RuleToHostMap coAnchorMap = getCoanchorMap();
         for (RuleEdge edge : getAction().getSimpleCreatorEdges()) {

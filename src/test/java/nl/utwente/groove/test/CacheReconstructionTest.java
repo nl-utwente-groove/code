@@ -18,6 +18,7 @@
 package nl.utwente.groove.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -32,11 +33,14 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.AbstractGraphState;
+import nl.utwente.groove.lts.DefaultGraphNextState;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.transform.AbstractRuleEvent;
+import nl.utwente.groove.transform.RuleEffect;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Tests that state graphs reconstructed after a cache collapse consist of
@@ -74,6 +78,68 @@ public class CacheReconstructionTest {
     @Test
     public void testParallelPumpSpo() {
         test("parallel-pump-spo");
+    }
+
+    /** Tests effect re-recording after an event cache sweep in the
+     * multigraph grammar. */
+    @Test
+    public void testParallelPumpRerecording() {
+        testRerecording("parallel-pump");
+    }
+
+    /** Tests effect re-recording after an event cache sweep in the SPO
+     * variant of the multigraph grammar. */
+    @Test
+    public void testParallelPumpSpoRerecording() {
+        testRerecording("parallel-pump-spo");
+    }
+
+    /**
+     * Fully explores a named grammar, then re-records the effect of every
+     * state-creating transition after clearing the event's cache, and asserts
+     * that the re-recorded added edges are the identities in the target graph
+     * and that the host factory has not grown: an event whose cache was
+     * collected mints no stray edge copies when it is applied again.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private void testRerecording(String grammarName) {
+        try {
+            GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
+            GTS gts = new GTS(grammarModel.toGrammar());
+            ExploreType.getDefault().newExploration(gts, null).play();
+            int nodeCount = gts.getHostFactory().getNodeCount();
+            int edgeCount = gts.getHostFactory().getEdgeCount();
+            int rerecorded = 0;
+            for (GraphTransition trans : gts.edgeSet()) {
+                if (trans instanceof DefaultGraphNextState next
+                    && next.getEvent() instanceof AbstractRuleEvent<?> event) {
+                    event.clearCache();
+                    RuleEffect effect
+                        = new RuleEffect(next.source().getGraph(), next.getAddedNodes());
+                    event.recordEffect(effect);
+                    effect.setFixed();
+                    Set<HostEdge> targetEdges = new HashSet<>(next.getGraph().edgeSet());
+                    java.util.function.Function<HostEdge,String> num
+                        = e -> e + "#" + e.getNumber();
+                    for (HostEdge edge : effect.getAddedEdgeArray()) {
+                        assertTrue(String
+                            .format("Re-recorded edge %s of %s (%s from %s) is not in the target %s; re-recorded %s",
+                                    num.apply(edge), next, next.getEvent(), next.source(),
+                                    targetEdges.stream().map(num).toList(),
+                                    java.util.Arrays.stream(effect.getAddedEdgeArray()).map(num).toList()),
+                                   targetEdges.contains(edge));
+                    }
+                    rerecorded++;
+                }
+            }
+            assertTrue("No transitions re-recorded", rerecorded > 0);
+            assertEquals("Node count changed by re-recording", nodeCount,
+                         gts.getHostFactory().getNodeCount());
+            assertEquals("Stray edges minted by re-recording", edgeCount,
+                         gts.getHostFactory().getEdgeCount());
+        } catch (Exception e) {
+            org.junit.Assert.fail(e.toString());
+        }
     }
 
     /**
