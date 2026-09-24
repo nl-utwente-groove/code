@@ -56,14 +56,16 @@ public interface HostEdgeStore<K> extends Map<K,HostEdgeSet> {
      * the key is not in the store
      */
     default @Nullable HostEdgeSet removeEdge(K key, HostEdge edge, boolean refresh) {
-        @Nullable
         HostEdgeSet result = get(key);
-        if (result != null) {
-            if (refresh) {
-                put(key, result = HostEdgeSet.newInstance(result));
-            }
-            result.remove(edge);
+        if (result == null) {
+            return null;
         }
+        if (refresh) {
+            HostEdgeSet fresh = HostEdgeSet.newInstance(result);
+            put(key, fresh);
+            result = fresh;
+        }
+        result.remove(edge);
         return result;
     }
 
@@ -76,10 +78,11 @@ public interface HostEdgeStore<K> extends Map<K,HostEdgeSet> {
      * @return the resulting edge set for {@code key}
      */
     default HostEdgeSet addEdge(K key, HostEdge edge, boolean refresh) {
-        @Nullable
         HostEdgeSet result = get(key);
         if (refresh || result == null) {
-            put(key, result = HostEdgeSet.newInstance(result));
+            HostEdgeSet fresh = HostEdgeSet.newInstance(result);
+            put(key, fresh);
+            result = fresh;
         }
         result.add(edge);
         return result;
