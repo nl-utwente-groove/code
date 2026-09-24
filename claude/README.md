@@ -31,7 +31,6 @@ Status lines below are as of 2026-09-11.
 | [download-stats.md](download-stats.md) | Download statistics from GitHub releases, SourceForge-style: daily counter snapshots differenced at render time. Repository and collector live since 2026-09-13 (`nl-utwente-groove/download-stats`); SourceForge import and website page open. |
 | [website-manual-8_0_0.md](website-manual-8_0_0.md) | gh #896 and the 8.0.0 release: what the web user manual (website repo, `manual/`) needs, change by change, plus the wrong statements and the broken reference-page generator. Proposal only, nothing written yet. |
 | [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
-| [coanchor-edge-leak.md](coanchor-edge-leak.md) | Stray parallel edge copies minted by the coanchor map in multigraph mode (the copy-mode edge surplus of the hub benchmark row). Mechanism, fix and regression test on `multigraph-coanchor-edge-leak`, awaiting review. |
 ## Archive
 
 Finished work, kept for the design rationale and rejected alternatives. Grouped by theme.
@@ -48,6 +47,7 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 | [edge-store-refactoring.md](archive/edge-store-refactoring.md) | `StoreFactory` edge store and per-factory perfect hash, gh #895. All seven steps on master; issue closed 2026-08-29. |
 | [iso-edge-bundles.md](archive/iso-edge-bundles.md) | Edge bundles in the isomorphism checker, gh #906. Merged 2026-08-30. Carry-over tracked as gh #886. |
 | [created-edge-pooling.md](archive/created-edge-pooling.md) | Cross-event pooling of content-equal created edges, gh #905. Merged 2026-08-31. |
+| [coanchor-edge-leak.md](archive/coanchor-edge-leak.md) | Stray parallel edge copies minted by the coanchor map in multigraph mode, found as the copy-mode edge surplus of the hub benchmark row. Fixed and merged 2026-09-24. |
 | [rete-retirement.md](archive/rete-retirement.md) | RETE matching engine removed 2026-07-20; tag `rete-final` marks the last tree with it. |
 | [module-exports-state.md](archive/module-exports-state.md) | Hand-over state for the export work (three branches, merge order, session B). All landed by 2026-09-22; superseded by `module-exports.md`. |
 | [module-exports.md](archive/module-exports.md) | What `module-info` exports now that 8.0.0 keeps it, the reasoning per package, and the four restructurings that trimmed it (controller context, `cli` package, `control.term` split, `util.collect` unexported). All merged by 2026-09-22. |

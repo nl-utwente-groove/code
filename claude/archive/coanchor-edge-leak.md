@@ -1,8 +1,12 @@
 # Stray edge copies from the coanchor map in multigraphs
 
+*Status (2026-09-24)*: fixed and merged into master as 9ec635802 (branch
+`multigraph-coanchor-edge-leak`, one commit, rebased once over the factory-user-leak
+archive move). Regression test `CacheReconstructionTest.testParallelPump[Spo]Rerecording`.
+Explicitly left alone: the merge-map image minting described under "Not addressed".
+
 Investigation record of the copy-mode edge surplus on the `hub-ring-1000-unstored`
-benchmark row of `claude/exploration-performance.md`. Branch `multigraph-coanchor-edge-leak`,
-off master, 2026-09-24. Status: fixed, awaiting review.
+benchmark row of `claude/exploration-performance.md`, 2026-09-24.
 
 ## Symptom
 
