@@ -141,7 +141,7 @@ Hand-made start graphs; `start-18` is in the directory but no row uses it.
 ### sierpinsky (`sierpinsky.gps`)
 
 Linear exploration over graphs growing to hundreds of thousands of elements: the
-large-graph case for the certifier array (3.1) and the per-node edge sets (4.3.2),
+large-graph case for the certifier array (3.1) and the graph stores (4.3.2),
 dominated by `gen`. Collapse is off in the record, so 2.5 applies. Hand-made start graphs.
 
 | start graph | states | factory nodes, edges | s | retMB | kept |
@@ -283,7 +283,8 @@ both ways. The rows' start graphs are generated. As built (1 000 leaves, 10 toke
 explores to one state, since the leaves are interchangeable: 295 s, of which
 certification 219 s, 22 ms per certificate of a 1 001-node graph with a 990-fold
 symmetric leaf class, which is finding 5.6 measured; the 1.3 MB allocated per transition
-is 4.3.2.
+was attributed to 4.3.2 as first written (not re-examined after its 2026-09-24
+correction; this row runs in swing mode).
 
 Stored rows: `star-300-3` under `run`, the symmetry row (5.6, 2.4); `chain-N-k`,
 consecutive leaves linked by `next` and a `chain` program whose `moveNext` moves a token
@@ -903,13 +904,15 @@ that moved (the full table takes 95 minutes to regenerate):
 - **The unstored single-path rows over large graphs are 11 to 33 times slower, all of it
   in `match`.** Each step's graph is a fresh copy of 1 000 to 5 400 nodes, and the
   `match` column includes the lazy materialisation of that graph, so what it shows is
-  finding 4.3.2 at full strength: the per-node edge sets rebuilt at graph size on every
-  step, where swing mode hands them down with the delta. `petrinet-join` (300 to 3 000
+  finding 4.3.2 at full strength: the edge stores and the global edge set copied at graph
+  size on every step (the per-node sets are shared, see the corrected 4.3.2), and the
+  collector working through the copies, where swing mode hands everything down with the
+  delta. `petrinet-join` (300 to 3 000
   nodes) shows the same at 3 times. This is the mode every Simulator user explores in,
   and the demotion of 3.7 above holds for swing mode only.
 - **Stored large-graph rows keep their time but retain 5 to 18 times as much**
   (`hub-chain-200-2` 81 to 423 MB, `hub-chain-1000-1` 4.6 to 85 MB): a stored state keeps
-  its own sets. `sierpinsky` (graphs of up to 800 k elements on a linear path) is 25 to
+  its own store maps and edge set. `sierpinsky` (graphs of up to 800 k elements on a linear path) is 25 to
   30 % slower with 55 % more allocation.
 - **Rows near the heap limit fall off the collector cliff**: `leader-election-16` at 3.9
   times with 73 % more allocation, the 300 k counter rows at 1.3 to 1.4.
@@ -1514,13 +1517,29 @@ A `Map<TypeNode,NodeFactory>` is determinism-safe (keyed lookup, never iterated)
 `knownTransience > 0` (`:493-496`). Use the existing `EMPTY_CACHE_SET` when the grammar
 has no transient behaviour and promote on first insertion.
 
-**4.3.2 Per-node edge sets are over-provisioned by about five times.** Medium to high
-(memory) / small / high. `grammar/host/HostEdgeStore.java:49-52,81-88` creates
-`HostEdgeSet`s at `TreeHashSet.DEFAULT_CAPACITY = 16` (`HostEdgeTreeHashSet.java:13-15`,
-`TreeHashSet.java:1138`): four arrays, about 290 bytes, per node per store, up to three
-stores per node, for typical degrees of 1 to 3. Graphs swing rather than copy so few are
-live at once, but the copy path (`CopyTarget`, `DeltaHostGraph.java:822-854`) allocates a
-full family. A small default (2 or 4) for per-node sets.
+**4.3.2 Copy mode copies every store at graph size per materialised graph.** High (in
+copy mode) / medium / high. *Corrected 2026-09-24; the original finding blamed the
+per-node edge sets, which are over-provisioned (`HostEdgeSet`s at
+`TreeHashSet.DEFAULT_CAPACITY = 16`, about 290 bytes per node per store) but not the
+cost.* `CopyTarget` (`DeltaHostGraph`) already treats the per-node sets as copy-on-write:
+in copy mode it copies the stores shallowly, shares the sets, and clones a set only when
+the delta touches its key (`freshSourceKeys`, `freshTargetKeys`, `freshLabelKeys`). What
+is O(|G|) per step is the flat mutable containers: the up to four `HostEdgeStore`s
+(`LinkedHashMap`s) and the global `edgeSet` (`TreeHashSet`), copied entry by entry. JFR on
+`hub-ring-1000-unstored` under `groove.bench.randomAccess` (JDK 25, one run, 22.2 s,
+24.9 GB allocated, about 125 KB per step, 994 MB retained): 17.6 s of the 22 s are GC
+pauses (121), 327 of 425 CPU samples fall inside `CopyTarget.<init>`, search and delta
+replay 12 each; of the allocation, about 48 % is the store copies (`LinkedHashMap`
+entries plus `resize`), about 44 % the `edgeSet` copy, under 1 % the per-node sets. The
+copies live on in the soft-cached state graphs, hence the collector share and the 5 to
+18 times retention of stored rows. Rejected remedies: smaller per-node sets (they are not
+the cost); presized or plain `HashMap` copies (about 30 % of a cost 11 to 33 times too
+high); swinging internally with snapshots for external callers (every `getGraph()` caller
+to audit, and a swing racing a GUI read corrupts silently where copying is safe); full
+persistent (HAMT) structures (largest change, deeper lookups on the matcher's path).
+Chosen: bucketed copy-on-write stores, a fixed array of small buckets keyed by number
+hash, copied as an array of references with a bucket cloned on first write; iteration
+order becomes bucket order (deterministic), which Arend accepted 2026-09-24.
 
 **4.3.3 `StateMatches.advanceFrame` uses a `LinkedList` for outstanding matches.** Low
 to medium / trivial / high. `lts/StateMatches.java:167`: only appended, iterated and
@@ -1809,9 +1828,10 @@ the exploration thread itself, uncontended.
    algorithmic. Chosen ahead of the constant-factor items because a cost that grows
    with the run hits every grammar with many distinct data values. Done 2026-09-24:
    the cause is 3.1, fixed on branch `certifier-node-table`, merged into master.
-5. Finding 4.3.2, the per-node edge sets: the whole of the Simulator-mode cost on large
-   graphs (11 to 33 times on the hub rows), but inherent to copying unless the sets
-   become copy-on-write, so a design discussion before a commit.
+5. Finding 4.3.2, the store copies: the whole of the Simulator-mode cost on large
+   graphs (11 to 33 times on the hub rows). Diagnosis corrected 2026-09-24 (the store
+   maps and the global edge set, not the per-node sets); bucketed copy-on-write stores
+   chosen, developed on their own branch off master.
 6. Section 1 (always-on instrumentation and locks): two-line changes in the innermost
    loops, no design risk; a few per cent each.
 7. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the

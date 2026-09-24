@@ -41,9 +41,12 @@ and outcomes" in the note).
    (probe table, null annotations, probe table replaced by a per-thread scratch array
    after it lost the A/B on `leader-election-14`), gates passed, merged into this branch
    and master 2026-09-24; branch and worktree cleaned up. Figures under 3.13 in the note.
-2. Finding 4.3.2 (per-node edge sets): the whole of the Simulator-mode cost on large
-   graphs, 11 to 33 times on the hub rows; a design discussion first (copy-on-write
-   sets or sharing), since copying is what the mode asks for.
+2. Finding 4.3.2: the whole of the Simulator-mode cost on large graphs, 11 to 33 times
+   on the hub rows. Diagnosis corrected 2026-09-24 by JFR: the per-node sets are already
+   copy-on-write; the cost is the graph-size copy of the store maps and the global edge
+   set, and the GC of those copies. Bucketed copy-on-write stores chosen (bucket order
+   instead of insertion order accepted), in development on branch `cow-edge-stores` off
+   master.
 3. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
    the `synchronized` accessors, `java.util.Stack`): one commit per item, each with
    before/after numbers in the A/B shape. `Reporter` first: it is on the innermost loop
