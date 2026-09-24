@@ -25,7 +25,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.graph.plain.PlainNode;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Reporter;
 
 /**
@@ -40,12 +40,6 @@ import nl.utwente.groove.util.Reporter;
 abstract public class CertificateStrategy {
     CertificateStrategy(Graph graph) {
         this.graph = graph;
-        // the graph may be null if a prototype is being constructed.
-        if (graph != null) {
-            this.defaultNodeCerts = new NodeCertificate[graph.getFactory().getMaxNodeNr() + 1];
-        } else {
-            this.defaultNodeCerts = null;
-        }
     }
 
     /**
@@ -153,6 +147,11 @@ abstract public class CertificateStrategy {
         int nodeCount = getGraph().nodeCount();
         int edgeCount = getGraph().edgeCount();
         this.nodeCerts = new NodeCertificate[nodeCount];
+        // the table is at least twice the number of nodes, to keep the
+        // linear probing short
+        int capacity = Integer.highestOneBit(Math.max(nodeCount, 2)) * 4;
+        this.nodeCertTable = new int[capacity];
+        this.nodeCertMask = capacity - 1;
         for (Node node : getGraph().nodeSet()) {
             initNodeCert(node);
         }
@@ -196,27 +195,40 @@ abstract public class CertificateStrategy {
     }
 
     /**
-     * Inserts a certificate node either in the array (if the corresponding node
-     * is a {@link PlainNode}) or in the map.
+     * Enters the certificate about to be stored at index {@link #nodeCertCount}
+     * of {@link #nodeCerts} into the lookup table, under its node's number.
      */
     private void putNodeCert(NodeCertificate nodeCert) {
-        Node node = nodeCert.getElement();
-        int nodeNr = node.getNumber();
-        assert nodeNr < this.defaultNodeCerts.length : String
-            .format("Node nr %d higher than maximum %d", nodeNr, this.defaultNodeCerts.length - 1);
-        this.defaultNodeCerts[nodeNr] = nodeCert;
+        int slot = nodeCertSlot(nodeCert.getElement().getNumber());
+        while (this.nodeCertTable[slot] != 0) {
+            slot = (slot + 1) & this.nodeCertMask;
+        }
+        this.nodeCertTable[slot] = this.nodeCertCount + 1;
     }
 
     /**
-     * Retrieves a certificate node image for a given graph node from the map,
-     * creating the certificate node first if necessary.
+     * Retrieves the certificate of a given graph node from the lookup table.
      */
     NodeCertificate getNodeCert(final Node node) {
-        NodeCertificate result;
         int nodeNr = node.getNumber();
-        result = this.defaultNodeCerts[nodeNr];
-        assert result != null : String.format("Could not find certificate for %s", node);
-        return result;
+        int slot = nodeCertSlot(nodeNr);
+        while (true) {
+            int entry = this.nodeCertTable[slot];
+            assert entry != 0 : String.format("Could not find certificate for %s", node);
+            NodeCertificate result = this.nodeCerts[entry - 1];
+            if (result.getElement().getNumber() == nodeNr) {
+                return result;
+            }
+            slot = (slot + 1) & this.nodeCertMask;
+        }
+    }
+
+    /** Returns the initial slot of a node number in {@link #nodeCertTable}. */
+    @AIGenerated("Claude Opus 5.5, 2026-09")
+    private int nodeCertSlot(int nodeNr) {
+        // spread the (typically consecutive) node numbers over the table
+        int hash = nodeNr * 0x9E3779B9;
+        return (hash ^ (hash >>> 16)) & this.nodeCertMask;
     }
 
     /**
@@ -421,8 +433,16 @@ abstract public class CertificateStrategy {
     int edge2CertCount;
     /** The number of unary edge certificates in {@link #edgeCerts}. */
     int edge1CertCount;
-    /** Array for storing default node certificates. */
-    private final NodeCertificate[] defaultNodeCerts;
+    /**
+     * Open-addressed lookup table from node numbers to certificates, filled in
+     * {@link #initCertificates()}: each slot holds an index into
+     * {@link #nodeCerts}, raised by one so that zero stands for an empty slot.
+     * Sized by the graph's node count rather than by the factory's node
+     * numbers, which grow with every node the exploration ever creates.
+     */
+    private int[] nodeCertTable;
+    /** Mask of the capacity of {@link #nodeCertTable}, a power of two. */
+    private int nodeCertMask;
 
     /**
      * Returns an array that, at every index, contains the number of times that
