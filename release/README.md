@@ -144,7 +144,7 @@ The `.msi` shows the licence in a narrow box on its first page. jpackage convert
 
 The installers are not code-signed, so Windows and macOS block them at first, and rpm-based package managers may ask before installing the `.rpm` (`zypper` does, `dnf` normally does not; `apt` and `dpkg` never check local `.deb` files). The release page therefore explains how to get past that, in two places, both kept in `github`:
 
-- `INSTALL-NOTE.md` opens the body of the release page. The `release` job builds the body with `github/release-notes.sh`, which appends this release's section of `include/CHANGES.md` (its first section) in a collapsed block, so that the note stays close to the asset list below it. Run `bash github/release-notes.sh` to preview the body. To save the preview to a file from Windows PowerShell, keep the redirection inside bash, as in `bash -c "github/release-notes.sh > body.md"`: PowerShell 5.1's `>` writes UTF-16, which GitHub does not render as Markdown (in a gist, for instance).
+- `INSTALL-NOTE.md` opens the body of the release page. The `release` job builds the body with `github/release-notes.sh`, which appends this release's section of `include/CHANGES.md` (its first section) in a collapsed block, so that the note stays close to the asset list below it; a later step of the job appends an invisible HTML comment naming the `yfiles-lib` commit of the add-on (see "Building" below). Run `bash github/release-notes.sh` to preview the body. To save the preview to a file from Windows PowerShell, keep the redirection inside bash, as in `bash -c "github/release-notes.sh > body.md"`: PowerShell 5.1's `>` writes UTF-16, which GitHub does not render as Markdown (in a gist, for instance).
 - `IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTALLER.txt` is attached to the release as an asset, with step-by-step instructions. Its name is the message, for those who read nothing but the asset list.
 
 Unlike the contents of `include`, neither file ends up in the zips or the installers.
@@ -224,9 +224,29 @@ from Maven Central like any plugin.
 
     This produces the standard zips and, next to them, `groove-x_y_z-yfiles-addon.zip`
     in `release/target`. The obfuscation runs in `release/yfiles`; its name mapping is
-    kept in `release/yfiles/target/yguard.log.xml.gz` (view it with
-    `java -jar yguard.jar <log>` from the yGuard distribution) and should be kept with
-    the release, in case a stack trace from a user needs translating.
+    written to `release/yfiles/target/yguard.log.xml.gz` (view it with
+    `java -jar yguard.jar <log>` from the yGuard distribution).
+
+**The name mapping must never be published.** It maps every obfuscated name back to
+the library's own, so a public copy would undo the obfuscation the license requires.
+Nothing publishes it: the release step attaches only `release/target/*.zip`, and the
+workflow keeps no artifacts. Do not attach it to a release, upload it as a workflow
+artifact (on a public repository any signed-in GitHub user can download those), or
+commit it.
+
+Nor does it need keeping: the renaming is deterministic, so the mapping of a release
+can be regenerated when a user's stack trace needs translating. Two obfuscations of
+the same inputs, under JDK 26 and JDK 21, gave logs identical except for yGuard's
+timestamp and memory-usage comments (checked 2026-09-24 on Windows; that a Linux
+runner renames the same way is expected, not checked). Such a trace needs the mapping
+only for its `com.yworks` frames, which carry no line numbers; the backend's own frames
+keep their names and lines. To regenerate the mapping of release x.y.z, repeat the two
+steps above from the release tag with the inputs of that release: the same library jar
+(the `lib/` directory of `yfiles-lib` keeps its history), the same `yguard.version`,
+and the `yfiles-lib` commit the release was built from. The release workflow checks
+that repository out by branch name, which does not fix the commit, so it records the
+commit at the end of the release notes, as an HTML comment that the release page does
+not show: `gh release view release-x_y_z --json body` prints it.
 
 The script `do-all.sh yfiles` runs the standard steps and then these two. The
 installers need nothing for the add-on: the standard ones bundle a runtime that

@@ -1,5 +1,10 @@
 # Factory user leak
 
+*Status (2026-09-24): done and on master (`344dc37a1` weak user sets, `c2aff68da` plain
+fields in `RuleApplication`, merged 2026-09-21); gh #919 closed. Open follow-ups: the
+global monitor in `Factory.get()` (finding 1.3) and resettable versus frozen factories,
+gh #920.*
+
 Design note for fixing the memory leak in `util.Factory`'s dependency tracking (finding
 3.11 of `claude/exploration-performance.md` on branch `worktree-exploration-performance`).
 gh #919. Branch `factory-user-leak`, off master. Status: implemented (weak user sets plus

@@ -22,6 +22,7 @@ Status lines below are as of 2026-09-11.
 | [phase-3-editor.md](phase-3-editor.md) | Phase 3 of gh #909: the editor. Design and slice record, in progress. |
 | [yfiles-distribution-options.md](yfiles-distribution-options.md) | What a release consists of now that a license-restricted yFiles edition exists: facts, options, decision. |
 | [module-split-plan.md](module-split-plan.md) | gh #887, Maven module split. Phases 1–4 (preparatory decoupling) on master; phase 5, the split itself, not started. The yFiles add-on built the service-discovery and second-artifact machinery along a different seam; rescope proposed on the issue. |
+| [cow-edge-stores.md](cow-edge-stores.md) | Finding 4.3.2 of the exploration-performance review: forkable (copy-on-write) edge stores in copy mode (the Simulator), behind a `HostEdgeStore` interface. Implemented on `cow-edge-stores` 2026-09-24, awaiting review. |
 | [io-refactor-plan.md](io-refactor-plan.md) | Four-phase `io` plan of 2026-07-26. Phases 1–3 (conceptual layer removed, io simplified, Ecore porter) on master; phase 4 (constraint rules) not started. gh #907, #558 open. |
 | [gh763-810-plan.md](gh763-810-plan.md) | Composite-graph error tracing, gh #763 (gh #810 closed as duplicate). Plan only, none of its six commits done. |
 | [priority-symmetric-choice.md](priority-symmetric-choice.md) | gh #880, priority-aware symmetric choice in control. Design points only, not started; interim gh #756 guard is on master. |
@@ -33,7 +34,6 @@ Status lines below are as of 2026-09-11.
 | [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
 | [exploration-performance.md](exploration-performance.md) | Code-reading review (2026-09-20) of the exploration hot path (always-on instrumentation, dead optimisations, wrong-quantity scaling, allocation churn, structural gaps) plus the throughput harness and grammar set built to measure it; laid out as test cases, harness, runs and outcomes, findings, coverage. Harness (`test/performance/ExplorationBenchmark`), the `junit/performance` grammar set (15 grammars, 57 rows in smoke, quick and long tiers), quick-tier (2026-09-23) and long-tier (2026-09-22) baselines and a coverage reassessment done; finding 3.11 fixed as gh #919 and 3.12 as gh #924 on their own branches, the rest not implemented. |
 | [exploration-performance-state.md](exploration-performance-state.md) | Handoff state for continuing the above: what is done, what waits on the `Factory` leak fix (finding 3.11, separate branch), next steps in order. Transient: delete when merged. |
-| [factory-user-leak.md](factory-user-leak.md) | gh #919, memory leak in `util.Factory` dependency tracking: rule applications retained by the grammar (finding 3.11 of the exploration performance review). Fixed by weak user sets plus plain fields in `RuleApplication` on `factory-user-leak`, awaiting review; resettable-versus-frozen factories filed as gh #920. |
 ## Archive
 
 Finished work, kept for the design rationale and rejected alternatives. Grouped by theme.
@@ -50,6 +50,7 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 | [edge-store-refactoring.md](archive/edge-store-refactoring.md) | `StoreFactory` edge store and per-factory perfect hash, gh #895. All seven steps on master; issue closed 2026-08-29. |
 | [iso-edge-bundles.md](archive/iso-edge-bundles.md) | Edge bundles in the isomorphism checker, gh #906. Merged 2026-08-30. Carry-over tracked as gh #886. |
 | [created-edge-pooling.md](archive/created-edge-pooling.md) | Cross-event pooling of content-equal created edges, gh #905. Merged 2026-08-31. |
+| [coanchor-edge-leak.md](archive/coanchor-edge-leak.md) | Stray parallel edge copies minted by the coanchor map in multigraph mode, found as the copy-mode edge surplus of the hub benchmark row. Fixed and merged 2026-09-24. |
 | [rete-retirement.md](archive/rete-retirement.md) | RETE matching engine removed 2026-07-20; tag `rete-final` marks the last tree with it. |
 | [module-exports-state.md](archive/module-exports-state.md) | Hand-over state for the export work (three branches, merge order, session B). All landed by 2026-09-22; superseded by `module-exports.md`. |
 | [module-exports.md](archive/module-exports.md) | What `module-info` exports now that 8.0.0 keeps it, the reasoning per package, and the four restructurings that trimmed it (controller context, `cli` package, `control.term` split, `util.collect` unexported). All merged by 2026-09-22. |
@@ -64,6 +65,7 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 | [determinism-ferryman-flake.md](archive/determinism-ferryman-flake.md) | Investigation of a `DeterminismTest` flake: cache collapse reorders reconstruction. Fixed by canonical match order, 2026-07-14/17. Explains the test's cache-clearing design. |
 | [parout-liveness.md](archive/parout-liveness.md) | Liveness-based control location variables, gh #561. Merged 2026-08-31, issue closed. |
 | [recipe-outpar-deletion.md](archive/recipe-outpar-deletion.md) | Recipe out-parameters vs. deletion: a reachable assert in `StateCache`. Option 1 merged 2026-08-29, repaired 2026-08-31; the assert is gone. |
+| [factory-user-leak.md](archive/factory-user-leak.md) | Memory leak in `util.Factory` dependency tracking: rule applications retained by the grammar, gh #919. Weak user sets plus plain fields in `RuleApplication`, merged 2026-09-21, issue closed; resettable versus frozen factories = gh #920. |
 | [sts-retirement.md](archive/sts-retirement.md) | STS package and remote exploration removed 2026-08-02; tag `sts-final`. |
 
 **Structure and dependencies**
