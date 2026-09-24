@@ -37,6 +37,7 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.iso.CertificateStrategy;
+import nl.utwente.groove.util.collect.ForkableHashSet;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -51,7 +52,10 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * the basis on this graph, with the inverted delta (see
  * {@code SwingTarget.install}). A lineage of graphs thus shares one physical
  * family of element sets, "swung" from graph to graph as different graphs are
- * materialised. The sets are insertion-ordered, and removal followed by
+ * materialised. The per-node sets are insertion-ordered, the stores and the
+ * global edge set are {@link nl.utwente.groove.util.collect.ForkableHashMap}s
+ * and {@link ForkableHashSet}s, whose order depends on the removal history
+ * as well, and in all of them removal followed by
  * re-insertion is not order-neutral, so iteration order is a function of the
  * entire swing history, not of the graph's content: take a shared edge set with
  * insertion order [a, b, c], and let it swing to a child graph whose delta
@@ -218,7 +222,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
     }
 
     @Override
-    public HostEdgeSet edgeSet() {
+    public Set<HostEdge> edgeSet() {
         var result = this.edgeSet;
         if (result == null) {
             initData();
@@ -375,7 +379,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             assert this.labelEdgeStore == null;
             var basis = this.basis;
             if (basis == null) {
-                this.edgeSet = createEdgeSet(null);
+                this.edgeSet = new ForkableHashSet<>();
                 this.nodeEdgeStore = new HostEdgeStore<>();
                 // apply the delta to fill the structures;
                 // the swing target actually shares this graph's structures
@@ -511,7 +515,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
 
     /** The (initially null) edge set of this graph. */
     @Nullable
-    HostEdgeSet edgeSet;
+    ForkableHashSet<HostEdge> edgeSet;
     /** The map from nodes to sets of incident edges. */
     @Nullable
     HostEdgeStore<HostNode> nodeEdgeStore;
@@ -745,7 +749,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
 
         /** Edge set to be filled by this target. */
         @Nullable
-        HostEdgeSet edgeSet;
+        ForkableHashSet<HostEdge> edgeSet;
         /** Node/edge map to be filled by this target. */
         @Nullable
         HostEdgeStore<HostNode> nodeEdgeStore;
@@ -821,7 +825,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
          */
         public CopyTarget(boolean deepCopy) {
             DeltaHostGraph graph = DeltaHostGraph.this;
-            this.edgeSet = createEdgeSet(graph.edgeSet);
+            var graphEdgeSet = graph.edgeSet;
+            assert graphEdgeSet != null;
+            this.edgeSet = new ForkableHashSet<>(graphEdgeSet);
             var graphNodeEdgeStore = graph.nodeEdgeStore;
             assert graphNodeEdgeStore != null;
             var nodeEdgeStore = copy(graphNodeEdgeStore, deepCopy);

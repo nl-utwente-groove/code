@@ -16,16 +16,19 @@
  */
 package nl.utwente.groove.grammar.host;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
+
+import nl.utwente.groove.util.collect.ForkableHashMap;
 
 /**
  * Convenience type for a deterministic map from
- * generic key types to sets of edges. 
+ * generic key types to sets of edges.
+ * Copying a store forks the underlying {@link ForkableHashMap}, which costs time
+ * proportional to the square root of the number of keys rather than to the number itself.
  * @author Arend Rensink
  * @version $Revision$
  */
-public final class HostEdgeStore<K> extends LinkedHashMap<K,HostEdgeSet> {
+public final class HostEdgeStore<K> extends ForkableHashMap<K,HostEdgeSet> {
     /** Returns a fresh empty store. */
     public HostEdgeStore() {
         // empty
@@ -36,10 +39,11 @@ public final class HostEdgeStore<K> extends LinkedHashMap<K,HostEdgeSet> {
      * @param deepCopy if {@code true}, the image sets are also copied
      */
     public HostEdgeStore(HostEdgeStore<K> original, boolean deepCopy) {
-        for (Map.Entry<K,HostEdgeSet> entry : original.entrySet()) {
-            HostEdgeSet image = entry.getValue();
-            put(entry.getKey(), deepCopy ? HostEdgeSet.newInstance(image)
-                    : image);
+        super(original);
+        if (deepCopy) {
+            for (Map.Entry<K,HostEdgeSet> entry : original.entrySet()) {
+                put(entry.getKey(), HostEdgeSet.newInstance(entry.getValue()));
+            }
         }
     }
 
