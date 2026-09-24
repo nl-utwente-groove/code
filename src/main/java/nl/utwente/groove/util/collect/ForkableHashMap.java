@@ -26,6 +26,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.Equator;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * Hash map that can be forked in time proportional to the square root of its size;
@@ -37,9 +39,14 @@ import nl.utwente.groove.util.AIGenerated;
 @AIGenerated("Claude Opus 5.5, 2026-09")
 @NonNullByDefault
 public class ForkableHashMap<K,V> extends AbstractMap<K,V> {
-    /** Creates an empty map. */
+    /** Creates an empty map, keyed by {@link Object#hashCode()} and {@link Object#equals(Object)}. */
     public ForkableHashMap() {
-        this.table = new ForkableHashTable<>(true);
+        this(TreeHashSet.equalsEquator());
+    }
+
+    /** Creates an empty map, keyed by a given equator. */
+    public ForkableHashMap(Equator<K> equator) {
+        this.table = new ForkableHashTable<>(true, equator);
     }
 
     /** Creates a fork of a given map, which afterwards evolves independently of it. */

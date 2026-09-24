@@ -21,6 +21,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.Equator;
 
 /**
  * Hash table core of {@link ForkableHashMap} and {@link ForkableHashSet}: a hash table that
@@ -37,9 +38,15 @@ import nl.utwente.groove.util.AIGenerated;
  * number of buckets, which keeps both the fork and the per-bucket clone at about the
  * square root of the size.
  * <p>
+ * Hash codes and key equality are delegated to an {@link Equator}, so that keys may be
+ * identified by something other than {@link Object#hashCode()} and
+ * {@link Object#equals(Object)}, such as a number. The equator's code is spread before
+ * use; the hash code of the key set as prescribed by {@link java.util.Set#hashCode()}
+ * is still computed from {@link Object#hashCode()}.
+ * <p>
  * Iteration is in bucket order, and within a bucket in slot order. This is a function of
- * the keys' hash codes and of the insertion and removal history, not of the insertion
- * order alone.
+ * the keys' codes and of the insertion and removal history, not of the insertion order
+ * alone.
  * <p>
  * Forking reads the original and replaces its owner token; neither operation is
  * synchronised, but reads of a table that is no longer modified are safe while it is
@@ -50,9 +57,11 @@ import nl.utwente.groove.util.AIGenerated;
 @AIGenerated("Claude Opus 5.5, 2026-09")
 @NonNullByDefault
 final class ForkableHashTable<K,V> {
-    /** Creates an empty table, with or without value storage. */
-    ForkableHashTable(boolean hasValues) {
+    /** Creates an empty table, with or without value storage, keyed by a given equator. */
+    @SuppressWarnings("unchecked")
+    ForkableHashTable(boolean hasValues, Equator<K> equator) {
         this.hasValues = hasValues;
+        this.equator = (Equator<Object>) equator;
         this.bits = MIN_BITS;
         this.buckets = new @Nullable Bucket[1 << MIN_BITS];
         this.owner = new Object();
@@ -61,6 +70,7 @@ final class ForkableHashTable<K,V> {
     /** Creates a fork of a given table, sharing its buckets. */
     private ForkableHashTable(ForkableHashTable<K,V> original) {
         this.hasValues = original.hasValues;
+        this.equator = original.equator;
         this.bits = original.bits;
         this.buckets = original.buckets.clone();
         this.size = original.size;
@@ -84,9 +94,9 @@ final class ForkableHashTable<K,V> {
         if (key == null) {
             return false;
         }
-        int hash = spread(key.hashCode());
+        int hash = hash(key);
         var bucket = this.buckets[bucketIndex(hash)];
-        return bucket != null && bucket.indexOf(key, hash) >= 0;
+        return bucket != null && bucket.indexOf(key, hash, this.equator) >= 0;
     }
 
     /** Returns the value stored for a given key, if any. */
@@ -95,12 +105,12 @@ final class ForkableHashTable<K,V> {
         if (key == null) {
             return null;
         }
-        int hash = spread(key.hashCode());
+        int hash = hash(key);
         var bucket = this.buckets[bucketIndex(hash)];
         if (bucket == null) {
             return null;
         }
-        int index = bucket.indexOf(key, hash);
+        int index = bucket.indexOf(key, hash, this.equator);
         if (index < 0) {
             return null;
         }
@@ -119,9 +129,9 @@ final class ForkableHashTable<K,V> {
      */
     @Nullable
     Object put(K key, @Nullable V value) {
-        int hash = spread(key.hashCode());
+        int hash = hash(key);
         var bucket = ownedBucket(bucketIndex(hash), INIT_CAPACITY);
-        Object result = bucket.put(key, value, hash);
+        Object result = bucket.put(key, value, hash, this.equator);
         if (result == null) {
             this.size++;
             if (this.size > 1 << (2 * this.bits) && this.bits < MAX_BITS) {
@@ -141,26 +151,22 @@ final class ForkableHashTable<K,V> {
         if (key == null) {
             return null;
         }
-        int hash = spread(key.hashCode());
+        int hash = hash(key);
         int bucketIndex = bucketIndex(hash);
         var bucket = this.buckets[bucketIndex];
         if (bucket == null) {
             return null;
         }
-        int index = bucket.indexOf(key, hash);
+        int index = bucket.indexOf(key, hash, this.equator);
         if (index < 0) {
             return null;
         }
         // a clone keeps the slots of its original
-        Object result = ownedBucket(bucketIndex, INIT_CAPACITY).remove(index);
+        Object result = ownedBucket(bucketIndex, INIT_CAPACITY).remove(index, this.equator);
         this.size--;
         return result;
     }
 
-    /** Returns an iterator over the keys (if {@code values} is {@code false})
-     * or the values (if {@code values} is {@code true}) of this table.
-     * The iterator does not support removal.
-     */
     /** Returns the sum of the hash codes of the keys, which is the hash code
      * that {@link java.util.Set#hashCode()} prescribes for the key set.
      */
@@ -178,8 +184,17 @@ final class ForkableHashTable<K,V> {
         return result;
     }
 
+    /** Returns an iterator over the keys (if {@code values} is {@code false})
+     * or the values (if {@code values} is {@code true}) of this table.
+     * The iterator does not support removal.
+     */
     <T> Iterator<T> iterator(boolean values) {
         return new TableIterator<>(values);
+    }
+
+    /** Returns the spread equator code of a key. */
+    private int hash(Object key) {
+        return spread(this.equator.getCode(key));
     }
 
     /** Returns the bucket at a given index, cloned if this table does not own it,
@@ -214,10 +229,10 @@ final class ForkableHashTable<K,V> {
             for (int i = 0; i < keys.length; i++) {
                 var key = keys[i];
                 if (key != null) {
-                    int hash = spread(key.hashCode());
+                    int hash = hash(key);
                     ownedBucket(bucketIndex(hash), capacity).put(key, vals == null
                         ? null
-                        : vals[i], hash);
+                        : vals[i], hash, this.equator);
                 }
             }
         }
@@ -229,6 +244,8 @@ final class ForkableHashTable<K,V> {
 
     /** Flag indicating that the table stores values. */
     private final boolean hasValues;
+    /** Equator determining the codes and equality of the keys. */
+    private final Equator<Object> equator;
     /** Base-2 logarithm of the number of buckets. */
     private int bits;
     /** The buckets; {@code null} entries stand for empty buckets. */
@@ -274,7 +291,7 @@ final class ForkableHashTable<K,V> {
         }
 
         /** Returns the slot of a key, or {@code -1} if the key is not in the bucket. */
-        int indexOf(Object key, int hash) {
+        int indexOf(Object key, int hash, Equator<Object> equator) {
             var keys = this.keys;
             int mask = keys.length - 1;
             for (int i = hash & mask;; i = (i + 1) & mask) {
@@ -282,7 +299,7 @@ final class ForkableHashTable<K,V> {
                 if (k == null) {
                     return -1;
                 }
-                if (k == key || spread(k.hashCode()) == hash && k.equals(key)) {
+                if (k == key || spread(equator.getCode(k)) == hash && equator.areEqual(key, k)) {
                     return i;
                 }
             }
@@ -293,7 +310,7 @@ final class ForkableHashTable<K,V> {
          * (or the key already in the bucket if there are no values)
          */
         @Nullable
-        Object put(Object key, @Nullable Object value, int hash) {
+        Object put(Object key, @Nullable Object value, int hash, Equator<Object> equator) {
             var keys = this.keys;
             int mask = keys.length - 1;
             int i = hash & mask;
@@ -302,7 +319,7 @@ final class ForkableHashTable<K,V> {
                 if (k == null) {
                     break;
                 }
-                if (k == key || spread(k.hashCode()) == hash && k.equals(key)) {
+                if (k == key || spread(equator.getCode(k)) == hash && equator.areEqual(key, k)) {
                     Object result = k;
                     var vals = this.vals;
                     if (vals != null) {
@@ -319,7 +336,7 @@ final class ForkableHashTable<K,V> {
             }
             this.size++;
             if (2 * this.size > keys.length) {
-                grow();
+                grow(equator);
             }
             return null;
         }
@@ -328,7 +345,7 @@ final class ForkableHashTable<K,V> {
          * (or the key itself if there are no values).
          * Uses backward-shift deletion to keep the probe sequences intact.
          */
-        Object remove(int index) {
+        Object remove(int index, Equator<Object> equator) {
             var keys = this.keys;
             var vals = this.vals;
             var key = keys[index];
@@ -346,7 +363,7 @@ final class ForkableHashTable<K,V> {
                 if (k == null) {
                     break;
                 }
-                int home = spread(k.hashCode()) & mask;
+                int home = spread(equator.getCode(k)) & mask;
                 // move k into the hole unless its home lies cyclically in (hole, j]
                 boolean stays = hole <= j
                     ? hole < home && home <= j
@@ -368,7 +385,7 @@ final class ForkableHashTable<K,V> {
         }
 
         /** Doubles the capacity of this bucket. */
-        private void grow() {
+        private void grow(Equator<Object> equator) {
             var oldKeys = this.keys;
             var oldVals = this.vals;
             int capacity = 2 * oldKeys.length;
@@ -380,7 +397,7 @@ final class ForkableHashTable<K,V> {
             for (int i = 0; i < oldKeys.length; i++) {
                 var k = oldKeys[i];
                 if (k != null) {
-                    int j = spread(k.hashCode()) & mask;
+                    int j = spread(equator.getCode(k)) & mask;
                     while (keys[j] != null) {
                         j = (j + 1) & mask;
                     }

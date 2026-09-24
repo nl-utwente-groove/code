@@ -21,6 +21,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.Equator;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * Hash set that can be forked in time proportional to the square root of its size;
@@ -31,9 +33,14 @@ import nl.utwente.groove.util.AIGenerated;
 @AIGenerated("Claude Opus 5.5, 2026-09")
 @NonNullByDefault
 public class ForkableHashSet<E> extends AbstractSet<E> {
-    /** Creates an empty set. */
+    /** Creates an empty set, keyed by {@link Object#hashCode()} and {@link Object#equals(Object)}. */
     public ForkableHashSet() {
-        this.table = new ForkableHashTable<>(false);
+        this(TreeHashSet.equalsEquator());
+    }
+
+    /** Creates an empty set, keyed by a given equator. */
+    public ForkableHashSet(Equator<E> equator) {
+        this.table = new ForkableHashTable<>(false, equator);
     }
 
     /** Creates a fork of a given set, which afterwards evolves independently of it. */
