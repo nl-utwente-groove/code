@@ -347,7 +347,9 @@ parent's references), so the O(V+E) walk runs once per chain, recurring only aft
 reconstruction from the delta chain. In copy mode (the Simulator, `randomAccess`) every
 child copies all four stores anyway. Hence the demotion of 3.7 to Low for exploration.
 The counted row also retains 5 KB per step: the host factory keeps every value node and
-`moves` edge it ever made (200 k and 400 k by `fNodes`/`fEdges`), the counter grammar's
+`moves` edge it ever made (200 k and 203 k by `fNodes`/`fEdges`; the 400 k edges first
+recorded were half stray token-flag copies, one per step, removed by the coanchor edge
+leak fix of 2026-09-24, `claude/archive/coanchor-edge-leak.md`), the counter grammar's
 growth too.
 
 **The wander recipe rows (added 2026-09-23)**, coverage gap 2: cyclic and wide
@@ -746,7 +748,11 @@ All 53 smoke and quick rows. Desktop, JDK 25.0.4.1, the launch flags
 `-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and three measured runs, all rows in one
 JVM in table order, fresh grammar per run, at `733a78d5c` (after the gh #925 merge, the
 wander recalibration and the removal of `binary-tree-dfs-unstored-9`), on a quiet
-machine, 35 minutes:
+machine, 35 minutes. The eleven `hub` rows were replaced on 2026-09-24 by a run of those
+rows alone, same flags and shape, one JVM, at `6707d4ddc`: the coanchor edge leak fix
+(`claude/archive/coanchor-edge-leak.md`) had lowered their `fEdges`, by half for the
+counted ring and by a third to a half for the star and wander rows, so their times also
+come from that separate run:
 
 ```
 config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
@@ -780,17 +786,17 @@ count-100000-big        100001   250001   100001    250001   5446.5   5380.0   5
 count-300000-big        300001   750001   300001    750001  35258.2  34860.9  35412.7      8509     21272    1675     516     495   33807     12       0 354283.0   2655.2  300008   300005
 as-and-bs-equality      262144  1413120   262144   1413120   8688.9   8379.5   8724.5     30170    162636    1229       0       0    6206      7       0  16513.2   1171.4       6       27
 sierpinsky-12               13       12       13        12   2688.2   2629.7   2738.3         5         4     338       0       0    2137      0       0   2623.4   1233.9  797176  2524375
-hub-star-300-3               1      891        1       891   2333.4   2163.4   2481.3         0       382       2    2242    1663    2323      0       0    374.0      1.3     303     1200
-hub-chain-1000-1          1000      999     1000       999   7365.8   7078.0   7442.3       136       136      10    7224    7224    7333      0       0    317.4      4.6    1003     3005
-hub-chain-200-2          19900    39402    19900     39402  10912.4  10813.9  10947.1      1824      3611      63   10180   10180   10774      0       0   2865.9     80.8     203      606
-hub-field-hop           100001   100000   100002    100001   6404.1   6381.5   6640.2     15615     15615    5960       0       0     237      0       0  13480.3    262.4    5405     5914
-hub-field-jump          200001   200000   200002    200001   7517.1   7513.8   7566.6     26606     26606    6594       0       0     501      0       0   1668.1    521.8    5404     5816
-hub-ring-1000-unstored  200001   200000   200002    200001   1307.9   1199.0   1316.1    152924    152923     185       0       0     706      0       0   1687.9    521.2    1003     3007
-hub-ring-1000-counted   200001   200000   200002    200001   1403.7   1388.4   1431.1    142477    142477     304       0       0     795      1       0   2742.4   1066.5  201004   402009
-hub-wander-alap-20         191    65170      191     66197     40.1     34.1     49.1      4764   1651226       1       4       4      22      0       0     62.2     13.3      23       85
-hub-wander-100            4951     4950     4951     24355   1412.8   1407.1   1428.9      3504     17239       5    1178    1178    1378      0       0    965.7     19.9     103      405
-hub-wander-200           19901    19900    19901     98705  20546.7  20497.3  20614.5       969      4804      31   18727   18727   20337      1       0   7550.3     88.3     203      805
-hub-wander-alap-60        1771  6058710     1771   6068977   4168.8   4116.4   4321.8       425   1455818      17     315     315    2350      2       0   4604.1   1184.5      63      245
+hub-star-300-3               1      891        1       891   2104.6   2094.6   2142.3         0       423       5    1994    1397    2080      0       0    365.1      1.8     303      606
+hub-chain-1000-1          1000      999     1000       999   6838.1   6809.2   6903.8       146       146       4    6715    6715    6817      0       0    313.6      4.5    1003     3005
+hub-chain-200-2          19900    39402    19900     39402   9918.4   9774.9  10127.5      2006      3973      62    9193    9193    9797      2       0   2813.1     80.7     203      605
+hub-field-hop           100001   100000   100002    100001   5616.9   5461.2   5747.4     17804     17804    5260       0       0     166      0       0  13470.4    262.4    5405     5913
+hub-field-jump          200001   200000   200002    200001   5231.2   5225.0   5236.2     38232     38232    4467       0       0     421      0       0   1669.9    521.8    5404     5815
+hub-ring-1000-unstored  200001   200000   200002    200001   1039.8    769.3   1045.1    192351    192350     195       0       0     454      2       0   1673.5    521.1    1003     3006
+hub-ring-1000-counted   200001   200000   200002    200001   1262.8   1131.8   1276.0    158378    158377     501       0       0     402      1       0   2633.8   1026.8  201004   203007
+hub-wander-alap-20         191    65170      191     66197     34.3     30.6     47.9      5565   1928671       0       5       5      24      0       0     61.7     13.3      23       65
+hub-wander-100            4951     4950     4951     24355   1328.9   1313.8   1338.3      3726     18328      11    1101    1101    1293      0       0    923.0     19.3     103      305
+hub-wander-200           19901    19900    19901     98705  20233.8  19896.7  20256.6       984      4878      47   18075   18075   19968      2       0   7746.7    119.5     203      605
+hub-wander-alap-60        1771  6058710     1771   6068977   3887.4   3757.7   3926.4       456   1561173      16     310     310    2181      0       0   4612.0   1188.2      63      185
 petrinet-pipe-8-8        12870    91520    12870     91520   2952.4   2949.5   2973.2      4359     30999     355    1932     999    2367      2       0   4034.2     85.1      89      177
 petrinet-pipe-9-9        48620   393822    48620    393822  12033.6  11977.3  12223.4      4040     32727    1299    8461    4835    9877      7       0  18061.1    340.3     109      217
 petrinet-join-100        20001    20000    20002     20001   8049.5   7884.9   8192.5      2485      2485    4379       0       0    1784     15       0  23027.9    483.2     502     1202
