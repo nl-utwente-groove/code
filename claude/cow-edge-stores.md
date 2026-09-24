@@ -1,9 +1,14 @@
 # Copy-on-write edge stores (finding 4.3.2)
 
-Status 2026-09-24: first implementation on branch `cow-edge-stores` (off master
-`01e38fd95`), awaiting a decision on the swing-mode regression (below). Gates not yet
-run: `determinism-check`, `grammar-smoke`, `null-check`, GUI tests. The fast suite passes
-(890 tests).
+Status 2026-09-24: first implementation by Opus 5.5 on branch `cow-edge-stores` (off
+master `01e38fd95`), assessed the same day by Fable 5.1: diagnosis and data structure
+confirmed, the swing-mode regression re-measured and found larger than first reported, the
+proposal to restrict the forkable structures to copy mode confirmed and refined (below),
+one correctness amendment required (edge identity). Awaiting Arend's decision. Gates:
+`null-check` run on the touched files (clean after the annotation-order fix); the fast suite
+passes (890 tests); `determinism-check`, `grammar-smoke` and the GUI tests not run, since
+they would test the interim form that the proposal replaces. See "Branch state" for the
+accidental revert at the branch tip.
 
 ## Problem
 
@@ -13,7 +18,9 @@ edge set (`TreeHashSet`) entry by entry: O(|G|) per step, retained in the soft s
 caches, most of it then paid again in GC. The per-node edge sets were already
 copy-on-write (`CopyTarget`'s fresh-key sets). Diagnosis and profile in
 `claude/exploration-performance.md`, finding 4.3.2 (corrected 2026-09-24, on branch
-`exploration-performance`).
+`exploration-performance`). The assessment confirms the diagnosis: `CopyTarget` shares the
+per-node sets and clones only touched keys; the stores and the global set are the flat
+containers copied at graph size.
 
 ## Design as built
 
@@ -25,53 +32,152 @@ copy-on-write (`CopyTarget`'s fresh-key sets). Diagnosis and profile in
 - Forking copies the bucket array only. Each bucket records the table that owns it
   (owner token); a fork gives both tables fresh tokens, so either clones a shared bucket
   on its first write. Forking writes nothing but the original's token, so reads of a
-  graph that is no longer modified stay safe while it is forked.
+  graph that is no longer modified stay safe while it is forked. (A property to keep: a
+  graph displayed in the Simulator is read on the event thread while the exploration
+  forks it.)
 - `HostEdgeStore` extends `ForkableHashMap`; its copy constructor forks (and, for the
   deep copy of swing mode's copy bound, re-puts cloned sets). `DeltaHostGraph.edgeSet`
   is a `ForkableHashSet`; `edgeSet()` now returns `Set<HostEdge>`.
 - Iteration order of the stores and the global edge set becomes bucket/slot order
   (deterministic, history-dependent); accepted by Arend 2026-09-24. The per-node sets
   keep insertion order.
+- `ForkableHashMapTest`: randomised differential test against `HashMap`/`HashSet`,
+  200 000 operations over up to 50 forks, with heavily colliding keys.
 
-## Measurements (A/B, one JVM per row, JDK 25, master classes vs branch classes)
+Code review (Fable 5.1, 2026-09-24): no correctness defect found in the table; probing
+terminates by the half-full invariant, backward-shift deletion handles the cyclic case,
+removal clones the shared bucket after locating the slot (the clone keeps the slots).
+Minor: `put`/`add` of a key that is already present clones a shared bucket needlessly (no
+caller does this); `indexOf` recomputes `spread(k.hashCode())` per probe, which is a cached
+field read for every key type involved (`ANode`, `AEdge`, `ALabel`). The `entrySet`
+iterator runs a key and a value iterator in lock-step; correct while both traverse the
+same table, and only the deep copy uses it.
 
-Random-access (copy) mode, median time, retained heap:
+## Measurements
 
-| row | master | branch |
+Fable 5.1, 2026-09-24, re-measured independently of the first figures: JDK 25.0.4.1,
+`-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and three measured runs, one JVM per row
+and side, master (A: the exploration-performance tip `2d878dbcb`, whose main tree equals
+master, since master lacks the harness) against branch (B: `442b93192`), the swing rows
+in the order A, B, A, B. Median time per JVM, retained heap of the last.
+
+Swing (Generator) mode:
+
+| row | A | B | change |
+|---|---|---|---|
+| `sierpinsky-12` | 2.63, 2.75 s | 3.58, 3.65 s | +33 to +36 % (`gen` 2.1 to 2.9 s, `match` 0.32 to 0.49 s) |
+| `hub-chain-200-2` | 11.2, 11.8 s | 12.4, 12.9 s | +9 to +10 % |
+| `leader-election-14` | 5.71, 5.69 s | 6.09, 5.83 s | +3 to +7 % |
+| `count-100000` | 1.51, 1.22 s | 1.31, 1.28 s | noise |
+
+The first figures (Opus 5.5, `sierpinsky-11` +10 to 25 %, `leader-election-14` +3 to
+5 %, `hub-chain-200-2` noise to +8 %) understated the regression: on the larger
+`sierpinsky-12` it is a third. The cost is per operation (bucket indirection, probing
+with a hash recompute per compared key, bucket clones and rehashes on insertion), all in
+`gen` on insertion-heavy rows; profiles show no single hot spot left to tune. A single
+representation is therefore not an option.
+
+Random-access (copy) mode:
+
+| row | A | B |
 |---|---|---|
-| `hub-ring-1000-unstored` | 25.9 s | 1.1 s |
-| `hub-field-hop` | 58.7 s | 5.6 s |
-| `petrinet-join-100` | 30.4 s | 11.8 s (retained 131 MB to 2.85 GB, see open points) |
-| `hub-chain-200-2` | 10.5 s, 423 MB | 10.9 s, 83 MB |
+| `hub-ring-1000-unstored` | 27.4 s, 24.9 GB allocated, 985 MB retained | 1.00 s, 2.6 GB, 1 092 MB |
+| `hub-chain-200-2` | 11.4 s, 3.9 GB, 423 MB | 10.4 s, 2.9 GB, 88 MB |
+| `petrinet-join-100` at 4 GB | 27.5 s, 31.2 GB, 133 MB | 10.7 s, 30.4 GB, 2 990 MB |
+| `petrinet-join-100` at 1 GB | 25.1 s, 31.0 GB, 222 MB | 22.7 s, 30.4 GB, 694 MB |
 
-Swing (Generator) mode, after tuning (presized rehash, single-lookup put/remove, hash
-pre-compare before `equals`, cached key-set view, load 0.5, direct set `hashCode`):
+`hub-ring` is the finding at full strength: the branch brings copy mode to swing speed
+(swing baseline 1.4 s) and cuts allocation tenfold. `hub-chain` confirms the retention
+gain for stored states. Discovered state and transition counts agree between the sides in
+every row.
 
-| row | master | branch |
-|---|---|---|
-| `sierpinsky-11` | 0.68 to 0.77 s | 0.84 to 0.86 s (+10 to 25 %) |
-| `leader-election-14` | 5.6 to 5.7 s | 5.9 s (+3 to 5 %) |
-| `hub-chain-200-2` | 10.5 to 11.2 s | 11.2 to 11.5 s (noise to +8 %) |
-| `hub-ring-1000-unstored`, `petrinet-join-100`, `count-100000` | | within noise to +4 % |
+`petrinet-join-100` is a different case. Its allocation does not move (swing mode: 23 GB),
+and at 1 GB the gain shrinks to 10 %. A JFR profile of the branch in copy mode
+(`-XX:+DebugNonSafepoints`, whole JVM including the warm-up): GC pauses 7.2 s in 98
+pauses at 4 GB, 29.4 s in 799 pauses at 1 GB; of the sampled allocation about a fifth is
+the refresh clones of touched per-node and per-label sets (`TreeHashSet` copy constructor
+via `HostEdgeSet.newInstance` from `HostEdgeStore.addEdge`/`removeEdge`/`addKey`), a
+third the matcher's maps (`AGraphMap`, `RuleToHostMap`, `TreeMatch`, `Proof`), which is
+mode-independent. The remaining copy-mode cost there is the per-key clones, retained by
+the soft state caches and paid as GC; the 2.99 GB retained at 4 GB is those caches
+surviving under lower pressure, not a leak (694 MB at 1 GB, no `OutOfMemoryError`). Both
+open points of the first version are thereby settled. CPU on that row: `Factory.get`
+11 to 12 % of samples from `Rule.getCreatorNodes`/`getAnchor`/`getMergers`/`getEraserNodes`
+(finding 1.3, mode-independent), `ForkableHashTable.indexOf` plus `put` 8 to 11 %.
 
-The swing cost is per operation (bucket indirection, probing on insertion; sierpinsky
-is nearly pure insertion into graphs of up to a million elements), all in `gen`.
-Profiles show no single hot spot left to tune.
+Unexplained, master side: on `hub-ring-1000-unstored` in copy mode the factory reports
+8 007 edges on master against 3 007 on the branch (nodes 1 003 on both), where the start
+graph's 2 004 edges plus 1 000 token flags come to 3 004. The factory's
+edge store is a strongly held `TreeHashSet`, the rule creates only flags, and both sides
+run clean with `-ea`. To be understood before the merge; reproduction is the single-JVM
+run above with `-Dgroove.bench.warmups=0 -Dgroove.bench.runs=1`.
 
 ## Proposal: forkable structures in copy mode only
 
 `DeltaHostGraph` builds forkable stores and edge set when `copyData` is set, the current
 `LinkedHashMap`/`HostEdgeSet` ones otherwise; `CopyTarget` forks a forkable source and
-copies a classic one as before. Swing mode is then unchanged by construction. Cost: a
-store abstraction (`HostEdgeStore` delegating to one of two maps, a bimorphic call site)
-and two creation paths for the global edge set. Rejected alternative: keep one
-representation and accept the swing-mode regression (the Generator and most of the
-benchmark set run in swing mode).
+copies a classic one as before (the deep copy at the swing copy bound stays a
+`LinkedHashMap` copy). Swing mode is then unchanged by construction. Rejected
+alternatives: one representation with the swing-mode regression (the Generator and most
+of the benchmark set run in swing mode; a third on large graphs is not acceptable); a
+flat-until-forked table that restructures itself into buckets on its first fork (one
+class for both modes, but it changes the Generator's store implementation, which then
+needs its own measurement, and a restructuring fork would mutate a graph the Simulator
+may be reading).
 
-## Open points
+Refinements from the assessment:
 
-- Remaining copy-mode cost: refresh clones of large touched per-node and per-label
-  sets (`petrinet-join`: hub places, label sets of hundreds of edges). Forking those
-  sets as well is a possible second step.
-- `petrinet-join-100` random-access retention: presumably soft state caches surviving
-  under lower GC pressure; to be confirmed with a smaller heap.
+- **Shape of the abstraction.** Not a delegating `HostEdgeStore` (an extra indirection on
+  every store access in swing mode) but an interface `HostEdgeStore<K> extends
+  Map<K,HostEdgeSet>` carrying `addKey`/`addEdge`/`removeEdge` as default methods and a
+  `copy(boolean deepCopy)` factory, with two final implementations, one extending
+  `LinkedHashMap` and one extending `ForkableHashMap`. The `edgeSet` field becomes
+  `Set<HostEdge>`, a `HostEdgeSet` in swing mode and a forkable set in copy mode. A
+  Generator JVM then loads only the `LinkedHashMap` store and a Simulator JVM only the
+  forkable one, so the call sites stay monomorphic in practice; a test JVM sees both,
+  which the JIT handles as a bimorphic inline cache.
+- **Edge identity (required).** `HostEdgeSet` (`HostEdgeTreeHashSet`) keys edges by their
+  factory number and treats equal numbers as equal; `ForkableHashSet` keys by
+  `hashCode`/`equals`, and `DefaultHostEdge.equals` is content-based. The two agree for
+  registered edges of simple graphs, where the factory pools one instance per content,
+  but not for parallel copies in multigraph mode (`semantics=SPO-multi|DPO`), which are
+  content-equal instances with distinct numbers: the branch's global edge set would
+  reject the second copy as a duplicate (`add` returns false, the "already occurred"
+  assertion fires under `-ea`), leaving the global set inconsistent with the per-node
+  sets and with `RuleEffect.excluded()`, which consults `containsEdge` when pooling
+  created edges. No copy-mode multigraph test exists, so this was found by reading. The
+  forkable edge set must key by number like `HostEdgeTreeHashSet`: give
+  `ForkableHashTable` an equator hook (number as hash, number equality as `equals`) or a
+  `HostEdge`-specific subclass. This also removes the `equals` calls from probing.
+- **`RuleApplication.computeMorphism`** copies `source.edgeSet()` through the
+  `Collection` constructor once the set is no longer a `HostEdgeSet` (element-wise
+  instead of the array copy). It is off the exploration path (the morphism is computed
+  on request); acceptable, but worth a look when the number-keyed set exists, since a
+  `HostEdgeSet` constructor from it could stay cheap.
+- **Tests as the gate.** No test in `src/test` runs copy mode (`setRandomAccess` and
+  `setCopyGraphs` are unused there); the benchmark harness's random-access mode is the
+  only exercise. The implementation should add a copy-mode variant of the exploration
+  tests (same state and transition counts as swing mode, assertions on), including at
+  least one multigraph grammar, and run `DeterminismTest` in copy mode if that is cheap.
+  `ForkableHashMapTest` stays.
+- **Annotation order.** `@AIGenerated` must precede `@NonNullByDefault` on the three
+  collect classes: with the reverse order ecj 3.42.0 reports the `AIGenerated` import as
+  never used (three warnings, reproduced in per-file and whole-project mode, absent with
+  the annotations swapped or without `@NonNullByDefault`; other files carrying both
+  annotations in the other order check clean, so the trigger is not understood). Fixed on
+  the branch.
+
+## Possible second step
+
+Fork the per-key sets too: a forkable `HostEdgeSet` in copy mode would remove the
+refresh clones that dominate `petrinet-join`'s remaining copy-mode allocation (large hub
+places, label sets of hundreds of edges). Measure on `petrinet-join-100` at `-Xmx1g`,
+where the clones show as GC. Not part of this branch.
+
+## Branch state
+
+The branch tip `f1999e60e` ("Intermadiate proposal of ForkableHash-structures by
+Opus 5.5") was committed from the main checkout four minutes after Opus's last commit with
+a working tree equal to master, so it reverts the whole branch (its tree is master's).
+The assessment commits sit on top of `442b93192`, the last substantive commit; adopt them
+with `git branch -f cow-edge-stores <tip>` and drop `f1999e60e`.
