@@ -13,7 +13,8 @@ random-access mode, and a coverage assessment are done; the set is judged suffic
 start fixing (see "Coverage"). Building it found three defects that were fixed on their
 own branches and merged: finding 3.11 (gh #919), finding 3.12 (gh #924) and the recipe
 targets on cyclic regions (gh #925). The first investigation, finding 3.13 (the
-counter's generation time), traced it to 3.1, fixed on branch `certifier-node-table`;
+counter's generation time), traced it to 3.1, fixed on branch `certifier-node-table` and merged into master and
+this branch (2026-09-24);
 nothing else in the finding list is implemented. The transient handoff
 state (what is next, in which order) lives in `claude/exploration-performance-state.md`.
 
@@ -1293,8 +1294,8 @@ from `GTS$StateSet.getCode` through the new state's first `getCache`), which is 
 zeroing loop of the inlined array allocation attributed to a neighbouring frame even
 with `-XX:+DebugNonSafepoints`. Trust `allocation-by-site` over `hot-methods` when the
 two disagree. None of the three readings (a) to (c) was needed: with the array replaced
-by a lookup that does not grow with the factory (branch `certifier-node-table` off
-master), the rows allocate a flat 33 to 34 KB per state and take about 19 µs per state,
+by a lookup that does not grow with the factory (branch `certifier-node-table`, merged
+into master and this branch 2026-09-24), the rows allocate a flat 33 to 34 KB per state and take about 19 µs per state,
 one JVM per row, no warm-up (figures of the first, probe-table version):
 
 | row | before (tier) | after | allocMB before | allocMB after |
@@ -1807,7 +1808,7 @@ the exploration thread itself, uncontended.
    `count-100000` and `count-300000`; a fix on its own branch if the cause is
    algorithmic. Chosen ahead of the constant-factor items because a cost that grows
    with the run hits every grammar with many distinct data values. Done 2026-09-24:
-   the cause is 3.1, fixed on branch `certifier-node-table`.
+   the cause is 3.1, fixed on branch `certifier-node-table`, merged into master.
 5. Finding 4.3.2, the per-node edge sets: the whole of the Simulator-mode cost on large
    graphs (11 to 33 times on the hub rows), but inherent to copying unless the sets
    become copy-on-write, so a design discussion before a commit.
