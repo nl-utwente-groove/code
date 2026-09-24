@@ -224,9 +224,29 @@ from Maven Central like any plugin.
 
     This produces the standard zips and, next to them, `groove-x_y_z-yfiles-addon.zip`
     in `release/target`. The obfuscation runs in `release/yfiles`; its name mapping is
-    kept in `release/yfiles/target/yguard.log.xml.gz` (view it with
-    `java -jar yguard.jar <log>` from the yGuard distribution) and should be kept with
-    the release, in case a stack trace from a user needs translating.
+    written to `release/yfiles/target/yguard.log.xml.gz` (view it with
+    `java -jar yguard.jar <log>` from the yGuard distribution).
+
+**The name mapping must never be published.** It maps every obfuscated name back to
+the library's own, so a public copy would undo the obfuscation the license requires.
+Nothing publishes it: the release step attaches only `release/target/*.zip`, and the
+workflow keeps no artifacts. Do not attach it to a release, upload it as a workflow
+artifact (on a public repository any signed-in GitHub user can download those), or
+commit it.
+
+Nor does it need keeping: the renaming is deterministic, so the mapping of a release
+can be regenerated when a user's stack trace needs translating. Two obfuscations of
+the same inputs, under JDK 26 and JDK 21, gave logs identical except for yGuard's
+timestamp and memory-usage comments (checked 2026-09-24 on Windows; that a Linux
+runner renames the same way is expected, not checked). Such a trace needs the mapping
+only for its `com.yworks` frames, which carry no line numbers; the backend's own frames
+keep their names and lines. To regenerate the mapping of release x.y.z, repeat the two
+steps above from the release tag with the inputs of that release: the same library jar
+(the `lib/` directory of `yfiles-lib` keeps its history), the same `yguard.version`,
+and the `yfiles-lib` commit the release was built from. The release workflow checks
+that repository out by branch name, not by commit; the resolved commit appears only in
+the log of the release job's checkout step, which GitHub deletes after the log
+retention period, so note it down at the release.
 
 The script `do-all.sh yfiles` runs the standard steps and then these two. The
 installers need nothing for the add-on: the standard ones bundle a runtime that

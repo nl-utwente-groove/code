@@ -22,7 +22,8 @@
 	     of the "Obfuscation" appendix of its developer guide. The two resulting
 	     jars land in target/lib under their original names, and
 	     target/yguard.log.xml.gz records the name mapping (readable with
-	     java -jar yguard.jar [log]). The add-on zip then holds the two jars and
+	     java -jar yguard.jar [log]); it undoes the obfuscation and must never be
+	     published (see release/README.md). The add-on zip then holds the two jars and
 	     the license notice of include/ in a directory yfiles/, ready to be
 	     unzipped into the extension directory. The plain library jar never
 	     leaves the local Maven repository. -->
