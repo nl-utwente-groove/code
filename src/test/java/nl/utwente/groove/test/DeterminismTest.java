@@ -100,13 +100,24 @@ public class DeterminismTest {
      * drawn from the GTS's own copy of the grammar's host factory (gh #888).
      */
     private void test(String grammarName, String config) {
+        test(grammarName, config, false);
+    }
+
+    /**
+     * Tests determinism in a given data mode: swing mode (the default, in which
+     * state graphs hand their data down to their children) or copy mode (the
+     * Simulator's, in which every state graph gets a copy of its parent's data;
+     * {@code Record.setRandomAccess}).
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private void test(String grammarName, String config, boolean copyMode) {
         try {
             GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             ExploreType exploreType = ExploreTypeConverter.toExploreType(ExploreConfig.parse(config));
-            String first = explore(grammarModel, exploreType, NO_COLLAPSE);
+            String first = explore(grammarModel, exploreType, NO_COLLAPSE, copyMode);
             int closures = this.closureCount;
             perturbIdentityHashes();
-            String second = explore(grammarModel, exploreType, NO_COLLAPSE);
+            String second = explore(grammarModel, exploreType, NO_COLLAPSE, copyMode);
             assertEquals(String
                 .format("Non-deterministic '%s' exploration of grammar %s", config, grammarName),
                          first, second);
@@ -116,7 +127,7 @@ public class DeterminismTest {
                     continue;
                 }
                 perturbIdentityHashes();
-                String third = explore(grammarModel, exploreType, collapseAt);
+                String third = explore(grammarModel, exploreType, collapseAt, copyMode);
                 assertEquals(String
                     .format("Non-deterministic '%s' exploration of grammar %s"
                         + " under cache collapse at %s", config, grammarName,
@@ -128,6 +139,15 @@ public class DeterminismTest {
         } catch (Exception e) {
             fail(e.toString());
         }
+    }
+
+    /** Tests determinism of exploration in copy mode, the Simulator's data mode. */
+    @Test
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void testCopyModeDeterminism() {
+        test("ferryman", "", true);
+        test("parallel-pump-spo", "", true);
+        test("counting", "persistence=none", true);
     }
 
     /** Value for the collapse parameter of {@link #explore} that disables cache collapse. */
@@ -146,15 +166,27 @@ public class DeterminismTest {
      * transition data to be reconstructed on next use, along basis chains
      * that differ from the original construction — the enumeration must be
      * insensitive to such reconstructions, wherever they occur.
+     * @param copyMode if {@code true}, the GTS is put into copy mode, in which
+     * every state graph is a copy of its parent's (as in the Simulator), and
+     * whose forkable stores iterate in bucket order
      */
     private String explore(GrammarModel grammarModel, ExploreType exploreType,
-                           int collapseAt) throws FormatException {
+                           int collapseAt, boolean copyMode) throws FormatException {
         // reset the master seed so that every exploration draws identical
         // random streams; the randomised configurations are then expected to
         // enumerate identically across runs (the plan-based default draws no
         // randomness and is unaffected)
         Randomness.setMasterSeed(42);
-        GTS gts = new GTS(grammarModel.toGrammar());
+        // in copy mode the GTS is built through the exploration type, which applies
+        // the per-GTS features (such as persistence) before the start state is
+        // materialised below, as the benchmark harness does
+        GTS gts = copyMode
+            ? exploreType.newGTS(grammarModel)
+            : new GTS(grammarModel.toGrammar());
+        if (copyMode) {
+            gts.getRecord().setRandomAccess(true);
+            gts.startState();
+        }
         this.closureCount = 0;
         StringBuilder result = new StringBuilder();
         // the signature records the exploration event stream as it occurs,

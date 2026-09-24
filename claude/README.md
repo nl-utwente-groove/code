@@ -22,6 +22,7 @@ Status lines below are as of 2026-09-11.
 | [phase-3-editor.md](phase-3-editor.md) | Phase 3 of gh #909: the editor. Design and slice record, in progress. |
 | [yfiles-distribution-options.md](yfiles-distribution-options.md) | What a release consists of now that a license-restricted yFiles edition exists: facts, options, decision. |
 | [module-split-plan.md](module-split-plan.md) | gh #887, Maven module split. Phases 1–4 (preparatory decoupling) on master; phase 5, the split itself, not started. The yFiles add-on built the service-discovery and second-artifact machinery along a different seam; rescope proposed on the issue. |
+| [cow-edge-stores.md](cow-edge-stores.md) | Finding 4.3.2 of the exploration-performance review: forkable (copy-on-write) edge stores in copy mode (the Simulator), behind a `HostEdgeStore` interface. Implemented on `cow-edge-stores` 2026-09-24, awaiting review. |
 | [io-refactor-plan.md](io-refactor-plan.md) | Four-phase `io` plan of 2026-07-26. Phases 1–3 (conceptual layer removed, io simplified, Ecore porter) on master; phase 4 (constraint rules) not started. gh #907, #558 open. |
 | [gh763-810-plan.md](gh763-810-plan.md) | Composite-graph error tracing, gh #763 (gh #810 closed as duplicate). Plan only, none of its six commits done. |
 | [priority-symmetric-choice.md](priority-symmetric-choice.md) | gh #880, priority-aware symmetric choice in control. Design points only, not started; interim gh #756 guard is on master. |
