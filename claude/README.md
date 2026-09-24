@@ -31,7 +31,6 @@ Status lines below are as of 2026-09-11.
 | [download-stats.md](download-stats.md) | Download statistics from GitHub releases, SourceForge-style: daily counter snapshots differenced at render time. Repository and collector live since 2026-09-13 (`nl-utwente-groove/download-stats`); SourceForge import and website page open. |
 | [website-manual-8_0_0.md](website-manual-8_0_0.md) | gh #896 and the 8.0.0 release: what the web user manual (website repo, `manual/`) needs, change by change, plus the wrong statements and the broken reference-page generator. Proposal only, nothing written yet. |
 | [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
-| [factory-user-leak.md](factory-user-leak.md) | gh #919, memory leak in `util.Factory` dependency tracking: rule applications retained by the grammar (finding 3.11 of the exploration performance review). Fixed by weak user sets plus plain fields in `RuleApplication` on `factory-user-leak`, awaiting review; resettable-versus-frozen factories filed as gh #920. |
 ## Archive
 
 Finished work, kept for the design rationale and rejected alternatives. Grouped by theme.
@@ -62,6 +61,7 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 | [determinism-ferryman-flake.md](archive/determinism-ferryman-flake.md) | Investigation of a `DeterminismTest` flake: cache collapse reorders reconstruction. Fixed by canonical match order, 2026-07-14/17. Explains the test's cache-clearing design. |
 | [parout-liveness.md](archive/parout-liveness.md) | Liveness-based control location variables, gh #561. Merged 2026-08-31, issue closed. |
 | [recipe-outpar-deletion.md](archive/recipe-outpar-deletion.md) | Recipe out-parameters vs. deletion: a reachable assert in `StateCache`. Option 1 merged 2026-08-29, repaired 2026-08-31; the assert is gone. |
+| [factory-user-leak.md](archive/factory-user-leak.md) | Memory leak in `util.Factory` dependency tracking: rule applications retained by the grammar, gh #919. Weak user sets plus plain fields in `RuleApplication`, merged 2026-09-21, issue closed; resettable versus frozen factories = gh #920. |
 | [sts-retirement.md](archive/sts-retirement.md) | STS package and remote exploration removed 2026-08-02; tag `sts-final`. |
 
 **Structure and dependencies**
