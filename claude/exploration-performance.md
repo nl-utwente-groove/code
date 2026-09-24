@@ -6,11 +6,15 @@ JIT-friendliness, together with the throughput harness and the grammar set built
 measure it. One item found on the way, a null dereference in `Proof.equals`, is already
 fixed on master (`9ff9fb4d5`) and is not repeated here.
 
-**Status (2026-09-23).** The harness (`test/performance/ExplorationBenchmark`), the
-`junit/performance` grammar set and baselines of its quick and long tiers are done.
-Finding 3.11 is fixed as gh #919 and finding 3.12 as gh #924, each on its own branch;
-nothing else in the finding list is implemented. The transient handoff state (what is
-next, in which order) lives in `claude/exploration-performance-state.md`.
+**Status (2026-09-24).** The harness (`test/performance/ExplorationBenchmark`), the
+`junit/performance` grammar set (15 grammars, 58 rows in three tiers), baselines of the
+quick and long tiers in the Generator's mode and of the quick tier in the Simulator's
+random-access mode, and a coverage assessment are done; the set is judged sufficient to
+start fixing (see "Coverage"). Building it found three defects that were fixed on their
+own branches and merged: finding 3.11 (gh #919), finding 3.12 (gh #924) and the recipe
+targets on cyclic regions (gh #925). Nothing else in the finding list is implemented; the
+first investigation is finding 3.13, the counter's generation time. The transient handoff
+state (what is next, in which order) lives in `claude/exploration-performance-state.md`.
 
 The note runs from the test cases to the numbers to the findings: the grammar set, the
 harness, the runs and their outcomes, the finding list, and the coverage of the set.
@@ -203,10 +207,12 @@ state gets a self-loop. States are unchanged, transitions rose by half the state
 | `bound-1000000` | | | out of heap | too large |
 
 Times except `bound-600000` predate `probe-odd`. The million is about 7 GB of live GTS,
-the ordinary per-state cost, not a leak. The allocation is superlinear: 0.4 MB per state
-at 100 k, 1.2 MB at 300 k, 2.3 MB at 600 k (1.4 TB), so something on the state-generation
-path allocates in proportion to the states so far on every step (the value-node factory
-is the first suspect; unmeasured).
+the ordinary per-state cost, not a leak. The number of value nodes grows linearly with
+the values generated, by design: every value is wrapped in a `ValueNode` once and none is
+ever collected, so `fNodes` at 600 008 is expected. What is not expected is the time the
+rows spend in generation and the allocation behind it: 0.4 MB per state at 100 k, 1.2 MB
+at 300 k, 2.3 MB at 600 k (1.4 TB in all), for a step that creates one value node and
+one edge. That is finding 3.13, the first investigation to take.
 
 Cost of the probe, `count-100000` and its BigInteger twin with and without the rule,
 2 warm-ups and 3 runs at `-Xmx8g`, one JVM per pair, the with-probe pair run before and
@@ -940,8 +946,7 @@ retention is their transitions, do not move.
   of the append and leader-election rows. This puts sections 2.3, 2.4, 4.4 and 5.5 to 5.8
   ahead of the matching items for the large-state-space rows.
 - **`gen` dominates the counter and the fibonacci rows**: 91 to 97 % of the counter rows of
-  100 000 states and more (104 of 107 s at `count-600000`, with the superlinear
-  allocation), and about 60 % of both fibonacci families at `fib-22`, where matching and
+  100 000 states and more (104 of 107 s at `count-600000`; finding 3.13), and about 60 % of both fibonacci families at `fib-22`, where matching and
   isomorphism are under 100 ms; also 79 % of `sierpinsky`, the large-graph linear case.
 - **Matching dominates the hub field and petrinet join rows**: 93 and 87 % of
   `hub-field-hop` and `hub-field-jump` (5.1, 5.2), and over half of the petrinet join rows
@@ -1271,6 +1276,29 @@ local rule may be what it replaced. Gates: `grammar-smoke`, the `control` and
 *Fixed 2026-09-22* as gh #924 (branch `statecache-transient-closures`, merged into this
 branch at `da54faa44`) by local propagation over direct predecessor edges; the figures
 above are pre-fix, and the fibonacci recipe rows now cost the same as their function twins.
+
+**3.13 The counter's generation time and allocation grow faster than its state count.**
+Unknown / medium / measured, cause not located (added 2026-09-24). `attribute-count-to-n`
+explores a single line of states, one per value, each step a `let:` that mints one value
+node and one edge, plus, with `probe-odd`, one `ErrorValue` per even state. In the tier
+tables the rows take 4.2 s at 100 000 states, 34 s at 300 000 and 107 s at 600 000, 91 to
+97 % of it in `gen`, and allocate 42 GB, 354 GB and 1.4 TB: 0.4, 1.2 and 2.3 MB per state.
+The value-node count itself grows linearly with the run by design (values are wrapped
+once and never collected) and is not the explanation; what has to be explained is a
+per-state allocation that rises with the size of the run so far, so that some operation
+on the generation path does work proportional to what has been generated. Readings to
+test, none verified: (a) the state space is a single line, so the delta chain from the
+start graph is as long as the run, and a graph materialised after its parent's soft cache
+has been cleared is rebuilt from the chain root at a cost proportional to its depth (2.5
+to 2.7), with the collector clearing more caches as the live set grows; (b) a per-step
+walk over the factory's value nodes or edges (3.3; `fEdges` reaches 600 005); (c) the
+value-node lookups of 4.2.2 in a structure that grows with the run. Approach: a JFR
+allocation profile of `count-100000` against `count-300000` (`jfr view
+allocation-by-site`, the profiling recipe in the state file), compared per state; a run
+with the graph caches kept strongly reachable, or the reconstructions counted, separates
+(a) from the rest. Deliverable: the cause recorded here, and a fix on its own branch if
+it is algorithmic. Gates: the counter rows' pinned counts, `DeterminismTest`,
+`grammar-smoke`.
 
 ### 4. Allocation on the per-state and per-match path
 
@@ -1759,27 +1787,39 @@ the exploration thread itself, uncontended.
 
 1. Build the throughput harness, so the rest can be measured. Done 2026-09-20.
 2. Fix the `Factory` user leak (3.11): a genuine unbounded leak, found by the harness,
-   which also caps how long any benchmark run can be. Its own branch, since it is a
-   bug fix independent of the rest. Done 2026-09-21 as gh #919.
-3. Section 1 (always-on instrumentation and locks): two-line changes in the innermost
-   loops, no design risk.
-3. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
+   which also caps how long any benchmark run can be. Done 2026-09-21 as gh #919.
+3. The transient closures of `StateCache` (3.12), found by the fibonacci rows. Done
+   2026-09-22 as gh #924; its complement gh #925 (recipe targets on cyclic regions,
+   found by the wander rows) done 2026-09-23.
+4. Finding 3.13, the counter's generation time: an investigation first, on the rows
+   `count-100000` and `count-300000`; a fix on its own branch if the cause is
+   algorithmic. Chosen ahead of the constant-factor items because a cost that grows
+   with the run hits every grammar with many distinct data values.
+5. Finding 4.3.2, the per-node edge sets: the whole of the Simulator-mode cost on large
+   graphs (11 to 33 times on the hub rows), but inherent to copying unless the sets
+   become copy-on-write, so a design discussion before a commit.
+6. Section 1 (always-on instrumentation and locks): two-line changes in the innermost
+   loops, no design risk; a few per cent each.
+7. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
    certifier reference; each restores an optimisation that exists but does not work.
-4. Section 3 (costs scaling with the wrong quantity): the certifier array, the eager
+8. Section 3 (costs scaling with the wrong quantity): the certifier array, the eager
    certificate map, the interning edge probe. Each is small and independently measurable.
-5. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
+9. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
    `Search` reuse, NAC context maps, algebra reflection, `Valuator` lambdas, match-set
    sizing.
-6. Section 5 (structural) needs design discussions, not commits.
+10. Section 5 (structural) needs design discussions, not commits.
 
+Every change is measured one JVM per row on the rows it targets (the A/B shape under
+"Runs and outcomes"), in both materialisation modes where the row is mode-sensitive.
 Any change to matching or certificates must pass `DeterminismTest` and the
 `grammar-smoke` state counts (see the gates above).
 
 ## Coverage
 
-Reassessed 2026-09-22, after grammar-set item 6 and gh #924. The set is fifteen grammars
-and 57 rows. Mapped against the parts of state-space generation that run per state, per
-match or per transition, this is what the rows exercise and what they do not.
+Assessed 2026-09-22 after grammar-set item 6, updated 2026-09-24 after the gaps closed
+on this branch. The set is fifteen grammars and 58 rows. Mapped against the parts of
+state-space generation that run per state, per match or per transition, this is what the
+rows exercise and what they do not.
 
 Covered, with the row that carries the cost:
 
@@ -1789,8 +1829,9 @@ Covered, with the row that carries the cost:
   (`mark-unmark`); attribute tests, `let:` and operations (`count`, `hub-ring-counted`,
   `fib`), error values (`probe-odd` on every counter row), BigInteger (`count-*-big`);
   rule priorities (`leader-election`, `car-platooning`); subtyping (`inheritance`,
-  `hub`); parameters in and out (`fib`); the candidate over-approximation at a hub
-  (`hub-field-hop`, `hub-field-jump`).
+  `hub`); parameters in and out (`fib`); injective matching, rejecting
+  (`mergers-9-injective`) and not (`leader-election-14-injective`); the candidate
+  over-approximation at a hub (`hub-field-hop`, `hub-field-jump`).
 - **Transformation**: creation and deletion (all); merging (`mergers`); parallel edges
   under SPO-multi and DPO (`pump`, `mergers-*-multi`); the dangling check
   (`mergers-11-dpo`); value nodes and factory growth (`count`, `hub-ring-counted`);
@@ -1798,80 +1839,53 @@ Covered, with the row that carries the cost:
 - **LTS and state cache**: many transitions per state (`pump`, `pipe`, `pacman`); delta
   chains and reconstruction on a linear or depth-first path (`sierpinsky`,
   `binary-tree-dfs12`); unstored runs (`binary-tree-dfs-unstored`, the hub field and
-  ring rows, `petrinet-join`); transient states of a deep acyclic recipe recursion
-  (`fib-*`, paired with the function rows); the confluence check (`inheritance`, dead).
+  ring rows, `petrinet-join`); transient regions, deep and acyclic with one end per
+  launch (`fib-*`, paired with the function rows) and cyclic with every state an end,
+  launched once (`hub-wander-100`, `hub-wander-200`) or from every state
+  (`hub-wander-alap-*`); the confluence check (`inheritance`, dead).
 - **Isomorphism**: symmetry (`leader-election`, `hub-star`); diameter (`hub-chain`); edge
   bundles (`pump`); equality collapse (`*-equality`); checking off (`car-platooning`).
-- **Driver**: breadth-first, depth-first, linear, cost-bounded, unstored.
+- **Driver and materialisation**: breadth-first, depth-first, linear, cost-bounded,
+  unstored; the Generator's swing mode (every table) and the Simulator's random-access
+  copy mode (the quick tier once more under `groove.bench.randomAccess`).
 
-Not covered, ranked by how much of the generation path the gap hides and how cheap it
-is to close:
+Not covered. None of these hides a cost known to be large; the first is the one
+realistic shape missing, the rest wait for a finding that needs them:
 
-1. **The Simulator's mode.** `SimulatorModel.resetGTS` sets `Record.randomAccess`, which
-   makes `DeltaHostGraph` materialise every state through a `CopyTarget` (fresh node and
-   edge sets per graph) instead of the `SwingTarget` that hands the parent's sets down a
-   lineage. Every row runs the headless swing mode, so the harness measures the
-   `Generator` and never the mode every interactive user runs in; the demotion of 3.7
-   above holds for swing mode only, and 4.3.2 (per-node edge sets) is a per-state cost
-   in copy mode. Closing it is a harness switch (`-Dgroove.bench.copy=true`, calling
-   `setRandomAccess(true)` on the fresh GTS before the start state), no new grammar, and
-   a second column of the baseline for the rows where the two modes differ.
-2. **Cyclic and wide transient regions.** The fibonacci recipe is a deep, acyclic
-   recursion with one recipe end per launch: the case gh #924 was measured on. The
-   redesign's forward-search fallback runs on cyclic transient regions, and its open
-   point (a search repeated per successor notification, bounded by the closed non-full
-   region) has no row that would show it; nor is there a region with many recipe ends
-   (a star-ended recipe, `r() { step; step* }`, as in the `recipes` sample's `star`
-   programs) or an atomic block. A `hub` control program on `chain-200-2` with a
-   backward step next to `moveNext` inside a star-ended recipe gives both shapes on an
-   existing graph: the transient region is the placement space itself, revisited from
-   many directions.
-3. **Many rules, few applicable.** The largest rule set is `car-platooning`'s twenty;
+1. **Many rules, few applicable.** The largest rule set is `car-platooning`'s twenty;
    real grammars have hundreds, and without control every rule is tried in every state
    (the per-rule fixed cost of `MatchCollector`: matcher lookup, plan, control frame
    schedule). A generated grammar with a few hundred non-matching rules around one
    working rule (the script can write `.gpr` files as it writes `.gst` files) would
-   isolate that cost; nothing in the set does.
-4. **Injective matching.** No grammar in the set has `matchInjective=true`; the
-   injectivity constraint is a per-candidate filter in the search plan. A
-   `Config.properties` variant row on `mergers` or `as-and-bs` costs nothing to add,
-   with new counts.
-5. **Cache collapse under memory pressure.** Reconstruction from the delta chain
+   isolate that cost. Add it when a matching fix needs it.
+2. **Cache collapse under memory pressure.** Reconstruction from the delta chain
    (findings 2.5 to 2.7) is measured only where the collector happens to clear soft
    caches, which the long tier's unstable `retMB` shows it does unpredictably. A harness
    option that clears the collectable caches every N states, as `DeterminismTest` does,
-   would make the reconstruction cost a controlled column instead of noise.
-6. **Per-state acceptors and rule-condition bounds.** `goal=condition|fires|graph`,
-   `bound=upto|include|nodes|size|edges` and `count` each add a check per state (a rule
-   match, a graph size, an isomorphism test against a fixed graph); no row uses any of
-   them. One `goal=condition` row on an existing grammar would show whether the check
-   costs a rule's worth or more.
-7. **Randomised and restricted frontiers.** `next=random`, `successor=all-random`,
+   would make the reconstruction cost a controlled column instead of noise; the 3.13
+   investigation may want it.
+3. **Per-state acceptors and rule-condition bounds.** `goal=condition|fires|graph`,
+   `bound=upto|include|nodes|size|edges` and `count` each add a check per state; no row
+   uses any of them.
+4. **Randomised and restricted frontiers.** `next=random`, `successor=all-random`,
    `frontier=beam` and `heuristic` (the seed machinery of gh #897) have no row; their
    per-state cost is a shuffle or a pool operation, probably small, but unmeasured.
-8. **LTL model checking.** The nested depth-first strategies of `explore/verify` build
+5. **LTL model checking.** The nested depth-first strategies of `explore/verify` build
    the product with the Büchi automaton during exploration and share nothing with the
    frontier strategies; unmeasured. CTL checking runs over a finished GTS and is outside
    the harness's scope.
-9. **Regular-expression variants.** `regExpMatching=sloppy` (gh #900) on the
+6. **Regular-expression variants.** `regExpMatching=sloppy` (gh #900) on the
    `mark-unmark` rows is a one-line variant row.
 
-Items 1, 2 and 4 are the ones to close before the section 1 to 4 fixes are measured:
-1 because a fix measured in swing mode only may not carry to the Simulator, 2 because
-gh #924 has just rewritten that code and its own gate is a correctness test, 4 because
-it is free. Items 3 and 5 are harness or generator work of an hour each; 6 to 9 can
-wait for a finding that needs them.
-
-Closed 2026-09-23 on this branch: gap 1 by the `groove.bench.randomAccess` switch and the
-random-access table under "Runs and outcomes" (the unstored large-graph rows are 11 to 33
-times slower in the Simulator's mode, all in `match`: 4.3.2 measured); gap 2 by the
-`wander` rows on the hub chain (which found the master bug of the recipe targets under
-breadth- and depth-first exploration, see the hub grammar); gap 4 by
+Closed on this branch 2026-09-23: the Simulator's mode, by the `groove.bench.randomAccess`
+switch and the random-access table under "Runs and outcomes" (the unstored large-graph
+rows are 11 to 33 times slower there, all in `match`: 4.3.2 measured); cyclic and wide
+transient regions, by the `wander` rows on the hub chain (which found gh #925, the recipe
+targets missed under the closing strategies; fixed, merged, the family recalibrated and
+`hub-wander-200` added as the quick row for the recipe traversal cost, 23 s against 10.7 s
+for `hub-chain-200-2`, no size of the family in the long tier); injective matching, by
 `mergers-9-injective` and `leader-election-14-injective` (the filter costs 1 to 4 % where
-it rejects nothing). New since: the recipe-target bug is fixed and merged, the wander
-family recalibrated against it, and `hub-wander-200` added as the quick row for the
-recipe traversal cost, next to `hub-chain-200-2` (23 s against 10.7 s; no size of the
-family lands in the long tier) (2026-09-23).
+it rejects nothing).
 
 Section 6 (assertion-only costs) is outside the harness by construction, since it runs
 with assertions off; those costs show only under `-ea`, in `ExplorationTest` and in

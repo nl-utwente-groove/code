@@ -7,146 +7,84 @@ in a fresh session. Delete when the branch is merged or the work is abandoned.
 
 Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
-order of attack" and "Building a throughput harness" sections first).
+order of attack", then the finding the next item names).
 
-## State as of 2026-09-23 (coverage gaps 1, 2, 4 closed; note restructured)
+## State as of 2026-09-24
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
-master merged in up to `f8ab8a880` (2026-09-23, by Arend). The note
-`claude/exploration-performance.md` was restructured 2026-09-23 (test cases, harness,
-runs and outcomes, findings with unchanged numbering, coverage); superseded run data and
-the gh #919 leak investigation are gone from it (the latter lives in
-`claude/factory-user-leak.md`).
+master merged in up to `f529c7540` (2026-09-23). Everything the branch set out to build is
+done and recorded in the note: the harness with its three tiers and the random-access
+switch; the grammar set (15 grammars, 58 rows); the quick-tier baseline (2026-09-23, re-run
+after gh #925), the long-tier baseline (2026-09-22) and the quick tier in the Simulator's
+random-access mode; the coverage assessment, judged sufficient to start fixing. Three
+defects found on the way were fixed on their own branches and merged: gh #919 (finding
+3.11, the `Factory` user leak), gh #924 (finding 3.12, the transient closures of
+`StateCache`, found by the fibonacci rows) and gh #925 (recipe targets missed on cyclic
+regions under the closing strategies, found by the wander rows). All recorded figures
+are post-fix: the recipe rows mirror the function rows, the wander family is
+recalibrated (`hub-wander-200` added; no size of it lands in the long tier), the quick
+tier was re-run on the repaired code with every non-recipe row within noise, and the
+random-access recipe rows re-measured (time level with swing mode, the single-launch
+wander rows retaining 3.7 times as much). `binary-tree-dfs-unstored-9` was dropped as
+collector-bound at 4 GB. No finding of the review itself is implemented.
 
-**gh #924 landed in between** (the parallel session that took finding 3.12, merged
-2026-09-22): every recipe figure before it is void; the recipe rows mirror the function
-rows now (`fib-15` smoke, `fib-22` quick), and an A/B showed no cost on the non-recipe
-path.
-
-Done 2026-09-23, all in the note:
-
-- Quick-tier re-baseline on a quiet machine (a first run during an Eclipse rebuild was
-  discarded: machine load, not run order, was the 20 %). Lesson: the tier table serves
-  counts, breakdown and order of magnitude; a fix is judged one JVM per row.
-- Coverage gaps closed: (1) `-Dgroove.bench.randomAccess=true` and the Simulator-mode
-  table (unstored large-graph rows 11 to 33 times slower, all in `match`: 4.3.2 at full
-  strength; stored large-graph rows retain 5 to 18 times more); (2) `movePrev`, the
-  `wander` and `wander-alap` programs, rows `hub-wander-alap-20` (smoke), `hub-wander-100`
-  and `hub-wander-alap-60` (quick); (4) `mergers-9-injective`, `leader-election-14-injective`.
-- **Master bug found by the wander rows, gh #925, fixed and merged 2026-09-23**: recipe
-  launches under bfs/dfs missed most end states (2n − 3 of n(n−1)/2 on `chain-n-2`;
-  linear found all). Cause: a region state that leaves the recipe through the star's
-  same-verdict exit becomes steady before it is closed, and the gh #924 bookkeeping
-  treated it as done for its predecessors, which then dropped the target propagation.
-  Fix: `StateCache.isDone` waits for steady states with an inner prime frame; and since
-  the correct backward propagation was quadratic on this shape (every region state
-  accumulating every target: `chain-100-2` 4.4 s → 8.9 s, `chain-200-2` out of a 6 GB
-  heap), it was replaced by forward launch propagation (`LaunchSet` per region state,
-  `GTS.newLaunchIndex`). Warm scratch-harness timings, bfs: `chain-100-2` wander 4.4 s /
-  19 602 trans (incomplete) → 1.5 s / 24 355; `chain-200-2` wander 90 s / 79 202 → 21 s /
-  98 705; `chain-60-2` wander-alap 3.6 s / 6 068 150 → 4.1 s / 6 068 977; `fib-22` 1.0 →
-  0.9 s. The gate cases live in `RecipeCompletenessTest` on `junit/samples/wander.gps`
-  (a copy of the hub wander programs). Master merged into this branch and the three tier
-  rows re-pinned through the harness 2026-09-23 (single cold runs, one JVM per row):
-  `hub-wander-alap-20` 191 / 66 197 (0.24 s), `hub-wander-100` 4951 / 24 355 (1.9 s, was
-  5.0; retains 22 MB, was 845), `hub-wander-alap-60` 1771 / 6 068 977 (4.8 s, was 4.4);
-  benchmark comment, note table and outcomes updated.
-
-Realigned with gh #925, 2026-09-23 (all in the note): the wander family recalibrated
-post-fix (20 to 400 leaves, alap 20 to 80); no size lands in the long tier (300 leaves
-115 s, 400 leaves 355 s; alap-80 already retains 3.8 GB), so the new row is
-`hub-wander-200` in the quick tier (19 901 / 98 705, 23 s against 10.7 s for
-`hub-chain-200-2`, the difference being isomorphism checks). `binary-tree-dfs-unstored-9`
-dropped (collector-bound at 4 GB). Quick tier re-run at `733a78d5c`: no non-recipe row
-moved with the fix (the drifting ones checked alone). Recipe rows re-measured in
-random-access mode: time within 3 % (`fib-22` 1.12), the wander rows retaining 3.7 times
-as much.
+Measurement discipline, learnt the hard way: the tier table serves counts, breakdown and
+order of magnitude; a change is judged one JVM per row, alternating the two builds, on a
+quiet machine, in both materialisation modes where the row is mode-sensitive (see "Runs
+and outcomes" in the note).
 
 ## Next, in order
 
-1. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
+1. **Investigate finding 3.13, the counter's generation time** (the note has the full
+   write-up). What is known: `count-100000`, `count-300000` and `count-600000` take 4.2,
+   34 and 107 s, 91 to 97 % in `gen`, and allocate 0.4, 1.2 and 2.3 MB per state; the
+   value-node count grows linearly by design (values are wrapped once, never collected)
+   and is not the explanation; some operation on the generation path does work
+   proportional to the run so far. Readings to test: reconstruction from a delta chain
+   as long as the run after soft caches are cleared (2.5 to 2.7), a per-step walk over
+   the factory's nodes or edges (3.3), value-node lookups in a growing structure (4.2.2).
+   How: JFR allocation profiles of `count-100000` and `count-300000` (recipe below),
+   compared per state; then a run with the caches kept strongly reachable or the
+   reconstructions counted. Deliverable: the cause under 3.13 in the note; a fix on its
+   own branch off master if it is algorithmic, measured one JVM per row on the three
+   counter rows, gated by their pinned counts, `DeterminismTest` and `grammar-smoke`.
+2. Finding 4.3.2 (per-node edge sets): the whole of the Simulator-mode cost on large
+   graphs, 11 to 33 times on the hub rows; a design discussion first (copy-on-write
+   sets or sharing), since copying is what the mode asks for.
+3. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
    the `synchronized` accessors, `java.util.Stack`): one commit per item, each with
-   before/after numbers measured one JVM per row (the A/B shape in the note), in both
-   modes where the row is mode-sensitive. `Reporter` first: it is on the innermost loop
+   before/after numbers in the A/B shape. `Reporter` first: it is on the innermost loop
    and also the harness's own breakdown source, so gate it on a system property and run
    the harness once with it on (for the breakdown) and once off (for the headline).
-2. Finding 4.3.2 (per-node edge sets) has moved up: it is the whole of the Simulator-mode
-   cost on large graphs, 11 to 33 times on the hub rows.
-3. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
+4. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
    goes non-zero on `inheritance`; 2.3 soft certifier reference; 2.4 refinement loop
    (gate with `grammar-smoke`); 2.5 to 2.7 freezing and chain replay.
-4. A long-tier size for As-and-Bs is still missing; then section 3.
+5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
+   does not fit 8 GB; intermediate edge densities untried); then section 3.
 
-## Grammar set extension (started 2026-09-21)
+## Grammar set (complete)
 
-Arend wants `junit/performance` to cover more of the performance-sensitive functionality
-than the eight copied samples do. Agreed order, by coverage gained per hour:
-
-1. Done: `leader-election` ring (symmetry, finding 5.6): `ring-8/14/16/18` generated,
-   hand-drawn graphs dropped (the `-init` ones were dead: `type:`/`flag:` prefixes the
-   rules do not use), four harness rows, calibration in the note.
-2. Done: Arend's copies of `attribute-count-to-n` and
-   `fibonacci` take the size from a `let:` attribute of the start graph; generated
-   `bound-10000/100000/300000` and `fib-12/15`, five harness rows, calibration in the
-   note. The guarded-division rule `probe-odd` (2026-09-22) puts `ErrorValue`
-   construction on the path of every counter row (a self-loop per odd state, an error
-   per even one; states unchanged, transitions re-pinned). The
-   `algebra=big` row waited for gh #923; the fix landed and the rows
-   `count-100000-big` and `count-300000-big` are in since 2026-09-22 (the harness builds
-   its GTS through `ExploreType.newGTS` now). Surprises, both in the
-   note: fibonacci's transient states cost hundreds of times a plain state and `fib-17`
-   exhausts 8 GB; the exponential state count is by design (Arend), the per-state cost
-   is not, and the `fibonacci-function` control rows added 2026-09-21 (same states as
-   plain states, 60 times faster at `fib-15`, time in the `gen` column) pin it on the
-   recipe path (ground of 4.3.1, investigate before a long-tier size); the counter's
-   allocation grows superlinearly (0.4 to 1.2 MB per state from 100k to 300k).
-3. Done: Arend's `hub` grammar (2026-09-22) with the star row (5.6, 4.3.2) and
-   the chain rows (many states of large graphs: 3.1, the certifier's diameter
-   dependence); generated by the script. Under isomorphism collapse the star has one
-   state, so "states C(N,k)" needed the symmetry-breaking chain. The unstored rows
-   (2026-09-22 evening): `field-2-100-2500` with `hop` (5.1: target-bound edge item at
-   the hub enumerates 2 703 incident edges for one match, 6.1 s) and `jump` (5.2: bare
-   typed node over 5 400 nodes, 5.5 s), and `ring-1000-1` with `chain` against `counted`
-   (3.7). All four are depth-first unstored with a depth bound on deterministic
-   systems, since the linear traversal admits no bound. Outcome in the note: 3.7 is
-   demoted to Low for exploration (swing mode carries the in-edge store along the
-   chain); a new lead is the 1.3 KB allocated per attribute-test candidate in `hop`.
-4. Dropped 2026-09-22 as covered by the fibonacci rows: `recipes` and `transactions`
-   (4.3.1, 1.5). Coverage gap 2 of the reassessment (cyclic and wide transient regions)
-   revives the shape on the `hub` chain instead.
-5. Done (2026-09-22 night): Arend copied `petrinet` over; four of the five hand-drawn
-   nets deleted (1 to 38 states), `start2` kept as default. Generated `pipe-k-n`
-   (C(n+k, k) markings: `pipe-8-8` and `pipe-9-9` quick, `pipe-11-11` long at 4 min and
-   5.2 GB) and `join-f` (2f sub-matches per step on an unstored path: `join-100` and
-   `join-1000` quick, 450 µs and 1.1 MB per step at f = 100, linear in f). Calibration
-   table in the note.
-6. Done (2026-09-22 late): `parallel-pump` (Arend's DPO copy) with generated `pump-k-m`
-   (`pump-8-4` smoke, `pump-12-6` quick under DPO and SPO-multi, `pump-16-8` long at
-   169 s and 6 GB) and `mergers` (hand copy of the sample, `system.properties` rewritten
-   to 3.12 with `semantics=SPO-simple`) with generated `ring-n` (`ring-6` smoke,
-   `ring-9` quick under simple and multi, `ring-10-multi` upper quick, `ring-11-dpo`
-   quick; no long size, `ring-11` under multi is 7.6 min and 5.6 GB). The variants use a
-   new per-row grammar-property override, `Config.properties` (`key=value` pairs like
-   the `Generator`'s `-D`). Calibration table and observations in the note: DPO and
-   SPO-multi cost the same on the pump (no node erasure, so 4.1.6 never runs; the
-   mergers DPO row is the one for it), multi costs 5 to 10 % over simple on mergers,
-   DPO cuts mergers' states tenfold through the identification condition.
-7. Key-variant rows on existing grammars as needed while fixing.
-
-Per step: copy or
-write the grammar, extend `generate-starts.py`, calibrate with the headless `Generator`
-(quick tier 5 to 60 s, one long-tier candidate), pin counts, one commit per grammar.
-Only the harness reads `junit/performance`; new rows stay out of the smoke set unless
-small.
+Built 2026-09-21 to 2026-09-23, per grammar in the note: the eight copied samples with
+generated larger start graphs; `leader-election` rings (symmetry); `attribute-count-to-n`
+with `probe-odd` and the BigInteger rows, and `fibonacci` as recipe and as function;
+Arend's `hub` (star, chain, field and ring shapes, then the wander programs); `petrinet`
+pipelines and joins; `parallel-pump` and `mergers` under three semantics through the
+per-row property override; the injective variants. `recipes` and `transactions` were
+dropped as covered by the fibonacci and wander rows. Adding a grammar: copy or write it,
+extend `generate-starts.py`, calibrate through the harness (rows with `-1` counts, one
+JVM per row), pin counts, one commit per grammar; only the harness reads
+`junit/performance`, and new rows stay out of the smoke set unless small.
 
 ## Key files
 
-- `claude/exploration-performance.md`: the findings and the harness documentation.
+- `claude/exploration-performance.md`: the findings, the grammar set and the harness
+  documentation.
 - `src/test/java/nl/utwente/groove/test/performance/ExplorationBenchmark.java`,
   `junit/performance/generate-starts.py`.
-- `util/Reporter.java`, `match/plan/PlanSearchStrategy.java`, `util/Factory.java`,
-  `lts/AbstractGraphState.java`, `lts/MatchApplier.java`, `graph/iso/CertificateStrategy.java`,
-  `graph/iso/PartitionRefiner.java`, `lts/StateCache.java`: the section 1 to 3 targets.
+- `lts/StateCache.java`, `grammar/host/DeltaHostGraph.java`, `grammar/host/HostFactory.java`,
+  `algebra/` (3.13 and 4.3.2); `util/Reporter.java`, `match/plan/PlanSearchStrategy.java`,
+  `util/Factory.java`, `lts/AbstractGraphState.java`, `lts/MatchApplier.java`,
+  `graph/iso/CertificateStrategy.java`, `graph/iso/PartitionRefiner.java` (sections 1 to 3).
 
 ## Facts that cost time to find
 
@@ -163,7 +101,11 @@ small.
 - The harness `main` takes row names as arguments; `-Dgroove.bench.run=<name>` is the
   JUnit route's selector and is ignored by `main` (a loop passing it ran the whole quick
   tier per iteration, 2026-09-22).
-- Run order in one JVM changes timings (megamorphic call sites); compare like orders.
+- Run order in one JVM changes timings little (a few per cent; `fib-15` is the one
+  large, unexplained case), machine load changes them a lot: a tier run during an
+  Eclipse rebuild was 20 % off on three rows. Two clean tier runs differ by up to 10 %
+  per row, so a change is judged one JVM per row, alternating A and B, on a quiet
+  machine.
 - Surefire honours `-DenableAssertions=false`; the harness header prints the status.
 - Calibrate through the harness itself: a row with `-1` counts, no warm-up, one run, one
   JVM per row; the loop runs fine as a Bash background task well past ten minutes.
