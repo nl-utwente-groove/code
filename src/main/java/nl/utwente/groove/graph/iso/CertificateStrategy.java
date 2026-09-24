@@ -157,11 +157,25 @@ abstract public class CertificateStrategy {
         int nodeCount = getGraph().nodeCount();
         int edgeCount = getGraph().edgeCount();
         this.nodeCerts = new NodeCertificate[nodeCount];
-        // the table is at least twice the number of nodes, to keep the
-        // linear probing short
-        int capacity = Integer.highestOneBit(Math.max(nodeCount, 2)) * 4;
-        this.nodeCertTable = new int[capacity];
-        this.nodeCertMask = capacity - 1;
+        var lookup = this.nodeCertLookup = getNodeCertScratch(getGraph());
+        try {
+            initNodeAndEdgeCerts(edgeCount);
+        } finally {
+            // leave the scratch array empty for the next certifier
+            var nodeCerts = this.nodeCerts;
+            assert nodeCerts != null;
+            for (int i = 0; i < this.nodeCertCount; i++) {
+                lookup[nodeCerts[i].getElement().getNumber()] = null;
+            }
+            this.nodeCertLookup = null;
+        }
+    }
+
+    /**
+     * Fills the node and edge certificate arrays, with {@link #nodeCertLookup}
+     * set to the scratch array.
+     */
+    private void initNodeAndEdgeCerts(int edgeCount) {
         for (Node node : getGraph().nodeSet()) {
             initNodeCert(node);
         }
@@ -207,46 +221,55 @@ abstract public class CertificateStrategy {
     }
 
     /**
-     * Enters the certificate about to be stored at index {@link #nodeCertCount}
-     * of {@link #nodeCerts} into the lookup table, under its node's number.
+     * Inserts a node certificate into the lookup array, at its node's number.
      */
     private void putNodeCert(NodeCertificate nodeCert) {
-        var nodeCertTable = this.nodeCertTable;
-        assert nodeCertTable != null;
-        int slot = nodeCertSlot(nodeCert.getElement().getNumber());
-        while (nodeCertTable[slot] != 0) {
-            slot = (slot + 1) & this.nodeCertMask;
-        }
-        nodeCertTable[slot] = this.nodeCertCount + 1;
+        var lookup = this.nodeCertLookup;
+        assert lookup != null;
+        int nodeNr = nodeCert.getElement().getNumber();
+        assert nodeNr < lookup.length : String
+            .format("Node nr %d higher than maximum %d", nodeNr, lookup.length - 1);
+        lookup[nodeNr] = nodeCert;
     }
 
     /**
-     * Retrieves the certificate of a given graph node from the lookup table.
+     * Retrieves the certificate of a given graph node from the lookup array.
+     * Only valid during {@link #initCertificates()}.
      */
     NodeCertificate getNodeCert(final Node node) {
-        var nodeCertTable = this.nodeCertTable;
-        var nodeCerts = this.nodeCerts;
-        assert nodeCertTable != null && nodeCerts != null;
-        int nodeNr = node.getNumber();
-        int slot = nodeCertSlot(nodeNr);
-        while (true) {
-            int entry = nodeCertTable[slot];
-            assert entry != 0 : String.format("Could not find certificate for %s", node);
-            NodeCertificate result = nodeCerts[entry - 1];
-            if (result.getElement().getNumber() == nodeNr) {
-                return result;
-            }
-            slot = (slot + 1) & this.nodeCertMask;
-        }
+        var lookup = this.nodeCertLookup;
+        assert lookup != null;
+        NodeCertificate result = lookup[node.getNumber()];
+        assert result != null : String.format("Could not find certificate for %s", node);
+        return result;
     }
 
-    /** Returns the initial slot of a node number in {@link #nodeCertTable}. */
+    /**
+     * Returns this thread's scratch array for {@link #nodeCertLookup}, grown if
+     * necessary to cover the node numbers of a given graph's factory. The array
+     * is empty whenever no {@link #initCertificates()} is running on the thread.
+     */
     @AIGenerated("Claude Opus 5.5, 2026-09")
-    private int nodeCertSlot(int nodeNr) {
-        // spread the (typically consecutive) node numbers over the table
-        int hash = nodeNr * 0x9E3779B9;
-        return (hash ^ (hash >>> 16)) & this.nodeCertMask;
+    static private @Nullable NodeCertificate[] getNodeCertScratch(Graph graph) {
+        int size = graph.getFactory().getMaxNodeNr() + 1;
+        var result = nodeCertScratch.get();
+        if (result.length < size) {
+            result = new NodeCertificate[Math.max(size, 2 * result.length)];
+            nodeCertScratch.set(result);
+        }
+        return result;
     }
+
+    /**
+     * Per-thread scratch array from node numbers to node certificates. The
+     * numbers are those of the graph's factory, which counts every node ever
+     * created, so the array is shared between certifiers instead of being
+     * allocated per certifier (which made certification of a state cost time
+     * proportional to the whole exploration so far).
+     */
+    @AIGenerated("Claude Opus 5.5, 2026-09")
+    static private final ThreadLocal<@Nullable NodeCertificate[]> nodeCertScratch
+        = ThreadLocal.withInitial(() -> new NodeCertificate[0]);
 
     /**
      * Creates an {@link EdgeCertificate} for a given bundle of parallel edges,
@@ -457,15 +480,10 @@ abstract public class CertificateStrategy {
     /** The number of unary edge certificates in {@link #edgeCerts}. */
     int edge1CertCount;
     /**
-     * Open-addressed lookup table from node numbers to certificates, filled in
-     * {@link #initCertificates()}: each slot holds an index into
-     * {@link #nodeCerts}, raised by one so that zero stands for an empty slot.
-     * Sized by the graph's node count rather than by the factory's node
-     * numbers, which grow with every node the exploration ever creates.
+     * The scratch array from node numbers to certificates, set only while
+     * {@link #initCertificates()} runs.
      */
-    private int @Nullable [] nodeCertTable;
-    /** Mask of the capacity of {@link #nodeCertTable}, a power of two. */
-    private int nodeCertMask;
+    private @Nullable NodeCertificate @Nullable [] nodeCertLookup;
 
     /**
      * Returns an array that, at every index, contains the number of times that
