@@ -12,8 +12,9 @@ quick and long tiers in the Generator's mode and of the quick tier in the Simula
 random-access mode, and a coverage assessment are done; the set is judged sufficient to
 start fixing (see "Coverage"). Building it found three defects that were fixed on their
 own branches and merged: finding 3.11 (gh #919), finding 3.12 (gh #924) and the recipe
-targets on cyclic regions (gh #925). Nothing else in the finding list is implemented; the
-first investigation is finding 3.13, the counter's generation time. The transient handoff
+targets on cyclic regions (gh #925). The first investigation, finding 3.13 (the
+counter's generation time), traced it to 3.1, fixed on branch `certifier-node-table`;
+nothing else in the finding list is implemented. The transient handoff
 state (what is next, in which order) lives in `claude/exploration-performance-state.md`.
 
 The note runs from the test cases to the numbers to the findings: the grammar set, the
@@ -212,7 +213,8 @@ the values generated, by design: every value is wrapped in a `ValueNode` once an
 ever collected, so `fNodes` at 600 008 is expected. What is not expected is the time the
 rows spend in generation and the allocation behind it: 0.4 MB per state at 100 k, 1.2 MB
 at 300 k, 2.3 MB at 600 k (1.4 TB in all), for a step that creates one value node and
-one edge. That is finding 3.13, the first investigation to take.
+one edge. That is finding 3.13; its cause is 3.1, the certifier's array sized by the
+factory's node numbers, which the minted value nodes grow by one per state.
 
 Cost of the probe, `count-100000` and its BigInteger twin with and without the rule,
 2 warm-ups and 3 runs at `-Xmx8g`, one JVM per pair, the with-probe pair run before and
@@ -1115,7 +1117,8 @@ small / high (verified). `graph/iso/CertificateStrategy.java:45`:
 (`graph/ElementFactory.java:59,71`) is a monotone high-water mark over every node the
 factory ever registered, so per-state cost is O(states × total nodes created) in
 allocation and zero-filling, retained as a final field for the certifier's life. The
-array is scratch, used only by `putNodeCert`/`getNodeCert` from `initCertificates`
+array is scratch (3.13 is this finding at its worst: quadratic on the counter rows),
+used only by `putNodeCert`/`getNodeCert` from `initCertificates`
 (`:150-176,202,214`). Suggestion: an open-addressed int-keyed probe table sized by
 `nodeCount()` (the shape `EdgeBundles.java:59` already uses), or a reusable scratch
 array cleared after initialisation.
@@ -1278,27 +1281,30 @@ branch at `da54faa44`) by local propagation over direct predecessor edges; the f
 above are pre-fix, and the fibonacci recipe rows now cost the same as their function twins.
 
 **3.13 The counter's generation time and allocation grow faster than its state count.**
-Unknown / medium / measured, cause not located (added 2026-09-24). `attribute-count-to-n`
-explores a single line of states, one per value, each step a `let:` that mints one value
-node and one edge, plus, with `probe-odd`, one `ErrorValue` per even state. In the tier
-tables the rows take 4.2 s at 100 000 states, 34 s at 300 000 and 107 s at 600 000, 91 to
-97 % of it in `gen`, and allocate 42 GB, 354 GB and 1.4 TB: 0.4, 1.2 and 2.3 MB per state.
-The value-node count itself grows linearly with the run by design (values are wrapped
-once and never collected) and is not the explanation; what has to be explained is a
-per-state allocation that rises with the size of the run so far, so that some operation
-on the generation path does work proportional to what has been generated. Readings to
-test, none verified: (a) the state space is a single line, so the delta chain from the
-start graph is as long as the run, and a graph materialised after its parent's soft cache
-has been cleared is rebuilt from the chain root at a cost proportional to its depth (2.5
-to 2.7), with the collector clearing more caches as the live set grows; (b) a per-step
-walk over the factory's value nodes or edges (3.3; `fEdges` reaches 600 005); (c) the
-value-node lookups of 4.2.2 in a structure that grows with the run. Approach: a JFR
-allocation profile of `count-100000` against `count-300000` (`jfr view
-allocation-by-site`, the profiling recipe in the state file), compared per state; a run
-with the graph caches kept strongly reachable, or the reconstructions counted, separates
-(a) from the rest. Deliverable: the cause recorded here, and a fix on its own branch if
-it is algorithmic. Gates: the counter rows' pinned counts, `DeterminismTest`,
-`grammar-smoke`.
+Resolved (added and located 2026-09-24): it is 3.1. `attribute-count-to-n` explores a
+single line of states, each step a `let:` that mints one value node, so the host factory's
+node high-water mark grows by one per state and so does the `NodeCertificate` array every
+certifier allocates. Predicted allocation `states² × 4` bytes: 40 GB at 100 000 (measured
+41.5), 360 GB at 300 000 (measured 354). The JFR allocation profile puts 91 % (100 k) and
+96 % (300 k) of all allocation in `CertificateStrategy.<init>`; the time is the zero-fill.
+The execution samples are misleading: 70 % (100 k) and 81 % (300 k) land on
+`CacheReference.incFrequency` line 255 (an amortised-constant `ArrayList.set`, reached
+from `GTS$StateSet.getCode` through the new state's first `getCache`), which is the
+zeroing loop of the inlined array allocation attributed to a neighbouring frame even
+with `-XX:+DebugNonSafepoints`. Trust `allocation-by-site` over `hot-methods` when the
+two disagree. None of the three readings (a) to (c) was needed: with the array replaced
+by a table sized by the graph (branch `certifier-node-table` off master), the rows
+allocate a flat 33 to 34 KB per state and take about 19 µs per state, one JVM per row,
+no warm-up:
+
+| row | before (tier) | after | allocMB before | allocMB after |
+|---|---|---|---|---|
+| `count-100000` | 4.2 to 5.4 s | 2.0 s | 41 504 | 3 340 |
+| `count-300000` | 34 s | 5.5 s | 353 671 | 10 116 |
+| `count-600000` | 107 s | 11.2 s | about 1.4 TB | 20 727 |
+
+`gen` remains 70 to 75 % of these rows, now linear. The proper A/B (alternating builds,
+quiet machine) is still to be done on the fix branch.
 
 ### 4. Allocation on the per-state and per-match path
 
@@ -1794,7 +1800,8 @@ the exploration thread itself, uncontended.
 4. Finding 3.13, the counter's generation time: an investigation first, on the rows
    `count-100000` and `count-300000`; a fix on its own branch if the cause is
    algorithmic. Chosen ahead of the constant-factor items because a cost that grows
-   with the run hits every grammar with many distinct data values.
+   with the run hits every grammar with many distinct data values. Done 2026-09-24:
+   the cause is 3.1, fixed on branch `certifier-node-table`.
 5. Finding 4.3.2, the per-node edge sets: the whole of the Simulator-mode cost on large
    graphs (11 to 33 times on the hub rows), but inherent to copying unless the sets
    become copy-on-write, so a design discussion before a commit.
@@ -1862,8 +1869,8 @@ realistic shape missing, the rest wait for a finding that needs them:
    (findings 2.5 to 2.7) is measured only where the collector happens to clear soft
    caches, which the long tier's unstable `retMB` shows it does unpredictably. A harness
    option that clears the collectable caches every N states, as `DeterminismTest` does,
-   would make the reconstruction cost a controlled column instead of noise; the 3.13
-   investigation may want it.
+   would make the reconstruction cost a controlled column instead of noise (the 3.13
+   investigation turned out not to need it).
 3. **Per-state acceptors and rule-condition bounds.** `goal=condition|fires|graph`,
    `bound=upto|include|nodes|size|edges` and `count` each add a check per state; no row
    uses any of them.

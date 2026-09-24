@@ -35,19 +35,15 @@ and outcomes" in the note).
 
 ## Next, in order
 
-1. **Investigate finding 3.13, the counter's generation time** (the note has the full
-   write-up). What is known: `count-100000`, `count-300000` and `count-600000` take 4.2,
-   34 and 107 s, 91 to 97 % in `gen`, and allocate 0.4, 1.2 and 2.3 MB per state; the
-   value-node count grows linearly by design (values are wrapped once, never collected)
-   and is not the explanation; some operation on the generation path does work
-   proportional to the run so far. Readings to test: reconstruction from a delta chain
-   as long as the run after soft caches are cleared (2.5 to 2.7), a per-step walk over
-   the factory's nodes or edges (3.3), value-node lookups in a growing structure (4.2.2).
-   How: JFR allocation profiles of `count-100000` and `count-300000` (recipe below),
-   compared per state; then a run with the caches kept strongly reachable or the
-   reconstructions counted. Deliverable: the cause under 3.13 in the note; a fix on its
-   own branch off master if it is algorithmic, measured one JVM per row on the three
-   counter rows, gated by their pinned counts, `DeterminismTest` and `grammar-smoke`.
+1. **Finding 3.13: located 2026-09-24, it is 3.1** (the certifier's `NodeCertificate`
+   array sized by the factory's node high-water mark; the counter mints a value node per
+   state, so the cost was quadratic). Fix on branch `certifier-node-table` off master
+   (worktree `.claude/worktrees/certifier-node-table`): open-addressed table sized by the
+   graph. Counter rows 5.4/34/107 s -> 2.0/5.5/11.2 s, allocation flat at 33 KB/state.
+   Remaining there: null-annotation commit and gates (fast suite, `grammar-smoke`,
+   `DeterminismTest`, `null-check`), then the proper A/B (alternating builds, quiet
+   machine) on the counter rows plus a few iso-heavy rows (`leader-election`,
+   `As-and-Bs`) to confirm no regression where node counts are small, then hand over.
 2. Finding 4.3.2 (per-node edge sets): the whole of the Simulator-mode cost on large
    graphs, 11 to 33 times on the hub rows; a design discussion first (copy-on-write
    sets or sharing), since copying is what the mode asks for.
@@ -116,6 +112,16 @@ JVM per row), pin counts, one commit per grammar; only the harness reads
 - The linear traversal (`successor=single frontier=single`) rejects a depth bound; an
   unstored path of N steps is `next=newest cost=uniform bound=cost:N persistence=none`
   on a system with one successor per state.
+- JFR's execution samples misattribute the zero-fill of a large inlined array
+  allocation to a neighbouring frame even with `-XX:+DebugNonSafepoints` (3.13:
+  `CacheReference.incFrequency` got 70 to 81 % of samples); when `hot-methods` and
+  `allocation-by-site` disagree, believe the allocation view.
+- Harness launch outside Maven: `mvn -q test-compile dependency:build-classpath
+  "-Dmdep.outputFile=target/cp.txt"`, then `java -da -Xmx8g -XX:+UseParallelGC
+  "-Dgroove.bench.tier=all" -cp "target/test-classes;target/classes;$(cat target/cp.txt)"
+  nl.utwente.groove.test.performance.ExplorationBenchmark <rows>` (used 2026-09-24 for the
+  three counter rows incl. the long `count-600000`; whether the tier property is needed
+  for named long rows was not checked).
 - Profiling a row: the JDK 25 binary is `C:/Program Files/Java/jdk-25.0.4.1/bin/java`
   (plain `java` is 26 here); add `-XX:StartFlightRecording=filename=<f>.jfr,settings=profile`
   to the harness command with `warmups=0 runs=1`, then `jfr view hot-methods`,
