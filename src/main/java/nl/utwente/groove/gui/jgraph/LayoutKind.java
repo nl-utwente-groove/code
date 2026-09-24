@@ -265,7 +265,7 @@ public enum LayoutKind {
             1,
             1000,
             100,
-            "Width space between nodes");
+            "Maximum number of iterations");
         panel.createCheckBox(getMethod(layout, "setOptimizeNodeDistribution", Boolean.TYPE),
             "Optimize node distribution",
             true);
@@ -333,7 +333,7 @@ public enum LayoutKind {
             0,
             500,
             100,
-            "Maximum number of interations");
+            "Maximum number of iterations");
         panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         return panel;
     }
