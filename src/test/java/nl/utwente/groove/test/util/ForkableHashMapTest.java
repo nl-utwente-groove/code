@@ -29,6 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.Equator;
 import nl.utwente.groove.util.collect.ForkableHashMap;
 import nl.utwente.groove.util.collect.ForkableHashSet;
 
@@ -114,6 +115,42 @@ public class ForkableHashMapTest {
         }
     }
 
+    /** Random operations on forked sets keyed by an equator that identifies keys by
+     * half their value, compared with plain hash sets of the halved values. */
+    @Test
+    public void testEquatorForks() {
+        var random = new Random(7);
+        List<ForkableHashSet<Key>> sets = new ArrayList<>();
+        List<Set<Integer>> models = new ArrayList<>();
+        sets.add(new ForkableHashSet<>(new HalfEquator()));
+        models.add(new HashSet<>());
+        for (int step = 0; step < 100_000; step++) {
+            int which = random.nextInt(sets.size());
+            var set = sets.get(which);
+            var model = models.get(which);
+            var key = new Key(random.nextInt(5_000), 1 << 30);
+            int op = random.nextInt(100);
+            if (op < 60) {
+                assertEquals(model.add(key.value() / 2), set.add(key));
+            } else if (op < 90) {
+                assertEquals(model.remove(key.value() / 2), set.remove(key));
+            } else if (op < 99) {
+                assertEquals(model.contains(key.value() / 2), set.contains(key));
+            } else if (sets.size() < 20) {
+                sets.add(new ForkableHashSet<>(set));
+                models.add(new HashSet<>(model));
+            }
+            assertEquals(model.size(), set.size());
+        }
+        for (int i = 0; i < sets.size(); i++) {
+            Set<Integer> halves = new HashSet<>();
+            for (var key : sets.get(i)) {
+                halves.add(key.value() / 2);
+            }
+            assertEquals(models.get(i), halves);
+        }
+    }
+
     private static int count(Iterable<?> elements) {
         int result = 0;
         for (var e : elements) {
@@ -121,6 +158,25 @@ public class ForkableHashMapTest {
             result++;
         }
         return result;
+    }
+
+    /** Equator identifying keys by half their value. */
+    @NonNullByDefault({})
+    private static final class HalfEquator implements Equator<Key> {
+        @Override
+        public int getCode(Key key) {
+            return key.value() / 2;
+        }
+
+        @Override
+        public boolean areEqual(Key newKey, Key oldKey) {
+            return newKey.value() / 2 == oldKey.value() / 2;
+        }
+
+        @Override
+        public boolean allEqual() {
+            return false;
+        }
     }
 
     /** Key with a hash code reduced to a given range, to force collisions. */
