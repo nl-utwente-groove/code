@@ -214,12 +214,26 @@ median per JVM:
 | `hub-chain-200-2` | 10.6, 11.0, 11.1 s | 11.3, 10.4, 11.2 s |
 | `leader-election-14` | 5.54 s | 5.57 s |
 
-`hub-chain` and `leader-election` are within noise. `sierpinsky-12` is slower on the
+`hub-chain` and `leader-election` are within noise. `sierpinsky-12` was slower on the
 branch in all four pairs, by 2 to 6 % (against a third for the interim form). Swing
-mode keeps its data structures, so this residual can only come from the store and the
-global edge set now being reached through interface types (`HostEdgeStore`,
-`Set<HostEdge>`) where they were final classes before; the call sites are monomorphic
-in a Generator JVM, so the cost is presumably JIT inlining shape rather than dispatch.
-Whether to accept it or chase it with `-XX:+PrintInlining` on the sierpinsky row is
-Arend's call; the row is the artificial extreme of pure insertion into graphs of a
-million elements.
+mode keeps its data structures, so the suspects were the store and the global edge set
+now being reached through interface types (`HostEdgeStore`, `Set<HostEdge>`) where they
+were final classes before.
+
+**Chased with `-XX:+PrintInlining` (via `-XX:+LogCompilation`, since the text form
+interleaves across compiler threads) and a JFR self-time diff, 2026-09-24.** Not a
+dispatch cost: every new interface call site on the hot path (`Set::add`/`remove` on
+the edge set, `HostEdgeStore::addEdge`/`removeEdge`/`addKey`, and the `get`/`put`
+inside the default methods) is resolved by its receiver profile to the single class
+(`HostEdgeSet`, `LinkedHostEdgeStore`, n/n receivers) and inlined `(hot)` exactly as the
+final-class calls were on master; no itable or vtable stubs appear, and the top-frame
+profiles agree within their sampling error (about 1.4 percentage points on
+`TreeHashSet::put`), with the inlined share slightly higher on the branch. What differs
+is inlining shape at C2's "already compiled into a big method" threshold: on the branch
+the five `removeEdgeFromStore` calls are inlined into `DataTarget::removeEdge` (master
+rejects them), which makes that method big, so `DefaultDeltaApplier::applyDelta` in turn
+fails to inline `SwingTarget::removeEdge` (master inlines it); the method is two bytes
+longer. That tipping point moves with compile order, and in the two chase runs the
+branch was 4.5 % faster and 0.7 % slower than master. Verdict: JIT variance around an
+inlining threshold, not a cost of the design; accepted. If it ever matters, the lever is
+the size of `DataTarget::removeEdge`, not the interface.
