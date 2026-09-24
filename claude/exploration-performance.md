@@ -863,8 +863,8 @@ What it says:
   certification about a third to all of it. `car-platooning-06` (the grammar switches
   isomorphism checking off) and the unstored tree (nothing collapses) spend it in `gen`
   and matching instead.
-- **`count-600000` is `gen`**: 104 of 107 s, with 1.4 TB allocated; the superlinear
-  allocation of the counter lives in state generation, not in matching or the state set.
+- **`count-600000` is `gen`**: 104 of 107 s, with 1.4 TB allocated; the counter's
+  allocation (finding 3.13) lives in state generation, not in matching or the state set.
 - **`retMB` is not a stable figure in this tier.** `car-platooning-06` retained 6.2 GB
   here against 1.3 GB in its calibration run, and `count-600000` 0.5 GB against 2.5 GB:
   the softly reachable caches of 3.6 survive or not depending on how hard the collector
