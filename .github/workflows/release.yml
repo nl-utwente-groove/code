@@ -70,6 +70,13 @@ jobs:
         ref: ${{ env.YFILES_REF }}
         token: ${{ secrets.YFILES_LIB_TOKEN }}
         path: 'yfiles-lib'
+    - name: Record the backend commit
+      # the commit checked out above, which the branch name does not fix, as
+      # an HTML comment at the end of the release notes: invisible on the
+      # release page, in the raw body (gh release view --json body). It is
+      # the input needed to regenerate the obfuscation's name mapping, which
+      # is never published (see release/README.md, "Building")
+      run: echo "<!-- yFiles add-on built from nl-utwente-groove/yfiles-lib at $(git -C ../yfiles-lib rev-parse HEAD) -->" >> "$RUNNER_TEMP/release-notes.md"
     - name: Set up JDK 21
       uses: actions/setup-java@v5
       with:

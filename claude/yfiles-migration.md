@@ -554,8 +554,8 @@ add-on (two products to explain, macOS gap); a single installer with a yFiles qu
 6. **The website**: the download page gets the add-on next to the standard artifacts,
    with the non-commercial statement; the web manual's installation page describes the
    add-on and the extension directory, its layout section the yFiles algorithms.
-7. **At the first release**: nothing by hand except noting the `yfiles-lib` commit the
-   release job checked out. The yGuard name mapping must *not* be kept with the release
+7. **At the first release**: nothing by hand; the release job records the `yfiles-lib`
+   commit it built from as an HTML comment in the release notes. The yGuard name mapping must *not* be kept with the release
    or uploaded anywhere public: it undoes the obfuscation §2.1c requires (a workflow
    artifact would not do either, as any signed-in user can download those on a public
    repository). It need not be kept at all: the renaming was found deterministic on
