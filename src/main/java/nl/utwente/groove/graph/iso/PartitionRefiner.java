@@ -19,6 +19,9 @@ package nl.utwente.groove.graph.iso;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
@@ -36,6 +39,7 @@ import nl.utwente.groove.util.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class PartitionRefiner extends CertificateStrategy {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
@@ -44,7 +48,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public PartitionRefiner(Graph graph) {
+    public PartitionRefiner(@Nullable Graph graph) {
         this(graph, false);
     }
 
@@ -55,7 +59,7 @@ public class PartitionRefiner extends CertificateStrategy {
      * @param strong if <code>true</code>, the strategy puts more effort into
      *        getting distinct certificates.
      */
-    public PartitionRefiner(Graph graph, boolean strong) {
+    public PartitionRefiner(@Nullable Graph graph, boolean strong) {
         super(graph);
         this.strong = strong;
     }
@@ -164,9 +168,11 @@ public class PartitionRefiner extends CertificateStrategy {
         }
         // so far we have done nothing with the self-edges, so
         // give them a chance to get their value right
-        int edgeCount = this.edgeCerts.length;
+        var edgeCerts = this.edgeCerts;
+        assert edgeCerts != null;
+        int edgeCount = edgeCerts.length;
         for (int i = this.edge2CertCount; i < edgeCount; i++) {
-            ((MyEdge1Cert) this.edgeCerts[i]).setNewValue();
+            ((MyEdge1Cert) edgeCerts[i]).setNewValue();
         }
     }
 
@@ -181,8 +187,10 @@ public class PartitionRefiner extends CertificateStrategy {
      * Calls {@link MyCert#setNewValue()} on all edge certificates.
      */
     private void advanceEdgeCerts() {
+        var edgeCerts = this.edgeCerts;
+        assert edgeCerts != null;
         for (int i = 0; i < this.edge2CertCount; i++) {
-            MyEdge2Cert edgeCert = (MyEdge2Cert) this.edgeCerts[i];
+            MyEdge2Cert edgeCert = (MyEdge2Cert) edgeCerts[i];
             // the parallel copies of the bundle would each have contributed
             // the same value; widen before multiplying, since the graph
             // certificate accumulates in long arithmetic
@@ -197,9 +205,11 @@ public class PartitionRefiner extends CertificateStrategy {
      *        {@link #nodePartitionCount} are recalculated
      */
     private void advanceNodeCerts(boolean store) {
+        var nodeCerts = this.nodeCerts;
+        assert nodeCerts != null;
         int tmpSize = 0;
         for (int i = 0; i < this.nodeCertCount; i++) {
-            MyNodeCert nodeCert = (MyNodeCert) this.nodeCerts[i];
+            MyNodeCert nodeCert = (MyNodeCert) nodeCerts[i];
             this.graphCertificate += nodeCert.setNewValue();
             if (store) {
                 if (nodeCert.isSingular()) {
@@ -221,7 +231,7 @@ public class PartitionRefiner extends CertificateStrategy {
         if (store) {
             // copy the remainder of the certificates to the store
             for (int i = 0; i < tmpSize; i++) {
-                certStore.add((MyNodeCert) this.nodeCerts[tmpCertIxs[i]]);
+                certStore.add((MyNodeCert) nodeCerts[tmpCertIxs[i]]);
             }
             this.nodePartitionCount = certStore.size();
             certStore.clear();
@@ -233,24 +243,30 @@ public class PartitionRefiner extends CertificateStrategy {
      * certificates.
      */
     private void checkpointCertificates() {
-        for (int i = 0; i < this.nodeCerts.length; i++) {
-            MyCert<?> nodeCert = (MyCert<?>) this.nodeCerts[i];
+        var nodeCerts = this.nodeCerts;
+        var edgeCerts = this.edgeCerts;
+        assert nodeCerts != null && edgeCerts != null;
+        for (int i = 0; i < nodeCerts.length; i++) {
+            MyCert<?> nodeCert = (MyCert<?>) nodeCerts[i];
             nodeCert.setCheckpoint();
         }
         for (int i = 0; i < this.edge2CertCount; i++) {
-            MyCert<?> edgeCert = (MyCert<?>) this.edgeCerts[i];
+            MyCert<?> edgeCert = (MyCert<?>) edgeCerts[i];
             edgeCert.setCheckpoint();
         }
     }
 
     /** Calls {@link MyCert#rollBack()} on all node and edge certificates. */
     private void rollBackCertificates() {
-        for (int i = 0; i < this.nodeCerts.length; i++) {
-            MyCert<?> nodeCert = (MyCert<?>) this.nodeCerts[i];
+        var nodeCerts = this.nodeCerts;
+        var edgeCerts = this.edgeCerts;
+        assert nodeCerts != null && edgeCerts != null;
+        for (int i = 0; i < nodeCerts.length; i++) {
+            MyCert<?> nodeCert = (MyCert<?>) nodeCerts[i];
             nodeCert.rollBack();
         }
         for (int i = 0; i < this.edge2CertCount; i++) {
-            MyCert<?> edgeCert = (MyCert<?>) this.edgeCerts[i];
+            MyCert<?> edgeCert = (MyCert<?>) edgeCerts[i];
             edgeCert.rollBack();
         }
     }
@@ -260,22 +276,27 @@ public class PartitionRefiner extends CertificateStrategy {
      * certificates.
      */
     private void accumulateCertificates() {
-        for (int i = 0; i < this.nodeCerts.length; i++) {
-            MyCert<?> nodeCert = (MyCert<?>) this.nodeCerts[i];
+        var nodeCerts = this.nodeCerts;
+        var edgeCerts = this.edgeCerts;
+        assert nodeCerts != null && edgeCerts != null;
+        for (int i = 0; i < nodeCerts.length; i++) {
+            MyCert<?> nodeCert = (MyCert<?>) nodeCerts[i];
             nodeCert.accumulate(this.iterateCount);
         }
         for (int i = 0; i < this.edge2CertCount; i++) {
-            MyCert<?> edgeCert = (MyCert<?>) this.edgeCerts[i];
+            MyCert<?> edgeCert = (MyCert<?>) edgeCerts[i];
             edgeCert.accumulate(this.iterateCount);
         }
     }
 
     /** Returns the list of duplicate certificates with the smallest value. */
     private List<MyNodeCert> getSmallestDuplicates() {
+        var nodeCerts = this.nodeCerts;
+        assert nodeCerts != null;
         List<MyNodeCert> result = new LinkedList<>();
         MyNodeCert minCert = null;
-        for (int i = 0; i < this.nodeCerts.length; i++) {
-            MyNodeCert cert = (MyNodeCert) this.nodeCerts[i];
+        for (int i = 0; i < nodeCerts.length; i++) {
+            MyNodeCert cert = (MyNodeCert) nodeCerts[i];
             if (!cert.isSingular()) {
                 if (minCert == null) {
                     minCert = cert;
@@ -389,7 +410,7 @@ public class PartitionRefiner extends CertificateStrategy {
          * Tests if the other is a {@link PartitionRefiner.MyCert} with the same value.
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -502,17 +523,18 @@ public class PartitionRefiner extends CertificateStrategy {
          * Tests if the other is a {@link PartitionRefiner.MyCert} with the same value.
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
             if (obj == null || !super.equals(obj)) {
                 return false;
             }
-            if (this.seed == null) {
+            var seed = this.seed;
+            if (seed == null) {
                 return true;
             }
-            return this.seed.equals(((MyNodeCert) obj).seed);
+            return seed.equals(((MyNodeCert) obj).seed);
         }
 
         @Override
@@ -572,7 +594,7 @@ public class PartitionRefiner extends CertificateStrategy {
         }
 
         /** Possibly {@code null} certificate seed of the node. */
-        final Object seed;
+        final @Nullable Object seed;
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
         /**
@@ -604,12 +626,14 @@ public class PartitionRefiner extends CertificateStrategy {
          * {@link PartitionRefiner.MyIdentityNodeCert} and has the same seed as this one.
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
+            var seed = this.seed;
+            assert seed != null;
             return obj instanceof MyIdentityNodeCert
-                && this.seed.equals(((MyIdentityNodeCert) obj).seed);
+                && seed.equals(((MyIdentityNodeCert) obj).seed);
         }
 
         /**
@@ -671,7 +695,7 @@ public class PartitionRefiner extends CertificateStrategy {
          * @see #getValue()
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -759,7 +783,7 @@ public class PartitionRefiner extends CertificateStrategy {
          * @see #getValue()
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }

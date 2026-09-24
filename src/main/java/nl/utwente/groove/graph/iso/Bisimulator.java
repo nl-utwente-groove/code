@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.graph.iso;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
@@ -32,13 +35,14 @@ import nl.utwente.groove.util.collect.TreeIntSet;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class Bisimulator extends CertificateStrategy {
     /**
      * Constructs a new bisimulation strategy, on the basis of a given graph.
      * @param graph the underlying graph for the bisimulation strategy; should
      *        not be <tt>null</tt>
      */
-    public Bisimulator(Graph graph) {
+    public Bisimulator(@Nullable Graph graph) {
         super(graph);
     }
 
@@ -70,6 +74,9 @@ public class Bisimulator extends CertificateStrategy {
     void iterateCertificates() {
         // get local copies of attributes for speedup
         IntSet certStore = Bisimulator.certStore;
+        var nodeCerts = this.nodeCerts;
+        var edgeCerts = this.edgeCerts;
+        assert nodeCerts != null && edgeCerts != null;
         int nodeCertCount = this.nodeCertCount;
         int partitionCount = 0;
         long certificateValue;
@@ -82,7 +89,7 @@ public class Bisimulator extends CertificateStrategy {
             certStore.clear(nodeCertCount);
             // first compute the new edge certificates
             for (int i = 0; i < this.edge2CertCount; i++) {
-                MyEdge2Cert edgeCert = (MyEdge2Cert) this.edgeCerts[i];
+                MyEdge2Cert edgeCert = (MyEdge2Cert) edgeCerts[i];
                 // the parallel copies of the bundle would each have
                 // contributed the same value
                 certificateValue += (long) edgeCert.getMultiplicity() * edgeCert.setNewValue();
@@ -93,7 +100,7 @@ public class Bisimulator extends CertificateStrategy {
             int minCertValue = Integer.MAX_VALUE;
             MyNodeCert minCert = null;
             //for (MyNodeCert<N> nodeCert : (MyNodeCert<N>[]) this.nodeCerts) {
-            for (NodeCertificate nodeCert : this.nodeCerts) {
+            for (NodeCertificate nodeCert : nodeCerts) {
                 int newCert = ((MyNodeCert) nodeCert).setNewValue();
                 if (iterateCount > 0 && partitionCount < nodeCertCount) {
                     if (!certStore.add(newCert)) {
@@ -139,9 +146,9 @@ public class Bisimulator extends CertificateStrategy {
         if (USE_EDGE1_CERTIFICATES) {
             // so far we have done nothing with the flags, so
             // give them a chance to get their hash code right
-            int edgeCount = this.edgeCerts.length;
+            int edgeCount = edgeCerts.length;
             for (int i = this.edge2CertCount; i < edgeCount; i++) {
-                ((MyEdge1Cert) this.edgeCerts[i]).setNewValue();
+                ((MyEdge1Cert) edgeCerts[i]).setNewValue();
             }
         }
         recordIterateCount(iterateCount);
@@ -233,7 +240,7 @@ public class Bisimulator extends CertificateStrategy {
          * Tests if the other is a {@link Bisimulator.Certificate} with the same value.
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -315,18 +322,19 @@ public class Bisimulator extends CertificateStrategy {
          * Tests if the other is a {@link Bisimulator.Certificate} with the same value.
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
             if (obj == null || !super.equals(obj)) {
                 return false;
             }
-            if (this.seed == null) {
+            var seed = this.seed;
+            if (seed == null) {
                 return true;
             }
             MyNodeCert other = ((MyNodeCert) obj);
-            return this.seed.equals(other.seed);
+            return seed.equals(other.seed);
         }
 
         @Override
@@ -369,7 +377,7 @@ public class Bisimulator extends CertificateStrategy {
         }
 
         /** Certificate seed of the node (possibly {@code null}). */
-        final Object seed;
+        final @Nullable Object seed;
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
     }
@@ -395,11 +403,13 @@ public class Bisimulator extends CertificateStrategy {
          * {@link Bisimulator.MyIdentityNodeCert} and has the same seed as this one.
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
-            return obj instanceof MyIdentityNodeCert cert && this.seed.equals(cert.seed);
+            var seed = this.seed;
+            assert seed != null;
+            return obj instanceof MyIdentityNodeCert cert && seed.equals(cert.seed);
         }
 
         /**
@@ -452,7 +462,7 @@ public class Bisimulator extends CertificateStrategy {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -539,7 +549,7 @@ public class Bisimulator extends CertificateStrategy {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }

@@ -21,11 +21,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.graph.plain.PlainNode;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Reporter;
 
 /**
@@ -37,15 +40,10 @@ import nl.utwente.groove.util.Reporter;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 abstract public class CertificateStrategy {
-    CertificateStrategy(Graph graph) {
+    CertificateStrategy(@Nullable Graph graph) {
         this.graph = graph;
-        // the graph may be null if a prototype is being constructed.
-        if (graph != null) {
-            this.defaultNodeCerts = new NodeCertificate[graph.getFactory().getMaxNodeNr() + 1];
-        } else {
-            this.defaultNodeCerts = null;
-        }
     }
 
     /**
@@ -53,7 +51,9 @@ abstract public class CertificateStrategy {
      * @return the underlying graph
      */
     public Graph getGraph() {
-        return this.graph;
+        var result = this.graph;
+        assert result != null : "Prototype certificate strategy has no graph";
+        return result;
     }
 
     /**
@@ -113,14 +113,16 @@ abstract public class CertificateStrategy {
     }
 
     /** The pre-computed edge bundles, if any. */
-    private EdgeBundles edgeBundles;
+    private @Nullable EdgeBundles edgeBundles;
 
     /** Returns the node certificates calculated for the graph. */
     public NodeCertificate[] getNodeCertificates() {
         if (this.nodeCerts == null) {
             computeCertificates();
         }
-        return this.nodeCerts;
+        var result = this.nodeCerts;
+        assert result != null;
+        return result;
     }
 
     /** Returns the edge certificates calculated for the graph. */
@@ -128,7 +130,9 @@ abstract public class CertificateStrategy {
         if (this.edgeCerts == null) {
             computeCertificates();
         }
-        return this.edgeCerts;
+        var result = this.edgeCerts;
+        assert result != null;
+        return result;
     }
 
     /** Computes the node and edge certificate arrays. */
@@ -153,6 +157,25 @@ abstract public class CertificateStrategy {
         int nodeCount = getGraph().nodeCount();
         int edgeCount = getGraph().edgeCount();
         this.nodeCerts = new NodeCertificate[nodeCount];
+        var lookup = this.nodeCertLookup = getNodeCertScratch(getGraph());
+        try {
+            initNodeAndEdgeCerts(edgeCount);
+        } finally {
+            // leave the scratch array empty for the next certifier
+            var nodeCerts = this.nodeCerts;
+            assert nodeCerts != null;
+            for (int i = 0; i < this.nodeCertCount; i++) {
+                lookup[nodeCerts[i].getElement().getNumber()] = null;
+            }
+            this.nodeCertLookup = null;
+        }
+    }
+
+    /**
+     * Fills the node and edge certificate arrays, with {@link #nodeCertLookup}
+     * set to the scratch array.
+     */
+    private void initNodeAndEdgeCerts(int edgeCount) {
         for (Node node : getGraph().nodeSet()) {
             initNodeCert(node);
         }
@@ -190,34 +213,63 @@ abstract public class CertificateStrategy {
             nodeCert = createNodeCertificate(node);
         }
         putNodeCert(nodeCert);
-        this.nodeCerts[this.nodeCertCount] = nodeCert;
+        var nodeCerts = this.nodeCerts;
+        assert nodeCerts != null;
+        nodeCerts[this.nodeCertCount] = nodeCert;
         this.nodeCertCount++;
         return nodeCert;
     }
 
     /**
-     * Inserts a certificate node either in the array (if the corresponding node
-     * is a {@link PlainNode}) or in the map.
+     * Inserts a node certificate into the lookup array, at its node's number.
      */
     private void putNodeCert(NodeCertificate nodeCert) {
-        Node node = nodeCert.getElement();
-        int nodeNr = node.getNumber();
-        assert nodeNr < this.defaultNodeCerts.length : String
-            .format("Node nr %d higher than maximum %d", nodeNr, this.defaultNodeCerts.length - 1);
-        this.defaultNodeCerts[nodeNr] = nodeCert;
+        var lookup = this.nodeCertLookup;
+        assert lookup != null;
+        int nodeNr = nodeCert.getElement().getNumber();
+        assert nodeNr < lookup.length : String
+            .format("Node nr %d higher than maximum %d", nodeNr, lookup.length - 1);
+        lookup[nodeNr] = nodeCert;
     }
 
     /**
-     * Retrieves a certificate node image for a given graph node from the map,
-     * creating the certificate node first if necessary.
+     * Retrieves the certificate of a given graph node from the lookup array.
+     * Only valid during {@link #initCertificates()}.
      */
     NodeCertificate getNodeCert(final Node node) {
-        NodeCertificate result;
-        int nodeNr = node.getNumber();
-        result = this.defaultNodeCerts[nodeNr];
+        var lookup = this.nodeCertLookup;
+        assert lookup != null;
+        NodeCertificate result = lookup[node.getNumber()];
         assert result != null : String.format("Could not find certificate for %s", node);
         return result;
     }
+
+    /**
+     * Returns this thread's scratch array for {@link #nodeCertLookup}, grown if
+     * necessary to cover the node numbers of a given graph's factory. The array
+     * is empty whenever no {@link #initCertificates()} is running on the thread.
+     */
+    @AIGenerated("Claude Opus 5.5, 2026-09")
+    static private @Nullable NodeCertificate[] getNodeCertScratch(Graph graph) {
+        int size = graph.getFactory().getMaxNodeNr() + 1;
+        var result = nodeCertScratch.get();
+        if (result.length < size) {
+            result = new NodeCertificate[Math.max(size, 2 * result.length)];
+            nodeCertScratch.set(result);
+        }
+        return result;
+    }
+
+    /**
+     * Per-thread scratch array from node numbers to node certificates. The
+     * numbers are those of the graph's factory, which counts every node ever
+     * created, so the array is shared between certifiers instead of being
+     * allocated per certifier (which made certification of a state cost time
+     * proportional to the whole exploration so far).
+     */
+    @AIGenerated("Claude Opus 5.5, 2026-09")
+    static private final ThreadLocal<@Nullable NodeCertificate[]> nodeCertScratch
+        = ThreadLocal.withInitial(() -> new NodeCertificate[0]);
 
     /**
      * Creates an {@link EdgeCertificate} for a given bundle of parallel edges,
@@ -227,26 +279,28 @@ abstract public class CertificateStrategy {
      * @param multiplicity the number of parallel copies in the bundle
      */
     private void initEdgeCert(Edge edge, int multiplicity) {
+        var edgeCerts = this.edgeCerts;
+        assert edgeCerts != null;
         Node source = edge.source();
         NodeCertificate sourceCert = getNodeCert(source);
         assert sourceCert != null : String.format("No source certifiate found for %s", edge);
         if (source == edge.target()) {
             EdgeCertificate edge1Cert = createEdge1Certificate(edge, sourceCert, multiplicity);
-            this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] = edge1Cert;
+            edgeCerts[edgeCerts.length - this.edge1CertCount - 1] = edge1Cert;
             this.edge1CertCount++;
-            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String
+            assert this.edge1CertCount + this.edge2CertCount <= edgeCerts.length : String
                 .format("%s unary and %s binary edges do not equal %s edges", this.edge1CertCount,
-                        this.edge2CertCount, this.edgeCerts.length);
+                        this.edge2CertCount, edgeCerts.length);
         } else {
             NodeCertificate targetCert = getNodeCert(edge.target());
             assert targetCert != null : String.format("No target certifiate found for %s", edge);
             EdgeCertificate edge2Cert
                 = createEdge2Certificate(edge, sourceCert, targetCert, multiplicity);
-            this.edgeCerts[this.edge2CertCount] = edge2Cert;
+            edgeCerts[this.edge2CertCount] = edge2Cert;
             this.edge2CertCount++;
-            assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String
+            assert this.edge1CertCount + this.edge2CertCount <= edgeCerts.length : String
                 .format("%s unary and %s binary edges do not equal %s edges", this.edge1CertCount,
-                        this.edge2CertCount, this.edgeCerts.length);
+                        this.edge2CertCount, edgeCerts.length);
         }
     }
 
@@ -284,26 +338,27 @@ abstract public class CertificateStrategy {
      */
     public Map<Element,ElementCertificate<?>> getCertificateMap() {
         // check if the map has been computed before
-        if (this.certificateMap == null) {
+        var result = this.certificateMap;
+        if (result == null) {
             getGraphCertificate();
-            this.certificateMap = new HashMap<>();
+            this.certificateMap = result = new HashMap<>();
             // add the node certificates to the certificate map
-            for (NodeCertificate nodeCert : this.nodeCerts) {
-                this.certificateMap.put(nodeCert.getElement(), nodeCert);
+            for (NodeCertificate nodeCert : getNodeCertificates()) {
+                result.put(nodeCert.getElement(), nodeCert);
             }
             // add the edge certificates to the certificate map;
             // every parallel copy is a key, mapped to its bundle's certificate
-            for (EdgeCertificate edgeCert : this.edgeCerts) {
+            for (EdgeCertificate edgeCert : getEdgeCertificates()) {
                 if (edgeCert.getMultiplicity() == 1) {
-                    this.certificateMap.put(edgeCert.getElement(), edgeCert);
+                    result.put(edgeCert.getElement(), edgeCert);
                 } else {
                     for (Edge edge : getCopies(edgeCert.getElement())) {
-                        this.certificateMap.put(edge, edgeCert);
+                        result.put(edge, edgeCert);
                     }
                 }
             }
         }
-        return this.certificateMap;
+        return result;
     }
 
     /**
@@ -315,12 +370,13 @@ abstract public class CertificateStrategy {
      */
     public PartitionMap<NodeCertificate> getNodePartitionMap() {
         // check if the map has been computed before
-        if (this.nodePartitionMap == null) {
+        var result = this.nodePartitionMap;
+        if (result == null) {
             // no; go ahead and compute it
             getGraphCertificate();
-            this.nodePartitionMap = computeNodePartitionMap();
+            this.nodePartitionMap = result = computeNodePartitionMap();
         }
-        return this.nodePartitionMap;
+        return result;
     }
 
     /**
@@ -331,7 +387,7 @@ abstract public class CertificateStrategy {
         getPartitionReporter.start();
         PartitionMap<NodeCertificate> result = new PartitionMap<>();
         // invert the certificate map
-        for (NodeCertificate cert : this.nodeCerts) {
+        for (NodeCertificate cert : getNodeCertificates()) {
             result.add(cert);
         }
         getPartitionReporter.stop();
@@ -347,12 +403,13 @@ abstract public class CertificateStrategy {
      */
     public PartitionMap<EdgeCertificate> getEdgePartitionMap() {
         // check if the map has been computed before
-        if (this.edgePartitionMap == null) {
+        var result = this.edgePartitionMap;
+        if (result == null) {
             // no; go ahead and compute it
             getGraphCertificate();
-            this.edgePartitionMap = computeEdgePartitionMap();
+            this.edgePartitionMap = result = computeEdgePartitionMap();
         }
-        return this.edgePartitionMap;
+        return result;
     }
 
     /**
@@ -363,9 +420,10 @@ abstract public class CertificateStrategy {
         getPartitionReporter.start();
         PartitionMap<EdgeCertificate> result = new PartitionMap<>();
         // invert the certificate map
-        int bound = this.edgeCerts.length;
+        var edgeCerts = getEdgeCertificates();
+        int bound = edgeCerts.length;
         for (int i = 0; i < bound; i++) {
-            result.add(this.edgeCerts[i]);
+            result.add(edgeCerts[i]);
         }
         getPartitionReporter.stop();
         return result;
@@ -394,21 +452,21 @@ abstract public class CertificateStrategy {
     abstract public boolean getStrength();
 
     /** The graph for which certificates are to be computed. */
-    private final Graph graph;
+    private final @Nullable Graph graph;
 
     /** The pre-computed graph certificate, if any. */
     long graphCertificate;
     /** The pre-computed certificate map, if any. */
-    Map<Element,ElementCertificate<?>> certificateMap;
+    @Nullable Map<Element,ElementCertificate<?>> certificateMap;
     /** The pre-computed node partition map, if any. */
-    PartitionMap<NodeCertificate> nodePartitionMap;
+    @Nullable PartitionMap<NodeCertificate> nodePartitionMap;
     /** The pre-computed edge partition map, if any. */
-    PartitionMap<EdgeCertificate> edgePartitionMap;
+    @Nullable PartitionMap<EdgeCertificate> edgePartitionMap;
 
     /**
      * The list of node certificates in this bisimulator.
      */
-    NodeCertificate[] nodeCerts;
+    NodeCertificate @Nullable [] nodeCerts;
     /** The number of elements in {@link #nodeCerts}. */
     int nodeCertCount;
     /**
@@ -416,13 +474,16 @@ abstract public class CertificateStrategy {
      * {@link #edge2CertCount} certificates for binary edges, followed by
      * {@link #edge1CertCount} certificates for unary edges.
      */
-    EdgeCertificate[] edgeCerts;
+    EdgeCertificate @Nullable [] edgeCerts;
     /** The number of binary edge certificates in {@link #edgeCerts}. */
     int edge2CertCount;
     /** The number of unary edge certificates in {@link #edgeCerts}. */
     int edge1CertCount;
-    /** Array for storing default node certificates. */
-    private final NodeCertificate[] defaultNodeCerts;
+    /**
+     * The scratch array from node numbers to certificates, set only while
+     * {@link #initCertificates()} runs.
+     */
+    private @Nullable NodeCertificate @Nullable [] nodeCertLookup;
 
     /**
      * Returns an array that, at every index, contains the number of times that
