@@ -32,6 +32,7 @@ Status lines below are as of 2026-09-11.
 | [tab-merge.md](tab-merge.md) | gh #921. Merging the resource view tab (`AspectViewTab`, `TextTab` view mode) into the editor tab, with a display-level preview slot replacing the singleton main tab. Proposal with inventory and policy points; decided for after 8.0.0. |
 | [download-stats.md](download-stats.md) | Download statistics from GitHub releases, SourceForge-style: daily counter snapshots differenced at render time. Repository and collector live since 2026-09-13 (`nl-utwente-groove/download-stats`); SourceForge import and website page open. |
 | [website-manual-8_0_0.md](website-manual-8_0_0.md) | gh #896 and the 8.0.0 release: what the web user manual (website repo, `manual/`) needs, change by change, plus the wrong statements and the broken reference-page generator. Proposal only, nothing written yet. |
+| [iso-refinement-state.md](iso-refinement-state.md) | Handoff state for branch `iso-refinement` (findings 2.4 and 2.3 of the exploration performance review): commits, A/B verdicts, harness location. Transient: delete when merged. |
 | [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
 ## Archive
 
