@@ -1075,12 +1075,59 @@ Suggestion: store the originating `MatchResult` on transition and stub (one refe
 so `getKey()` is stable, and compare with `equals` as a fallback. `MatchResult` already
 has proper `equals` and a cached hash (`lts/MatchResult.java:114-157`).
 
+Fixed on branch `confluent-diamond` (2026-09-25; handoff note
+`claude/confluent-diamond-state.md` there) by comparing with `equals`, without the stored
+key (see 2.2). Revived, the shortcut was unsound in three situations, now guarded: without
+collapsing (the shared target merges states the GTS keeps apart); when the two sides
+create different nodes; and in multigraphs when one event erases a copy of an edge whose
+content the other creates, since which copy survives depends on the order.
+`BasicEvent.conflicts` therefore now compares erased and created edges by content
+(source, label, target) for simple and multigraphs alike, allocation-free; before, it
+compared created edge images in simple graphs only and reported no conflict in
+multigraphs. Parallel creation of content-equal edges commutes on identities through the
+gh #905 pool; the diamond then closes on graphs but not on the provenance of the created
+edges, as without the shortcut (gh #926). Validated by running the normal application
+alongside every shortcut over the non-GUI suite (32,223 shortcuts, 1,070 in multigraphs,
+no mismatch); `ConfluentDiamondTest` on `junit/samples/parallel-creators` guards the
+multigraph case. A/B, master 6af3e730c against the branch, one JVM per row and build,
+1 warm-up and 3 runs, two rounds with the order swapped, mean of the two `med ms`;
+counts identical:
+
+| row | diamonds | A | B | B/A |
+|---|---|---|---|---|
+| `leader-election-14` | 295,681 | 5694 | 2644 | 0.46 |
+| `inheritance-12` | 2,044,881 | 19096 | 14334 | 0.75 |
+| `as-and-bs-4-3` | 532,255 | 4960 | 3723 | 0.75 |
+| `mark-unmark-18` | 293,377 | 10720 | 8353 | 0.78 |
+| `mergers-9-multi` | 39,046 | 1606 | 1422 | 0.89 |
+| `mergers-9-simple` | 38,740 | 1460 | 1426 | 0.98 |
+| `pump-12-6-dpo` | 32,616 | 6214 | 6130 | 0.99 |
+| `pump-12-6-spo` | 34,380 | 6281 | 6271 | 1.00 |
+| `petrinet-pipe-9-9` | 0 | 11528 | 11521 | 1.00 |
+| `pacman-four-ghosts` (1 run) | 0 | 130768 | 132709 | 1.01 |
+
+The saving is in `iso` and `gen` (`leader-election-14`: 1.7 to 0.4 s and 4.2 to 1.2 s);
+allocation falls by up to 57 %. pacman never reaches the diamond branch (turn flags
+alternate its two rules). In `petrinet-pipe-8-8`, 92 % of the 85,078 candidates fail on
+a symmetric parent transition (interchangeable tokens), and the rest involve composite
+events, for which `conflicts` answers true; lifting that (sound pairwise over sub-events,
+given the `forall` handling of `RuleDependencies`) would still close none, since those
+candidates have no explored sibling or create token nodes, which the node guard refuses.
+
 **2.2 `getKey()` allocates inside the stub set's hash and equality functions.** Medium
 to high / medium / high. Consequence of 2.1: `StateCache.createStubSet`
 (`lts/StateCache.java:399-418`) calls `stub.getKey(getState())` in both `getCode` and
 `areEqual`; `computeTransitionMap` (`:338-351`) per element; `addTransition`
 (`:74-92`) three times per transition. Each fresh `MatchResult` recomputes its hash from
 `step.hashCode() + event.hashCode()`. The stored key from 2.1 fixes this for free.
+
+Not done (2026-09-25): the stored key is not free. A stub is 32 bytes and a `MatchResult`
+another 32, so storing it costs 24 to 36 bytes per retained transition, 4 to 6 % of the
+retained heap on `leader-election-16` and 11 to 15 % on `pacman-four-ghosts`. Regenerating
+it costs little: a JFR profile of `leader-election-16` on the `confluent-diamond` tip
+(1 ms sampling, 5,594 samples) has `getKey`/`MatchResult` frames in 0.6 % of the samples,
+the stub set's equator in 3, the key comparison inside `getOutStub` in 0.16 %, and
+`MatchResult` at 2.6 % of the allocation pressure, short-lived. Impact rating: low.
 
 **2.3 The certifier is held by a `WeakReference`.** Medium to high / small / medium on
 magnitude. `grammar/host/DeltaHostGraph.java:468-483`. A weak reference is cleared at
@@ -1865,8 +1912,11 @@ the exploration thread itself, uncontended.
    loops, no design risk; a few per cent each.
 7. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
    certifier reference; each restores an optimisation that exists but does not work.
+   2.1 done 2026-09-25 on branch `confluent-diamond` (up to 54 % off, see there); 2.2
+   dropped as not worth its footprint. Next: 2.4 and 2.3 on one iso branch.
 8. Section 3 (costs scaling with the wrong quantity): the certifier array, the eager
    certificate map, the interning edge probe. Each is small and independently measurable.
+   3.1 done (item 4); 3.2 fixed on master in 19dbd4194, time-neutral (see there).
 9. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
    `Search` reuse, NAC context maps, algebra reflection, `Valuator` lambdas, match-set
    sizing.

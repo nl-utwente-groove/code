@@ -26,7 +26,8 @@ recalibrated (`hub-wander-200` added; no size of it lands in the long tier), the
 tier was re-run on the repaired code with every non-recipe row within noise, and the
 random-access recipe rows re-measured (time level with swing mode, the single-launch
 wander rows retaining 3.7 times as much). `binary-tree-dfs-unstored-9` was dropped as
-collector-bound at 4 GB. No finding of the review itself is implemented.
+collector-bound at 4 GB. Findings implemented since, each on its own branch: 3.1/3.13,
+4.3.2, 3.2 (Arend, master) and 2.1 (2026-09-25); see "Next".
 
 Measurement discipline, learnt the hard way: the tier table serves counts, breakdown and
 order of magnitude; a change is judged one JVM per row, alternating the two builds, on a
@@ -53,9 +54,11 @@ and outcomes" in the note).
    before/after numbers in the A/B shape. `Reporter` first: it is on the innermost loop
    and also the harness's own breakdown source, so gate it on a system property and run
    the harness once with it on (for the breakdown) and once off (for the headline).
-4. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
-   goes non-zero on `inheritance`; 2.3 soft certifier reference; 2.4 refinement loop
-   (gate with `grammar-smoke`); 2.5 to 2.7 freezing and chain replay.
+4. Section 2 (dead optimisations): 2.1 done 2026-09-25 on branch `confluent-diamond`
+   (shortcut revived with content-based event conflicts, up to 54 % off; figures under
+   2.1 in the note); 2.2 dropped (footprint, see there). Next: 2.4 refinement loop and
+   2.3 soft certifier reference, on one iso branch (gate with `grammar-smoke` and
+   `determinism-check`); then 2.5 to 2.7 freezing and chain replay.
 5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
    does not fit 8 GB; intermediate edge densities untried); then section 3.
 
