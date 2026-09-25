@@ -1149,6 +1149,41 @@ built only in `areGraphEqual` for states that reach a comparison. Same for the
 `COLLAPSE_EQUAL` branch at `GTS.java:1134`. (`claude/archive/iso-edge-bundles.md`
 already records this cost.)
 
+Fixed on master in 19dbd4194 (Arend, 2026-09-25): both branches guard on a non-empty
+prime stack. A/B on 2026-09-25: A = this branch at 06fb020f2, B = A plus 19dbd4194,
+14 rows, four JVMs per row in the order A, B, B, A, JDK 25, `-da -Xmx4g
+-XX:+UseParallelGC`, harness default of 2 warm-ups and 5 runs (2 h 15 min). Counts
+identical throughout. Allocation falls where expected: `hub-chain-1000-1` 313 to
+190 MB, `mark-unmark-21` 71.3 to 68.4 GB, `leader-election-16` 56.3 to 54.5 GB,
+`inheritance-12` 35.0 to 32.6-34.1 GB. Time does not follow; the impact rating above
+does not hold, the map being short-lived garbage that the collector absorbs. Mean of the
+two JVMs' `med ms`, A to B:
+
+| row | A | B | B/A |
+|---|---|---|---|
+| `mark-unmark-21` | 60466 | 59774 | 0.99 |
+| `hub-chain-1000-1` | 8657 | 8505 | 0.98 |
+| `mergers-10-multi` | 23099 | 22932 | 0.99 |
+| `car-platooning-05` | 3739 | 3731 | 1.00 |
+| `count-300000` | 5380 | 5395 | 1.00 |
+| `pump-12-6-dpo` | 6129 | 6162 | 1.01 |
+| `petrinet-pipe-9-9` | 12347 | 12481 | 1.01 |
+| `as-and-bs-equality` (control) | 7026 | 7108 | 1.01 |
+| `hub-chain-200-2` | 12424 | 12827 | 1.03 |
+| `hub-wander-200` | 21461 | 22713 | 1.06 |
+| `append-4-list-8` | 2001 | 1792 | 0.90, one slow A JVM |
+| `as-and-bs-4-3` | 5068 | 5329 | 1.05, one slow B JVM |
+| `inheritance-12` | 19434 | 20274 | 1.04, one slow B JVM |
+| `leader-election-16` | 30092 | 32312 | unreadable, the A JVMs 15 % apart |
+
+Open: `hub-wander-200` is slower in both B JVMs, with the harness's `iso`/`cert`
+columns up by the same 1.2 s (`hub-chain-200-2` leans the same way), although wander's
+recipe states have non-empty stacks and take the unchanged path. Unexplained; possibly
+JIT variance as on the swing rows. Follow-up: that row alone in six to eight
+alternating JVMs, then a profile if it holds. The two builds are kept as worktrees
+`.claude/worktrees/ab32-a` and `ab32-b` (B carries the fix uncommitted); logs and loop
+script were in the session scratchpad, not kept.
+
 **3.3 Singular edge lookups mint and permanently intern a probe edge.** High / medium /
 high. `match/plan/Edge2SearchItem.java:319-333`: `getEdgeImage` calls
 `host.getFactory().createEdge(sourceFind, type, targetFind)`, and `HostFactory.createEdge`

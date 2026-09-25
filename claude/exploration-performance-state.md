@@ -41,6 +41,10 @@ and outcomes" in the note).
    (probe table, null annotations, probe table replaced by a per-thread scratch array
    after it lost the A/B on `leader-election-14`), gates passed, merged into this branch
    and master 2026-09-24; branch and worktree cleaned up. Figures under 3.13 in the note.
+   Finding 3.2: fixed by Arend on master (19dbd4194), A/B 2026-09-25 under 3.2 in the
+   note: allocation down, time level, `hub-wander-200` 6 % slower and unexplained.
+   Worktrees `ab32-a`/`ab32-b` are kept for that follow-up; do not remove them in a
+   cleanup unless Arend says so explicitly.
 2. Finding 4.3.2 (per-node edge sets): the whole of the Simulator-mode cost on large
    graphs, 11 to 33 times on the hub rows; a design discussion first (copy-on-write
    sets or sharing), since copying is what the mode asks for.
