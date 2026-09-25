@@ -28,9 +28,22 @@ merged. Background: finding 2.1 of `claude/exploration-performance.md` (on branc
   JVM flags via `-DcoverageAgent=...` or hard-wire them (a plain `-D` never reaches the
   surefire fork).
 
+## A/B timing (2026-09-25)
+
+Master 6af3e730c vs tip, one JVM per row and build, 1 warm-up + 3 runs, two rounds with
+the order swapped; mean of the two medians; counts identical everywhere.
+`leader-election-14` 5.69 -> 2.64 s (-54 %), `inheritance-12` 19.10 -> 14.33 s (-25 %),
+`as-and-bs-4-3` 4.96 -> 3.72 s (-25 %), `mark-unmark-18` 10.72 -> 8.35 s (-22 %),
+`mergers-9-multi` 1.61 -> 1.42 s (-11 %); within noise: `mergers-9-simple`, both
+`pump-12-6` rows (shortcut on about 3 % of transitions), `petrinet-pipe-9-9` and
+`pacman-four-ghosts` (single run), the last two with no diamond closed at all.
+Open lead: why petrinet and pacman close none (suspects: `parentOut.isSymmetry()`
+guard with interchangeable tokens, or modifying control steps).
+
 ## Next
 
-1. A/B timing (check first that no other session is timing on the machine), one JVM per row, alternating master and branch builds; harness and
+1. Done: A/B timing (above). Copy the figures to finding 2.1 of
+   `claude/exploration-performance.md` when that branch is next touched., one JVM per row, alternating master and branch builds; harness and
    grammars borrowed from `exploration-performance` (not on this branch). Rows:
    `leader-election-14` (one round done: 5.6 s -> 2.6 s, 295,681 diamonds),
    `pacman-four-ghosts`, `petrinet-pipe-9-9`, `mergers-9-simple`, plus multigraph rows
