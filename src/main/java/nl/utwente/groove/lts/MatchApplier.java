@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.Arrays;
+
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.CallStack;
@@ -71,11 +73,16 @@ public class MatchApplier {
         if (!match.getStep().isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(source, match, source, false);
-            } else if (match.hasTransition()) {
+            } else if (match.hasTransition() && getGTS().getRecord().isCollapse()
+                && getGTS().hasSimpleGraphs()) {
                 // try to find the target state by walking around three previously
                 // generated sides of a confluent diamond
                 // the parent state is the source of source
                 // the sibling is the child reached by the virtual event
+                // Without collapsing, the shared target would merge states that
+                // the GTS keeps apart; in a multigraph, the two sides of the
+                // diamond create distinct parallel edge copies, so their
+                // targets are isomorphic but not equal
                 assert source instanceof GraphNextState;
                 var parentOut = match.getTransition();
                 assert parentOut != null && source != parentOut.source();
@@ -85,7 +92,13 @@ public class MatchApplier {
                     && !match.getEvent().conflicts(sourceKey.getEvent())) {
                     GraphState sibling = parentOut.target();
                     RuleTransitionStub siblingOut = sibling.getOutStub(sourceKey);
-                    if (siblingOut != null) {
+                    // the target is only shared if both sides of the diamond
+                    // create the same nodes, as otherwise the transition would
+                    // claim an identity that does not exist
+                    if (siblingOut != null && getReusedCreatedNodes(source, match) != null
+                        && Arrays
+                            .equals(siblingOut.getAddedNodes(sibling),
+                                    ((GraphNextState) source).getAddedNodes())) {
                         transition = createTransition(source, match, siblingOut.getTarget(sibling),
                                                       siblingOut.isSymmetry());
                         confluentDiamondCount++;
