@@ -35,4 +35,10 @@ merged. Background: finding 2.1 of `claude/exploration-performance.md` (on branc
    `leader-election-14` (one round done: 5.6 s -> 2.6 s, 295,681 diamonds),
    `pacman-four-ghosts`, `petrinet-pipe-9-9`, `mergers-9-simple`, plus multigraph rows
    (`mergers-9-multi`, pump, default-semantics grammars).
-2. Second commit for finding 2.2: store the key so `getKey()` stops allocating.
+2. Finding 2.2 (store the key so `getKey()` stops allocating) investigated 2026-09-25 and
+   dropped: a stored `MatchResult` costs +24 to +36 bytes per retained stub (4-6 % of the
+   retained heap on `leader-election-16`, 11-15 % on `pacman-four-ghosts`), while
+   regenerating costs 0.6 % of CPU samples on `leader-election-16` (JFR, 1 ms sampling),
+   0.16 % for the key comparison in `getOutStub`, and 2.6 % of the allocation pressure.
+   Record this under finding 2.2 in `claude/exploration-performance.md` when that branch
+   is next touched.
