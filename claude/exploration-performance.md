@@ -1141,6 +1141,42 @@ for derived data (`util/cache/AbstractCacheHolder.java:100`; `graph/GraphCache.j
 keeps the certifier inside the soft cache). Suggestion: soft reference, or route through
 the graph cache as `AGraph` does; honour `strong` in `hasCertifier`.
 
+Measured and rejected on branch `iso-refinement` (2026-09-25). A probe on the accessors
+first counted what the weak reference costs, one exploration per row: the certifier was
+gone at the presence check in 3 % of the checks on `leader-election-14` (20,153 of
+673,350; two checks per equality test), 17 % on `mark-unmark-18` (272,706 of 1,645,058)
+and 0.5 % on `petrinet-pipe-8-8` (818 of 157,302). A lost certifier mostly makes
+`areGraphEqual` copy the stored graph's sets instead of comparing certificate-map keys;
+it is recomputed only when the graphs then differ: none of 386,295 certifiers on
+leader-election-14, 42,223 of 870,913 on mark-unmark-18, 818 of 91,521 on
+petrinet-pipe-8-8. The soft reference was then built (with `hasCertifier` honouring
+`strong`) and measured A/B: A = master 3624a9a02, B1 = A plus the 2.4 commit, B2 = B1
+plus the soft reference; one JVM per row and build, 1 warm-up and 3 runs (pacman 1 run,
+0 warm-ups), two rounds with the build order reversed, mean of the two `med ms`; counts
+identical wherever a run completed:
+
+| row | A | B2 | B2/A | retMB A | retMB B2 |
+|---|---|---|---|---|---|
+| `leader-election-16` | 10443 | 30512 | 2.92 | 1140 | 557 |
+| `pacman-four-ghosts` (1 run) | 130344 | 300 s timeout, both JVMs | > 2.3 | 1885 | |
+| `hub-chain-200-2` | 5287 | 5658 | 1.07 | 80 | 824 |
+| `petrinet-pipe-9-9` | 11377 | 11901 | 1.05 | 340 | 995 |
+| `mark-unmark-21` | 47024 | 46580 | 0.99 | 1281 | 2663 |
+| `hub-chain-1000-1` | 7534 | 7426 | 0.99 | 4.5 | 185 |
+| `pump-12-6-dpo` | 5994 | 5917 | 0.99 | 344 | 472 |
+| `as-and-bs-equality` (control) | 3334 | 3351 | 1.00 | 974 | 974 |
+
+Held softly, the certifiers of all stored states (each several times the size of a
+delta-shared graph: certificate objects, arrays, and the certificate and partition maps
+once built) crowd out the soft state caches, whose loss costs graph reconstruction: on
+leader-election-16 `gen` rises from 4.8 to 17.7 s and the retained heap halves as the
+caches go; pacman timed out at 187,152 of 210,102 states. Where recomputation does occur
+(mark-unmark) the soft reference gains nothing measurable. Routing through `GraphCache`
+would hold the certifier through the same soft `CacheReference`, with the same
+footprint, so it was not tried. Kept: only the `strong` argument of `hasCertifier`
+(7befad62d on `iso-refinement`), with a comment on the field recording why the
+reference stays weak. Impact rating: none; the finding is closed.
+
 **2.4 The refinement loop always runs one pass past discreteness.** Medium / small /
 high. `graph/iso/PartitionRefiner.java:95-123`. Pass 0 has `store == false` and forces
 `goOn`; pass 1 stores and yields `p1`; pass 2 stores only if `p1 < N`, so a discrete
@@ -1149,6 +1185,41 @@ cannot refine anything. Fixes: store on iteration 0, and break as soon as
 `nodePartitionCount == nodeCertCount` (a discrete node partition implies a discrete edge
 partition, since `MyEdge2Cert.equals` at `:682-689` compares endpoint certificates).
 Certificate values change, so gate with `grammar-smoke`.
+
+Done on branch `iso-refinement` (76de3e5f0, 2026-09-25): the loop counts the partition
+from the first pass and stops as soon as it is discrete or stops growing; `setSingular`
+takes a boolean, since storing on pass 0 would otherwise have marked every certificate
+duplicate (`setSingular(round)` tested `round > 0`). The claim about the edge partition
+holds: `MyEdge2Cert.equals` compares end node certificates, and
+`MyEdge1Cert.computeNewValue` is `(s << 8) + (s >> 24) + label`, injective in the source
+value `s` (the top byte survives in the second term, the rest in the first). Nothing pins
+certificate values (`CertificateStrategyTest` asserts equality across strategies and
+distinctness on hand-built fixtures; the goldens hold none); `ExplorationTest` counts,
+`DeterminismTest` and `CacheReconstructionTest` unchanged. Measured time-neutral in the
+A/B described under 2.3 (A = master 3624a9a02, B1 = A plus this commit; mean of two
+JVMs' `med ms`, `cert` likewise; counts identical):
+
+| row | A | B1 | B1/A | cert A | cert B1 |
+|---|---|---|---|---|---|
+| `hub-chain-1000-1` | 7534 | 7492 | 0.99 | 7494 | 7451 |
+| `hub-chain-200-2` | 5287 | 5434 | 1.03 | 5092 | 5246 |
+| `mark-unmark-21` | 47024 | 46340 | 0.99 | 24655 | 24479 |
+| `petrinet-pipe-9-9` | 11377 | 11626 | 1.02 | 4635 | 4844 |
+| `pump-12-6-dpo` | 5994 | 6214 | 1.04 | 1829 | 1782 |
+| `leader-election-16` | 10443 | 10630 | 1.02 | 1774 | 1856 |
+| `pacman-four-ghosts` (1 run) | 130344 | 131189 | 1.01 | 36581 | 38023 |
+| `as-and-bs-equality` (control) | 3334 | 3317 | 0.99 | 0 | 0 |
+
+The final pass is not where certification time goes: the hub chain rows spend hundreds
+of passes propagating along the chain, the symmetric rows (petrinet, pump, pacman) spend
+theirs in the symmetry-breaking rounds of `iterateCertificates2`, and for the rest the
+certifier's construction (certificate objects, edge bundles, lookup) dominates the one
+or two passes saved. `cert` leans up by 4 % on petrinet and pacman, within the two-JVM
+noise but possibly real: each trial refinement inside symmetry breaking now stops a pass
+earlier too, so its certificates discriminate less and more break rounds may follow.
+Impact rating: none. The commit stays on the branch as a simplification; whether a
+change of certificate values without a measured gain is worth merging is a review
+decision.
 
 **2.5 Frozen graphs are never taken when collapsing is off.** Medium / small / high.
 `lts/StateCache.java:293` (`isFreezeGraph` requires `freezeGraphs`, set from
@@ -1913,7 +1984,9 @@ the exploration thread itself, uncontended.
 7. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
    certifier reference; each restores an optimisation that exists but does not work.
    2.1 done 2026-09-25 on branch `confluent-diamond` (up to 54 % off, see there); 2.2
-   dropped as not worth its footprint. Next: 2.4 and 2.3 on one iso branch.
+   dropped as not worth its footprint. 2.4 and 2.3 done 2026-09-25 on branch
+   `iso-refinement`: 2.4 time-neutral, the soft reference of 2.3 measured and rejected
+   (see there). Next: 2.5 to 2.7.
 8. Section 3 (costs scaling with the wrong quantity): the certifier array, the eager
    certificate map, the interning edge probe. Each is small and independently measurable.
    3.1 done (item 4); 3.2 fixed on master in 19dbd4194, time-neutral (see there).

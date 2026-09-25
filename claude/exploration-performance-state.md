@@ -56,9 +56,11 @@ and outcomes" in the note).
    the harness once with it on (for the breakdown) and once off (for the headline).
 4. Section 2 (dead optimisations): 2.1 done 2026-09-25 on branch `confluent-diamond`
    (shortcut revived with content-based event conflicts, up to 54 % off; figures under
-   2.1 in the note); 2.2 dropped (footprint, see there). Next: 2.4 refinement loop and
-   2.3 soft certifier reference, on one iso branch (gate with `grammar-smoke` and
-   `determinism-check`); then 2.5 to 2.7 freezing and chain replay.
+   2.1 in the note); 2.2 dropped (footprint, see there). 2.4 and 2.3 done 2026-09-25 on
+   branch `iso-refinement` (handoff note `claude/iso-refinement-state.md` there): 2.4
+   measured time-neutral and kept as a simplification, 2.3's soft reference measured and
+   rejected (state caches evicted; leader-election-16 2.9 times slower), only the
+   `strong` argument honoured. Next: 2.5 to 2.7 freezing and chain replay.
 5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
    does not fit 8 GB; intermediate edge densities untried); then section 3.
 
