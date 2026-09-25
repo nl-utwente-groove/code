@@ -340,7 +340,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public void setPersistent(boolean persistent) {
         if (!isFresh() && persistent != this.persistent) {
-            throw Exceptions.illegalState("Persistence must be constant for the lifetime of the GTS");
+            throw Exceptions
+                .illegalState("Persistence must be constant for the lifetime of the GTS");
         }
         this.persistent = persistent;
         setStoring(persistent);
@@ -1145,8 +1146,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 return newNodeSet.equals(oldGraph.nodeSet())
                     && newEdgeSet.equals(oldGraph.edgeSet());
             } else {
-                return this.checker
-                    .areIsomorphic(newGraph, oldGraph, newCallStack, oldCallStack);
+                return this.checker.areIsomorphic(newGraph, oldGraph, newCallStack, oldCallStack);
             }
         }
 
@@ -1166,7 +1166,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
                 result += ctrlState.hashCode();
-                result += CallStack.hashCode(stateKey.getPrimeStack());
+                var primeStack = stateKey.getPrimeStack();
+                if (primeStack.length > 0) {
+                    result += CallStack.hashCode(primeStack);
+                }
             } else {
                 CertificateStrategy certifier
                     = this.checker.getCertifier(stateKey.getGraph(), true);
@@ -1174,8 +1177,11 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 result = certificate.hashCode();
                 Frame ctrlState = stateKey.getPrimeFrame();
                 result += ctrlState.hashCode();
-                result
-                    += CallStack.hashCode(stateKey.getPrimeStack(), certifier.getCertificateMap());
+                var primeStack = stateKey.getPrimeStack();
+                if (primeStack.length > 0) {
+                    result += CallStack
+                        .hashCode(stateKey.getPrimeStack(), certifier.getCertificateMap());
+                }
             }
             if (CHECK_CONTROL_LOCATION) {
                 // prime frames are normalised, so their canonical numbers can
