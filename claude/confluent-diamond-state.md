@@ -37,8 +37,15 @@ the order swapped; mean of the two medians; counts identical everywhere.
 `mergers-9-multi` 1.61 -> 1.42 s (-11 %); within noise: `mergers-9-simple`, both
 `pump-12-6` rows (shortcut on about 3 % of transitions), `petrinet-pipe-9-9` and
 `pacman-four-ghosts` (single run), the last two with no diamond closed at all.
-Open lead: why petrinet and pacman close none (suspects: `parentOut.isSymmetry()`
-guard with interchangeable tokens, or modifying control steps).
+Why petrinet and pacman close none (probe of the diamond branch, 2026-09-25): pacman
+never reaches it (turn flags alternate `moveGhosts` and `movePacman`, and `moveGhosts`
+alternatives disable each other). `petrinet-pipe-8-8`: 85,078 candidates, 92 % refused
+by `!parentOut.isSymmetry()` (interchangeable tokens); the 6,862 with composite events are
+all pairwise conflict-free, but half have no explored sibling and half fail the
+created-node guard (`smartRule` creates token nodes). So lifting the composite
+restriction of `conflicts` (sound pairwise over sub-events, given the forall handling of
+`RuleDependencies`; at most 9 sub-event pairs seen, a per-event erased-content index
+would bound large quantifiers) would close none here; left as is.
 
 ## Next
 
