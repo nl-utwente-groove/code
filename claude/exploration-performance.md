@@ -752,7 +752,13 @@ machine, 35 minutes. The eleven `hub` rows were replaced on 2026-09-24 by a run 
 rows alone, same flags and shape, one JVM, at `6707d4ddc`: the coanchor edge leak fix
 (`claude/archive/coanchor-edge-leak.md`) had lowered their `fEdges`, by half for the
 counted ring and by a third to a half for the star and wander rows, so their times also
-come from that separate run:
+come from that separate run. A re-run of the whole tier on 2026-09-25 at `67008a05e`
+(same flags and shape, one JVM, table order) found the factory counts of every other row
+identical except the three `pump` rows, whose `fEdges` fell from 82 and 180 to 61, 125
+and 126; those three rows are taken from that re-run. The other multigraph rows (every
+grammar without a `semantics` key runs under SPO-multi: inheritance, as-and-bs,
+sierpinsky, the binary tree, append, mark-unmark, car-platooning, and the mergers multi
+rows) never passed over a minted copy, so the fix left them untouched:
 
 ```
 config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
@@ -801,9 +807,9 @@ petrinet-pipe-8-8        12870    91520    12870     91520   2952.4   2949.5   2
 petrinet-pipe-9-9        48620   393822    48620    393822  12033.6  11977.3  12223.4      4040     32727    1299    8461    4835    9877      7       0  18061.1    340.3     109      217
 petrinet-join-100        20001    20000    20002     20001   8049.5   7884.9   8192.5      2485      2485    4379       0       0    1784     15       0  23027.9    483.2     502     1202
 petrinet-join-1000        2001     2000     2002      2001   9201.8   9091.1   9499.1       218       217    4827       0       0    2117     27       0  22580.1    418.4    5002    12002
-pump-8-4                  2143    38891     2143     38891    851.9    200.3    865.4      2516     45655      24     344     286     747      2       0    333.3     13.5       5       82
-pump-12-6-dpo            36894  1231379    36894   1231379   6357.8   6342.2   6408.5      5803    193680     153    2704    1941    5588     14       0  12100.5    344.8       7      180
-pump-12-6-spo            37026  1267481    37026   1267481   6469.8   6424.1   6500.0      5723    195908     135    2791    1984    5755     14       0  12434.2    351.2       7      180
+pump-8-4                  2143    38891     2143     38891    722.7    176.9    786.9      2965     53813      26     284     236     621      5       0    338.1     13.4       5       61
+pump-12-6-dpo            36894  1231379    36894   1231379   5930.5   5929.3   5944.4      6221    207635     151    2631    1889    5277      8       0  11767.8    344.0       7      125
+pump-12-6-spo            37026  1267481    37026   1267481   6130.3   6076.4   6140.2      6040    206758     135    2728    1977    5440     12       0  12083.1    351.5       7      126
 mergers-6                  202      681      202       681     42.4     31.8     50.9      4763     16056       4       6       4      27      1       0      9.2      0.8       6       83
 mergers-9-simple         25145   255596    25145    255596   1644.7   1638.1   1648.0     15288    155404      98     414     294    1373      3       0   2890.7    181.4       9      245
 mergers-9-injective      12775    60718    12775     60718    499.2    493.3    530.4     25591    121632      62     120      77     376      0       0    801.9     81.6       9      236
@@ -846,7 +852,9 @@ quick-tier baseline ran on 25.0.4.1, so the two tables are not to be compared ac
 44 minutes in all. `count-600000` predates the `probe-odd` rule (with it: 131 s in a
 single cold run, 1 500 001 transitions); `petrinet-pipe-11-11` and `pump-16-8-dpo` were
 added to the tier afterwards and have calibration runs only (249 s and 169 s, see the
-grammar set).
+grammar set). The four multigraph rows (`append-4-list-10`, `car-platooning-06`, the
+unstored tree and `mark-unmark-22`) were re-run on 2026-09-25 at `67008a05e` after the
+coanchor edge leak fix: factory counts identical, times within 7 %, so the table stands.
 
 ```
 config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
