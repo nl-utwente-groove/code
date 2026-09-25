@@ -51,6 +51,7 @@ import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.RuleEffect.Fragment;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.cache.CacheReference;
@@ -262,31 +263,47 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
     public boolean conflicts(RuleEvent other) {
         boolean result;
         if (other instanceof BasicEvent event) {
-            result = false;
-            // the edge checks only apply to simple graphs: in a non-simple
-            // graph, created edges are parallel copies outside the source
-            // graph, so they never coincide with erased edges, and the
-            // created-edge sets are not computed (see #computeSimpleCreatedEdges)
-            if (getHostFactory().isSimple()) {
-                // check if the other creates edges that this event erases
-                Iterator<HostEdge> myErasedEdgeIter = getErasedEdges().iterator();
-                HostEdgeSet otherCreatedEdges = event.getSimpleCreatedEdges();
-                while (!result && myErasedEdgeIter.hasNext()) {
-                    result = otherCreatedEdges.contains(myErasedEdgeIter.next());
-                }
-                if (!result) {
-                    // check if the other erases edges that this event creates
-                    Iterator<HostEdge> myCreatedEdgeIter = getSimpleCreatedEdges().iterator();
-                    HostEdgeSet otherErasedEdges = event.getErasedEdges();
-                    while (!result && myCreatedEdgeIter.hasNext()) {
-                        result = otherErasedEdges.contains(myCreatedEdgeIter.next());
-                    }
-                }
-            }
+            // the events conflict if one erases an edge with the content of
+            // an edge the other creates: in a simple graph, whether the edge
+            // survives depends on the order; in a non-simple graph, where the
+            // created edge is a parallel copy, which copy survives does
+            result = erasesCreatedContent(event) || event.erasesCreatedContent(this);
         } else {
             result = true;
         }
         return result;
+    }
+
+    /**
+     * Indicates if this event erases an edge with the same source, label and
+     * target as an edge created by another event. Only the other's creator
+     * edges between reader nodes are considered: an edge with a created end
+     * cannot have the content of an edge in the source graph. The ends of those
+     * creator edges are creator ends, which have images in the anchor map.
+     * The test is by content rather than by the created edge images, so it
+     * does not mint edges in the factory, and it applies to simple and
+     * non-simple graphs alike. It is slightly conservative: a creator edge
+     * is considered even if the other event erases one of its ends, in which
+     * case the edge is not actually created.
+     * @param other the event whose created edges are compared
+     */
+    @AIGenerated("Claude Opus 5.5, 2026-09")
+    private boolean erasesCreatedContent(BasicEvent other) {
+        RuleEdge[] creators = other.getAction().getSimpleCreatorEdges();
+        if (creators.length == 0 || getAction().getEraserEdges().length == 0) {
+            return false;
+        }
+        RuleToHostMap otherAnchorMap = other.getAnchorMap();
+        for (HostEdge erased : getErasedEdges()) {
+            for (RuleEdge creator : creators) {
+                if (erased.source() == otherAnchorMap.getNode(creator.source())
+                    && erased.target() == otherAnchorMap.getNode(creator.target())
+                    && erased.label().equals(otherAnchorMap.mapLabel(creator.label()))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

@@ -73,16 +73,26 @@ public class MatchApplier {
         if (!match.getStep().isModifying()) {
             if (!rule.isModifying()) {
                 transition = createTransition(source, match, source, false);
-            } else if (match.hasTransition() && getGTS().getRecord().isCollapse()
-                && getGTS().hasSimpleGraphs()) {
+            } else if (match.hasTransition() && getGTS().getRecord().isCollapse()) {
                 // try to find the target state by walking around three previously
                 // generated sides of a confluent diamond
                 // the parent state is the source of source
                 // the sibling is the child reached by the virtual event
                 // Without collapsing, the shared target would merge states that
-                // the GTS keeps apart; in a multigraph, the two sides of the
-                // diamond create distinct parallel edge copies, so their
-                // targets are isomorphic but not equal
+                // the GTS keeps apart
+                // The new transition claims that applying the event at source
+                // yields exactly the sibling's target, including edge identities.
+                // In a multigraph, two content-equal created edges commute on
+                // identities only because a created parallel copy is resolved
+                // from the graph and the edge content alone (gh #905): either
+                // order adds the first two copies absent from the parent.
+                // Erasing a copy frees an identity that a creation may take,
+                // which is why RuleEvent#conflicts compares edge content.
+                // Such a diamond closes on graphs, but not on the provenance of
+                // created elements: along one side a created edge is the one
+                // copy, along the other side the other, since both closing
+                // legs are inclusions; this is how the transitions would be
+                // recorded without the shortcut as well (gh #926)
                 assert source instanceof GraphNextState;
                 var parentOut = match.getTransition();
                 assert parentOut != null && source != parentOut.source();
