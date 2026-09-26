@@ -636,15 +636,14 @@ The columns of the table: `states` and `trans`, the stored counts; `disc.st` and
 start state materialises (under `persistence=none` the GTS keeps only the written-back
 trace, so its own counts describe the storage policy, not the work; for persistent rows
 the two coincide); `med ms`, `min ms`, `max ms`;
-`states/s` and `trans/s`; `match`, `iso`, `cert` (the certification part of `iso`),
-`gen` (state generation after matching) and `rep` (the `Reporter`'s self-time), all in
-ms, as deltas of the static `Reporter` counters that `StatisticsReporter` also prints at
-`Generator -v 3` (they accumulate over the JVM's lifetime and are never reset); `confl`,
-the confluent-diamond count of 2.1; `allocMB`, the per-thread allocated bytes of the
-exploring thread; `retMB`, the retained heap after two GCs with the GTS still referenced;
+`states/s` and `trans/s`; `confl`, the confluent-diamond count of 2.1; `allocMB`, the
+per-thread allocated bytes of the exploring thread; `retMB`, the retained heap after two GCs with the GTS still referenced;
 `fNodes` and `fEdges`, the host factory's node and edge counts, which are the elements it
 ever made, not the final graph's (the signal for 3.3 and for value-node growth).
-Non-timing columns come from the median run.
+Non-timing columns come from the median run. Since the `Reporter`'s retirement (branch
+`retire-reporter`, 2026-09-26) the per-phase breakdown comes from a JFR profile of the
+row (recipe in `claude/exploration-performance-state.md` under "Facts that cost time to
+find").
 
 The harness reaches the two management beans it uses (`RuntimeMXBean.getInputArguments`
 for the JVM flags, `com.sun.management.ThreadMXBean.getThreadAllocatedBytes` for the
@@ -682,12 +681,12 @@ tier. Quick rows run at `-Xmx4g`; long rows are sized for two to five minutes at
 Two run shapes, for two purposes:
 
 - **The table run**: the whole quick tier in one JVM in table order, two warm-ups and
-  three measured runs, the launch flags. It yields pinned counts, the breakdown columns
-  and the order of magnitude of every row; it cannot decide whether a change of under
+  three measured runs, the launch flags. It yields pinned counts and the order of
+  magnitude of every row; it cannot decide whether a change of under
   about 10 % helped (see the quick baseline).
 - **One JVM per row**: for decisions and for the long tier. A fix is measured on the rows
   it targets, before and after alternating per row (the A/B shape of the quick
-  baseline), and the table is re-run only to refresh the breakdown. The long tier runs
+  baseline), and the table is re-run only to refresh the overview. The long tier runs
   this way with one warm-up and two measured runs, which also lets a row that does not
   fit fail alone:
 
@@ -702,9 +701,7 @@ Calibration of a new row uses the same loop: `-1` counts, no warm-up, one run.
 
 Profiling a row: a JFR profile of a single run of one row (no warm-up) is how 3.12 was
 located; the search plans of a row are printed by flipping the compile-time constant
-`PlanSearchEngine.PRINT`, as for `hub-field-hop`. Once 1.1 lands (the `Reporter` gated on
-a property), each measurement wants two runs, with the property on for the breakdown and
-off for the headline number.
+`PlanSearchEngine.PRINT`, as for `hub-field-hop`.
 
 ### Calibration facts
 

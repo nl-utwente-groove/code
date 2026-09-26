@@ -47,18 +47,15 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.MatchApplier;
-import nl.utwente.groove.match.plan.PlanSearchStrategy;
 import nl.utwente.groove.test.SlowTest;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.Reporter;
 
 /**
  * Throughput harness for state-space exploration.
@@ -83,10 +80,6 @@ import nl.utwente.groove.util.Reporter;
  * the measured region of every run rather than only of the first; that is
  * milliseconds against seconds and falls on every run alike, so it is
  * accepted rather than worked around.
- * <p>
- * The timing counters ({@link Exploration#getRunningTime()} and friends) are
- * static and accumulate over the JVM's lifetime, so the harness reports
- * deltas.
  * <p>
  * <b>Running it.</b> The intended entry point is {@link #main(String[])}, run
  * outside Surefire so that assertions are off (the assertion-only costs listed
@@ -790,12 +783,6 @@ public class ExplorationBenchmark {
             gts.startState();
         }
         Exploration exploration = exploreType.newExploration(gts, null);
-        long runningBefore = Exploration.getRunningTime();
-        long matchingBefore = PlanSearchStrategy.searchFindReporter.getTotalTime();
-        long isoBefore = IsoChecker.getTotalTime();
-        long certifyingBefore = IsoChecker.getCertifyingTime();
-        long generateBefore = MatchApplier.getGenerateTime();
-        long reporterBefore = Reporter.getReportTime();
         int confluentBefore = MatchApplier.getConfluentDiamondCount();
         Runner runner = new Runner(exploration);
         Thread thread = new Thread(runner, "exploration-benchmark");
@@ -824,12 +811,7 @@ public class ExplorationBenchmark {
         int factoryEdges = gts.getHostFactory().getEdgeCount();
         long retained = settledHeap() - heapBefore;
         return new Measurement(wallNanos, states, transitions, counter.getStates(),
-            counter.getTransitions(), Exploration.getRunningTime() - runningBefore,
-            PlanSearchStrategy.searchFindReporter.getTotalTime() - matchingBefore,
-            IsoChecker.getTotalTime() - isoBefore,
-            IsoChecker.getCertifyingTime() - certifyingBefore,
-            MatchApplier.getGenerateTime() - generateBefore,
-            Reporter.getReportTime() - reporterBefore,
+            counter.getTransitions(),
             MatchApplier.getConfluentDiamondCount() - confluentBefore, runner.getAllocatedBytes(),
             retained, factoryNodes, factoryEdges);
     }
@@ -928,21 +910,21 @@ public class ExplorationBenchmark {
 
     /** Format of the table rows, with every column taken as a string. */
     private static final String HEAD_FORMAT
-        = "%-22s %7s %8s %8s %9s %8s %8s %8s %9s %9s %7s %7s %7s %7s %6s %7s %8s %8s %7s %8s";
+        = "%-22s %7s %8s %8s %9s %8s %8s %8s %9s %9s %7s %8s %8s %7s %8s";
 
     /** Format of a data row, matching {@link #HEAD_FORMAT} column for column. */
     private static final String ROW_FORMAT
-        = "%-22s %7d %8d %8d %9d %8.1f %8.1f %8.1f %9.0f %9.0f %7d %7d %7d %7d %6d %7d %8.1f %8.1f %7d %8d";
+        = "%-22s %7d %8d %8d %9d %8.1f %8.1f %8.1f %9.0f %9.0f %7d %8.1f %8.1f %7d %8d";
 
     /** Format of a CSV row, in the same column order. */
     private static final String CSV_FORMAT
-        = "%s,%d,%d,%d,%d,%.3f,%.3f,%.3f,%.1f,%.1f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d%n";
+        = "%s,%d,%d,%d,%d,%.3f,%.3f,%.3f,%.1f,%.1f,%d,%d,%d,%d,%d%n";
 
     /** Column headers of the report table. */
     private static final String HEADER_ROW = String
         .format(Locale.ROOT, HEAD_FORMAT, "config", "states", "trans", "disc.st", "disc.tr",
-                "med ms", "min ms", "max ms", "states/s", "trans/s", "match", "iso", "cert", "gen",
-                "rep", "confl", "allocMB", "retMB", "fNodes", "fEdges");
+                "med ms", "min ms", "max ms", "states/s", "trans/s", "confl", "allocMB", "retMB",
+                "fNodes", "fEdges");
 
     /** Separator below the column headers. */
     private static final String RULE_ROW = "-".repeat(HEADER_ROW.length());
@@ -959,9 +941,8 @@ public class ExplorationBenchmark {
                     median.discoveredStates(), median.discoveredTransitions(),
                     median.wallNanos() / 1e6, result.minNanos() / 1e6, result.maxNanos() / 1e6,
                     median.discoveredStates() / medianSeconds,
-                    median.discoveredTransitions() / medianSeconds, median.matching(),
-                    median.isoTotal(), median.certifying(), median.generate(), median.reporter(),
-                    median.confluent(), median.allocatedBytes() / 1048576.0,
+                    median.discoveredTransitions() / medianSeconds, median.confluent(),
+                    median.allocatedBytes() / 1048576.0,
                     median.retainedBytes() / 1048576.0, median.factoryNodes(),
                     median.factoryEdges());
     }
@@ -981,8 +962,8 @@ public class ExplorationBenchmark {
                 writer
                     .println("config,states,transitions,discoveredStates,discoveredTransitions,"
                         + "medianMs,minMs,maxMs,statesPerSec,"
-                        + "transPerSec,matchingMs,isoMs,certifyingMs,generateMs,reporterMs,"
-                        + "confluent,allocBytes,retainedBytes,factoryNodes,factoryEdges");
+                        + "transPerSec,confluent,allocBytes,retainedBytes,factoryNodes,"
+                        + "factoryEdges");
             }
             double medianSeconds = median.wallNanos() / 1e9;
             writer
@@ -991,9 +972,8 @@ public class ExplorationBenchmark {
                         median.discoveredTransitions(), median.wallNanos() / 1e6,
                         result.minNanos() / 1e6, result.maxNanos() / 1e6,
                         median.discoveredStates() / medianSeconds,
-                        median.discoveredTransitions() / medianSeconds, median.matching(),
-                        median.isoTotal(), median.certifying(), median.generate(),
-                        median.reporter(), median.confluent(), median.allocatedBytes(),
+                        median.discoveredTransitions() / medianSeconds, median.confluent(),
+                        median.allocatedBytes(),
                         median.retainedBytes(), median.factoryNodes(), median.factoryEdges());
         } catch (IOException exc) {
             System.out
@@ -1040,9 +1020,7 @@ public class ExplorationBenchmark {
     }
 
     /**
-     * The metrics of one exploration run. All times are in milliseconds and
-     * are deltas of the corresponding static counters, which accumulate over
-     * the JVM's lifetime.
+     * The metrics of one exploration run.
      * @param wallNanos wall time of {@link Exploration#play()}
      * @param states number of states retained in the resulting GTS
      * @param transitions number of transitions retained in the resulting GTS
@@ -1051,13 +1029,6 @@ public class ExplorationBenchmark {
      * the configuration switches persistence off
      * @param discoveredTransitions number of transitions the exploration
      * discovered, likewise
-     * @param running delta of {@link Exploration#getRunningTime()}
-     * @param matching delta of the matcher's {@code Search.find()} reporter
-     * @param isoTotal delta of {@link IsoChecker#getTotalTime()}
-     * @param certifying delta of {@link IsoChecker#getCertifyingTime()}
-     * @param generate delta of {@link MatchApplier#getGenerateTime()}
-     * @param reporter delta of {@link Reporter#getReportTime()}, i.e. the
-     * instrumentation's own cost
      * @param confluent delta of {@link MatchApplier#getConfluentDiamondCount()}
      * @param allocatedBytes bytes allocated on the exploring thread, or
      * {@code -1} if the JVM does not support the measurement
@@ -1073,10 +1044,8 @@ public class ExplorationBenchmark {
      * @param factoryEdges number of host edges the GTS's host factory holds
      */
     public record Measurement(long wallNanos, int states, int transitions, int discoveredStates,
-                              int discoveredTransitions, long running, long matching, long isoTotal,
-                              long certifying, long generate, long reporter, int confluent,
-                              long allocatedBytes, long retainedBytes, int factoryNodes,
-                              int factoryEdges) {
+                              int discoveredTransitions, int confluent, long allocatedBytes,
+                              long retainedBytes, int factoryNodes, int factoryEdges) {
         // no additional members
     }
 
