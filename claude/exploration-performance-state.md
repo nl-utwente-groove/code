@@ -54,10 +54,11 @@ and outcomes" in the note).
    1.3; section 1 is 11 to 16 % of the samples on the profiled rows). Status: 1.2
    (`CHECK_IMAGES`) fixed on master `1726ed599`; 1.1 retired, not gated, on branch
    `retire-reporter` off master (tip 61e000e7f, detached for review in its own worktree),
-   already merged into this branch (f303e1ba7) with the harness columns `match`, `iso`,
-   `cert`, `gen` and `rep` dropped (6a9670de9); merge `retire-reporter` into master before
-   or together with this branch. The profile recipe under "Facts" replaces the columns. 1.3: done on this
-   branch (c8adba7b6, 2026-09-26), lock-preserving fast path with a volatile holder; A/B
+   not merged into this branch (the fixes go on their own branches off master, this
+   branch keeps the note and the harness); the harness columns `match`, `iso`, `cert`,
+   `gen` and `rep`, which read the class, were dropped here in advance (58139ff9c). The profile recipe under "Facts" replaces the columns. 1.3: done on branch
+   `factory-fast-path` off master (tip 3e6e7f7f7, 2026-09-26, detached for review in its
+   own worktree), lock-preserving fast path with a volatile holder; A/B
    under 1.3 in the note: every row 2 to 11 % faster, direction uniform, single rows
    inside the noise. 1.4 to 1.6 remain (each 1 to 3 % sampled),
    1.6 (`java.util.Stack` to `ArrayDeque`) the cheapest. A `@DebugFlag` marker plus test,
@@ -156,7 +157,8 @@ JVM per row), pin counts, one commit per grammar; only the harness reads
   shortcut active but closing few diamonds per transition; an A/B of 2.1 on the pump rows
   decides whether the conflict check needs a cheaper pre-test.
 
-- Whether the section 1 to 4 fixes go on this branch or one branch per section (the
-  note is here, the fixes are independent; one branch per section is the house style).
+- Decided 2026-09-26: fixes go on their own branches off master (`retire-reporter`,
+  `factory-fast-path`); this branch carries only the note, the state file, the harness
+  and the A/B records.
 - `STATE_SET_RESOLUTION` (4.4.9) and the plan-ordering heuristics (5.3, 5.8) need
   measurement before any decision.

@@ -1123,8 +1123,10 @@ intervals, its self-time is undercounted by two orders of magnitude, and JFR giv
 same breakdown per row in a minute (recipe under "Facts" in the state note). Done on
 branch `retire-reporter` (three commits, tip 61e000e7f, off master 1726ed599: per-exploration
 running time by `nanoTime`, four printing-only speed tests deleted, the class and its
-brackets removed), merged into this branch in f303e1ba7; the harness columns `match`, `iso`,
-`cert`, `gen` and `rep` went with it in 6a9670de9. Awaiting the merge into master.
+brackets removed). Not merged into this branch: the fixes live on their own branches off
+master, this branch keeps the note and the harness; the harness columns `match`, `iso`,
+`cert`, `gen` and `rep`, which read the class, were dropped here in advance. Awaiting the
+merge into master.
 
 A/B of the retirement, 2026-09-26 17:40 to 17:55: A = the branch at 4629b69a7 (reporter
 on), B = the branch at 6ada74d8c (reporter gone, master otherwise identical), four JVMs per
@@ -1196,12 +1198,14 @@ build, `set`, `reset` and dependency registration under the lock. Advised shape:
 same-thread nested read during a build sees `builders` non-null and takes the slow path,
 so dependencies are still recorded; a cross-thread read during a build blocks as today;
 the only outcome removed is the spurious cross-thread dependency that lock order
-sometimes recorded. Implemented in that shape on this branch (c8adba7b6, 2026-09-26): the
+sometimes recorded. Implemented in that shape on branch `factory-fast-path` off master
+(tip 3e6e7f7f7, 2026-09-26, detached for review in its own worktree): the
 value and the set flag are folded into one volatile `Holder` record, published after
 `create()` returns; `FactoryTest`, the fast suite and the null check pass.
 
 A/B 2026-09-26: A = the build with the previous `Factory` compiled alone and prepended to
-the classpath, B = the branch at c8adba7b6, six JVMs per row in the order A, B, B, A, A,
+the classpath, B = this branch with the fast path applied (the same file as 3e6e7f7f7),
+six JVMs per row in the order A, B, B, A, A,
 B, JDK 25, `-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and three runs, no foreign Java
 process throughout. Mean of the three JVMs' `med ms`:
 
