@@ -762,7 +762,7 @@ public class PlanSearchStrategy implements SearchStrategy, Fixable {
         private final int[] influenceCount;
 
         private final static boolean PRINT_MATCHES = false;
-        private final static boolean CHECK_IMAGES = true;
+        private final static boolean CHECK_IMAGES = false;
     }
 
 }
