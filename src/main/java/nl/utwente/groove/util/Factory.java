@@ -122,12 +122,6 @@ public abstract class Factory<T> implements Supplier<T> {
     @Nullable
     private volatile Holder<T> holder;
 
-    /** Wrapper distinguishing a computed value (which may be {@code null}) from none. */
-    @AIGenerated("Claude Fable 5.1, 2026-09")
-    private record Holder<V>(V value) {
-        // no members
-    }
-
     /**
      * Adds the currently registered builders as users of this factory.
      */
@@ -266,4 +260,9 @@ public abstract class Factory<T> implements Supplier<T> {
     static private volatile @Nullable Set<Factory<?>> builders;
     /** Shared empty set, to save memory. */
     static private final Set<Factory<?>> EMPTY_SET = Collections.emptySet();
+    /** Wrapper distinguishing a computed value (which may be {@code null}) from none. */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private record Holder<V>(V value) {
+        // no members
+    }
 }
