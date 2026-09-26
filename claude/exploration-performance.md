@@ -1124,6 +1124,30 @@ same breakdown per row in a minute (recipe under "Facts" in the state note). In 
 on branch `retire-reporter`; the harness columns `match`, `iso`, `cert`, `gen` and `rep`
 go with it.
 
+A/B of the retirement, 2026-09-26 17:40 to 17:55: A = the branch at 4629b69a7 (reporter
+on), B = the branch at 6ada74d8c (reporter gone, master otherwise identical), four JVMs per
+row in the order A, B, B, A, JDK 25, `-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and
+three runs, a process sampler seeing no other Java process throughout. Mean of the two
+JVMs' `med ms`:
+
+| row | A | B | B/A |
+|---|---|---|---|
+| `car-platooning-05` | 2465 | 2367 | 0.96 |
+| `fib-function-22` | 1995 | 1930 | 0.97 |
+| `mark-unmark` | 2039 | 2006 | 0.98 |
+| `as-and-bs-4-3` | 3831 | 3958 | 1.03 |
+| `leader-election-14` | 2717 | 2831 | 1.04 |
+| `hub-chain-200-2` (control, 0.2 % sampled) | 6020 | 6389 | 1.06 |
+
+Not measurable: the control row moved 6 % with nothing to gain, the two JVMs of one build
+differ by up to 17 % (`mark-unmark` A 2195 and 1883), and every A is 10 to 27 % slower than
+the same row in the baseline an hour earlier although the sampler saw nothing, so the
+machine was not quiet in the sense that matters. The effects sit inside that noise. The
+profile's 3 to 6 % is therefore neither confirmed nor refuted; the retirement stands on
+the obsolescence argument, not on a measured gain. A cleaner measurement would need many
+more alternations on short rows, which the gain does not justify.
+
+
 **1.2 `CHECK_IMAGES` runs a graph containment query per candidate image.** High / small /
 high. `match/plan/PlanSearchStrategy.java:530-537` and `:572-579`, flag `true` at `:765`.
 The `String.format` is inside the `assert`, the `containsNode`/`containsEdge` call is
