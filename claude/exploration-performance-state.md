@@ -52,11 +52,11 @@ and outcomes" in the note).
    sets or sharing), since copying is what the mode asks for.
 3. Section 1 of the note, profiled 2026-09-26 (JFR shares and unit costs under 1.1 to
    1.3; section 1 is 11 to 16 % of the samples on the profiled rows). Status: 1.2
-   (`CHECK_IMAGES`) fixed on master `1726ed599`; 1.1 being retired, not gated, on branch
-   `retire-reporter` off master (Opus session, 2026-09-26). When that branch is merged
-   into master and then into this branch, the harness loses its `match`, `iso`, `cert`,
-   `gen` and `rep` columns (they read the reporter counters) and the note's harness
-   section needs the same cut; the profile recipe under "Facts" replaces them. 1.3: a
+   (`CHECK_IMAGES`) fixed on master `1726ed599`; 1.1 retired, not gated, on branch
+   `retire-reporter` off master (tip 61e000e7f, detached for review in its own worktree),
+   already merged into this branch (f303e1ba7) with the harness columns `match`, `iso`,
+   `cert`, `gen` and `rep` dropped (6a9670de9); merge `retire-reporter` into master before
+   or together with this branch. The profile recipe under "Facts" replaces the columns. 1.3: a
    lock-preserving fast path is designed under 1.3 in the note, awaiting Arend's go;
    the hot callers are the `Rule` accessors. 1.4 to 1.6 remain (each 1 to 3 % sampled),
    1.6 (`java.util.Stack` to `ArrayDeque`) the cheapest. A `@DebugFlag` marker plus test,

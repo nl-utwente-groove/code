@@ -1120,9 +1120,11 @@ two adjacent reads. Sampling skid inflates lock attribution, so the expected gai
 6 % on rows with many `find()` calls per state. Decision (Arend, 2026-09-26): retire the
 class rather than gate it; its output is a millisecond-clock estimate over microsecond
 intervals, its self-time is undercounted by two orders of magnitude, and JFR gives the
-same breakdown per row in a minute (recipe under "Facts" in the state note). In progress
-on branch `retire-reporter`; the harness columns `match`, `iso`, `cert`, `gen` and `rep`
-go with it.
+same breakdown per row in a minute (recipe under "Facts" in the state note). Done on
+branch `retire-reporter` (three commits, tip 61e000e7f, off master 1726ed599: per-exploration
+running time by `nanoTime`, four printing-only speed tests deleted, the class and its
+brackets removed), merged into this branch in f303e1ba7; the harness columns `match`, `iso`,
+`cert`, `gen` and `rep` went with it in 6a9670de9. Awaiting the merge into master.
 
 A/B of the retirement, 2026-09-26 17:40 to 17:55: A = the branch at 4629b69a7 (reporter
 on), B = the branch at 6ada74d8c (reporter gone, master otherwise identical), four JVMs per
