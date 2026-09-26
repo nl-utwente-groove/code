@@ -86,7 +86,5 @@ public class IsoCheckerTool {
         System.out
             .printf("Done. Result: %b%n",
                     (IsoChecker.getInstance(true)).areIsomorphic(graph1, graph2));
-        System.out.printf("Certification time: %d%n", IsoChecker.getCertifyingTime());
-        System.out.printf("Simulation time: %d%n", IsoChecker.getSimCheckTime());
     }
 }

@@ -20,8 +20,6 @@ import static nl.utwente.groove.explore.util.ExplorationReporter.time;
 import static nl.utwente.groove.util.Verbosity.HIGH;
 import static nl.utwente.groove.util.Verbosity.MEDIUM;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +39,7 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.MatchApplier;
 import nl.utwente.groove.lts.MatchCollector;
 import nl.utwente.groove.lts.Status.Flag;
-import nl.utwente.groove.match.plan.PlanSearchStrategy;
 import nl.utwente.groove.transform.Record;
-import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Verbosity;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
@@ -158,27 +154,14 @@ public class StatisticsReporter extends AExplorationReporter {
         // Set the string builder before we start.
         this.sb = new StringBuilder();
         this.sbVerbosity = verbosity;
-        reportProfiling();
         reportStatistics();
         reportTime();
         reportSpace();
         reportLTS();
     }
 
-    private void reportProfiling() {
-        time("Reporting the profile");
-        emit(HIGH, "%n");
-        if (this.sbVerbosity.isHigh()) {
-            StringWriter sw = new StringWriter();
-            Reporter.report(new PrintWriter(sw));
-            this.sb.append(sw.toString());
-        }
-        emit(HIGH,
-             "===============================================================================%n");
-    }
-
     private void reportStatistics() {
-        if (Reporter.GATHER_STATISTICS) {
+        if (AGraph.GATHER_STATISTICS) {
             time("Reporting detailed statistics");
             reportGraphStatistics();
             reportGraphElementStatistics();
@@ -324,45 +307,10 @@ public class StatisticsReporter extends AExplorationReporter {
     /** Reports on the time usage. */
     private void reportTime() {
         time("Reporting time usage");
-        // Timing figures.
         long total = getExploration().getRunningTime();
-        // total time doing matching-related computations,
-        // including certificate calculation
-        long matching = PlanSearchStrategy.searchFindReporter.getTotalTime();
-        long isoChecking = IsoChecker.getTotalTime();
-        long generateTime = MatchApplier.getGenerateTime();
-        long building = generateTime - isoChecking;
-        long measuring = Reporter.getReportTime();
-
-        // This calculation incorporates only transforming RuleMatches into
-        // RuleApplications, bit weird maybe, but transforming is considered
-        // everything besides the calculation of matches, isomorphisms, adding
-        // to GTS, and reporter-duty: i.e. it's the "overhead" of the scenario.
-        long transforming = total - matching - isoChecking - building - measuring;
-
         String format = "%-20s%d%n";
         emit(MEDIUM, "%n");
         emit(MEDIUM, format, "Time (ms):", total);
-
-        // Time breakup only reported under high verbosity
-        format = "    %-15s%7d    (%4.1f%%)%n";
-        String longFormat = "    " + format;
-        emit(HIGH, format, "Matching:", matching, 100 * matching / (double) total);
-        emit(HIGH, format, "Transforming:", transforming, 100 * transforming / (double) total);
-        emit(HIGH, format, "Iso checking:", isoChecking, 100 * isoChecking / (double) total);
-
-        long certifying = IsoChecker.getCertifyingTime();
-        long equalCheck = IsoChecker.getEqualCheckTime();
-        long certCheck = IsoChecker.getCertCheckTime();
-        long simCheck = IsoChecker.getSimCheckTime();
-        emit(HIGH, longFormat, "Certifying:", certifying, 100 * certifying / (double) isoChecking);
-        emit(HIGH, longFormat, "Equals check:", equalCheck,
-             100 * equalCheck / (double) isoChecking);
-        emit(HIGH, longFormat, "Cert check:", certCheck, 100 * certCheck / (double) isoChecking);
-        emit(HIGH, longFormat, "Sim check:", simCheck, 100 * simCheck / (double) isoChecking);
-
-        emit(HIGH, format, "Building GTS:", building, 100 * building / (double) total);
-        emit(HIGH, format, "Measuring:", measuring, 100 * measuring / (double) total);
     }
 
     /**

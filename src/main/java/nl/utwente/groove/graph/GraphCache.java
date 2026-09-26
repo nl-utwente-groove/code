@@ -28,7 +28,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.TreeHashSet;
 import nl.utwente.groove.util.cache.Cache;
 
@@ -65,7 +64,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable, C
     public GraphCache(AGraph<N,E> graph, boolean dynamic) {
         this.graph = graph;
         this.dynamic = dynamic;
-        if (Reporter.GATHER_STATISTICS) {
+        if (AGraph.GATHER_STATISTICS) {
             createCount++;
         }
     }

@@ -38,7 +38,6 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.iso.CertificateStrategy.EdgeCertificate;
 import nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate;
 import nl.utwente.groove.io.Groove;
-import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.collect.Bag;
 import nl.utwente.groove.util.collect.HashBag;
 import nl.utwente.groove.util.collect.NestedArrays;
@@ -96,7 +95,6 @@ public class IsoChecker {
             if (ISO_PRINT) {
                 System.out.printf("GRAPHS NOT EQUAL%n", dom, cod);
             }
-            areIsoReporter.start();
             CertificateStrategy domCertifier = getCertifier(dom, true);
             CertificateStrategy codCertifier = getCertifier(cod, true);
             result = areIsomorphic(domCertifier, codCertifier, domValues, codValues);
@@ -126,7 +124,6 @@ public class IsoChecker {
                     }
                 }
             }
-            areIsoReporter.stop();
         }
         totalCheckCount++;
         return result;
@@ -143,7 +140,6 @@ public class IsoChecker {
      * in addition to the graphs themselves; may be {@code null}
      */
     private boolean areGraphEqual(Graph dom, Graph cod, Object[] domValues, Object[] codValues) {
-        equalsTestReporter.start();
         // element-wise equality is only meaningful for graphs whose elements
         // come from the same factory (element numbers are factory-scoped);
         // for other graph pairs, fall through to the isomorphism check proper
@@ -193,7 +189,6 @@ public class IsoChecker {
                 }
             }
         }
-        equalsTestReporter.stop();
         return result;
     }
 
@@ -283,7 +278,6 @@ public class IsoChecker {
             intCertOverlap++;
             result = false;
         } else if (hasDiscreteCerts(codCertifier)) {
-            isoCertCheckReporter.start();
             if (hasDiscreteCerts(domCertifier)) {
                 result = areCertEqual(domCertifier, codCertifier, domValues, codValues);
             } else {
@@ -293,20 +287,14 @@ public class IsoChecker {
                 distinctCertsCount++;
                 result = false;
             }
-            isoCertCheckReporter.stop();
             if (result) {
                 equalCertsCount++;
             } else {
                 distinctCertsCount++;
             }
         } else {
-            // EZ: don't start the reporter here otherwise we get spurious times
-            // if ISO_PRINT == true.
-            // isoSimCheckReporter.start();
             if (domCertifier.getNodePartitionCount() == codCertifier.getNodePartitionCount()) {
-                isoSimCheckReporter.start();
                 result = hasIsomorphism(domCertifier, codCertifier, domValues, codValues);
-                isoSimCheckReporter.stop();
                 // EZ: Moved the count here.
                 if (result) {
                     equalSimCount++;
@@ -320,7 +308,6 @@ public class IsoChecker {
                 distinctCertsCount++;
                 result = false;
             }
-            // isoSimCheckReporter.stop();
             // EZ: We can't count this here because there are times when
             // the counters are incremented twice!
             /*if (result) {
@@ -1060,53 +1047,6 @@ public class IsoChecker {
     }
 
     /**
-     * Returns the total time doing isomorphism-related computations. This
-     * includes time spent in certificate calculation.
-     */
-    static public long getTotalTime() {
-        return getIsoCheckTime() + getCertifyingTime();
-    }
-
-    /**
-     * Returns the time spent calculating certificates, certificate maps and
-     * partition maps in {@link PartitionRefiner}.
-     */
-    static public long getCertifyingTime() {
-        return CertificateStrategy.computeCertReporter.getTotalTime()
-            + CertificateStrategy.getPartitionReporter.getTotalTime();
-    }
-
-    /**
-     * Returns the time spent checking for isomorphism. This does not include
-     * the time spent computing isomorphism certificates; that is reported
-     * instead by {@link #getCertifyingTime()}.
-     */
-    static public long getIsoCheckTime() {
-        return areIsoReporter.getTotalTime();
-    }
-
-    /**
-     * Returns the time spent establishing isomorphism by direct equality.
-     */
-    static public long getEqualCheckTime() {
-        return equalsTestReporter.getTotalTime();
-    }
-
-    /**
-     * Returns the time spent establishing isomorphism by certificate equality.
-     */
-    static public long getCertCheckTime() {
-        return isoCertCheckReporter.getTotalTime();
-    }
-
-    /**
-     * Returns the time spent establishing isomorphism by explicit simulation.
-     */
-    static public long getSimCheckTime() {
-        return isoSimCheckReporter.getTotalTime();
-    }
-
-    /**
      * Returns the number of total checks performed, i.e., the number of calls
      * to {@link #areIsomorphic(Graph, Graph)}.
      */
@@ -1225,19 +1165,6 @@ public class IsoChecker {
     static private final boolean SAVE_FALSE_NEGATIVES = false;
     /** Flag to switch assertions on, for debugging purposes. */
     static private final boolean ISO_ASSERT = false;
-    /** Reporter instance for profiling IsoChecker methods. */
-    static public final Reporter reporter = Reporter.register(IsoChecker.class);
-    /** Handle for profiling {@link #areIsomorphic(Graph, Graph)}. */
-    static public final Reporter areIsoReporter = reporter.register("areIsomorphic(Graph,Graph)");
-    /**
-     * Handle for profiling
-     * {@link #areCertEqual(CertificateStrategy, CertificateStrategy, Object[], Object[])}.
-     */
-    static final Reporter isoCertCheckReporter = reporter.register("Isomorphism by certificates");
-    /** Handle for profiling isomorphism by simulation. */
-    static final Reporter isoSimCheckReporter = reporter.register("Isomorphism by simulation");
-    /** Handle for profiling {@link #areGraphEqual(Graph, Graph, Object[], Object[])}. */
-    static final Reporter equalsTestReporter = reporter.register("Equality test");
 
     // the following has to be defined here in order to avoid
     // circularities in class initialisation

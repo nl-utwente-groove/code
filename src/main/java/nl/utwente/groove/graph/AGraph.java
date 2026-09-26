@@ -27,7 +27,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.graph.iso.PartitionRefiner;
 import nl.utwente.groove.util.Dispenser;
-import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
 
 /**
@@ -388,9 +387,10 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
     }
 
     /**
-     * Private copy of the static variable to allow compiler optimization.
+     * Flag to indicate if various types of statistics should be computed. This
+     * flag is intended to be used globally.
      */
-    static private final boolean GATHER_STATISTICS = Reporter.GATHER_STATISTICS;
+    static public final boolean GATHER_STATISTICS = true;
 
     /**
      * Counts the number of graphs that were not fixed. Added for debugging
