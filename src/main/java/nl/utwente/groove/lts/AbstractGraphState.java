@@ -82,7 +82,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         Iterator<? extends GraphTransitionStub> outTransIter = getTransitionStubIter();
         while (outTransIter.hasNext()) {
             GraphTransitionStub stub = outTransIter.next();
-            if (stub instanceof RuleTransitionStub rule && rule.getKey(this) == match) {
+            if (stub instanceof RuleTransitionStub rule && match.equals(rule.getKey(this))) {
                 result = rule;
                 break;
             }

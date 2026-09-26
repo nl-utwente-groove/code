@@ -501,7 +501,10 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
 
     @Override
     public boolean hasCertifier(boolean strong) {
-        return this.certifier != null && this.certifier.get() != null;
+        CertificateStrategy result = this.certifier == null
+            ? null
+            : this.certifier.get();
+        return result != null && result.getStrength() == strong;
     }
 
     @Override
@@ -558,7 +561,14 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
     /** Mapping from labels to sets of edges with that label. */
     @Nullable
     HostEdgeStore<TypeLabel> labelEdgeStore;
-    /** The certificate strategy of this graph, set on demand. */
+    /**
+     * The certificate strategy of this graph, set on demand. The reference is
+     * weak on purpose: held softly, the certifiers of all stored states (each
+     * several times the size of a delta-shared graph) crowd out the soft state
+     * caches, and reconstructing those costs far more than the occasional
+     * recomputation of a collected certifier (finding 2.3 of
+     * claude/exploration-performance.md).
+     */
     private @Nullable Reference<@Nullable CertificateStrategy> certifier;
     /**
      * Flag indicating that data should be copied rather than shared in
