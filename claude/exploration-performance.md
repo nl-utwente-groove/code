@@ -742,6 +742,103 @@ off for the headline number.
 
 ## Runs and outcomes
 
+### Quick-tier baseline (2026-09-26)
+
+All 53 smoke and quick rows at `4629b69a7` (master merged up to `1726ed599`: the
+confluent-diamond shortcut of 2.1, the certifier fix of 3.1, Arend's 3.2 and
+`hasCertifier` fixes, and `CHECK_IMAGES` off, finding 1.2). Desktop, JDK 25.0.4.1,
+`-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and three measured runs, fresh grammar per
+run, table order. Two JVMs: the full run started at 16:35, but at 16:44 another session
+created and built a worktree on the same machine, and its rows from `leader-election-8`
+onward came out 5 to 50 % slower than the previous baseline with the excess in `match`
+(`hub-field-jump` 7.9 s against 5.2 s); those 39 rows were re-run in one JVM at 17:01 with a
+sampler recording the machine's Java processes every 30 s, which saw none but the harness.
+Rows 1 to 14 are from the first JVM, rows 15 to 53 from the second. Every count asserted.
+
+```
+config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+inheritance                756     5374      756      5374     38.4     28.5     41.3     19687    139945       6       6       5      20      0    2456     28.3      2.8       7       10
+pacman                     256     1536      256      1536     31.1     29.6     33.3      8228     49368       4      12       7      19      0       0     37.1      1.2      20      228
+as-and-bs                 8240    44774     8240     44774    150.8    145.1    177.2     54653    296971      21      63      38      90      1   23304    335.7     33.2       6       27
+sierpinsky-11               12       11       12        11    708.4    691.3    834.2        17        16      77       0       0     555      0       0    893.9    418.2  265734   841476
+binary-tree-dfs12         4012    22188     4012     22188    386.2    376.5    413.7     10390     57458       2     343     210     375      0    9053    415.1     16.5     239      596
+append-4-list-8          31104   114008    31104    114008    855.7    845.6   1009.6     36351    133241     396     229     189     352      2   80297   1391.0    221.0      67      293
+append-4-list-8-equality   73792   268912    73792    268912   1548.6   1464.9   1563.5     47651    173648     828       0       0     447      0  195121   2446.0    497.4      74      357
+mark-unmark              24576   368640    24576    368640   1717.7   1614.8   1725.1     14308    214617     451     510     427    1071      4  151553   4156.5    143.8      15       30
+car-platooning-05       110366   369601   110366    369601   2221.5   2208.2   2261.8     49680    166372     907       0       0     776      3  211405   6212.3    487.4       5      215
+binary-tree-dfs-unstored       9        8   409114    409113    983.1    970.4   1034.5    416154    416153      69       0       0     728      2       0   2657.6   1041.5    1023     2556
+mark-unmark-18           48384   870912    48384    870912   8740.6   8633.0   9054.4      5536     99640     993    5699    3971    7205     11  293377  12712.1    365.7      18       36
+mark-unmark-21          169344  3556224   169344   3556224  46870.9  46862.9  48350.3      3613     75873    4406   34213   24079   40247     65 1123009  61734.0   1280.9      21       42
+as-and-bs-4-3           131505   947824   131505    947824   3722.6   3690.1   3795.0     35326    254614     723    1454     623    2379     11  532255   7528.0    564.2       7       35
+inheritance-12          297212  4317133   297212   4317133  14161.3  13961.2  14497.6     20988    304854     662    2896    2199   11399     47 2044881  24907.7   1728.2      12       21
+leader-election-8          820     3405      820      3405     37.3     36.1     45.5     21964     91205      15       5       5      19      0    2327     48.0      4.0      39      196
+leader-election-14       49620   386295    49620    386295   2236.5   2207.2   2445.7     22186    172721     870     394     394     981      6  295681   4354.9    272.6      63      375
+leader-election-14-injective   49620   386295    49620    386295   2270.4   2240.1   2290.1     21856    170147     951     362     362     963      7  295681   4558.9    274.8      63      375
+leader-election-16      197404  1772291   197404   1772291  10107.0   9759.6  10390.9     19531    175352    3529    1788    1788    4908     12 1378247  20058.4   1138.2      71      414
+count-10000              10001    25001    10001     25001    419.7    136.1    439.4     23827     59565     161      40      40     295      2       0    340.1     79.7   10008    10005
+count-100000            100001   250001   100001    250001   1262.5   1240.4   1266.7     79211    198025     348     103     103     914      1       0   3371.8    836.3  100008   100005
+count-300000            300001   750001   300001    750001   4106.4   4045.5   4288.6     73057    182643     994     349     331    3041      7       0  10542.2   2641.5  300008   300005
+fib-15                       3        2     4934      4934     60.9     53.6     77.4     81061     81061       1       0       0      42      0       0    120.5     39.2      27        2
+fib-22                       3        2   143284    143284   1882.9   1825.1   1913.2     76097     76097      35      33      33    1331      1       0   3660.4   1182.3      40        2
+fib-function-15           4934     4933     4934      4933     41.2     41.0     41.9    119856    119831       0       2       2      33      0       0    114.9     38.6      27        2
+fib-function-22         143284   143283   143284    143283   1813.8   1745.8   2251.0     78996     78995      48      33      33    1196      2       0   3506.9   1165.6      40        2
+count-100000-big        100001   250001   100001    250001   1286.1   1282.9   1300.2     77758    194393     326     146     146     997      0       0   3434.2    840.9  100008   100005
+count-300000-big        300001   750001   300001    750001   4227.2   4211.0   4241.9     70969    177422    1113     345     329    3170      8       0  10720.4   2655.2  300008   300005
+as-and-bs-equality      262144  1413120   262144   1413120   3311.2   3299.4   3321.1     79168    426764    1043       0       0    1270      6 1150466   6737.6    974.2       6       27
+sierpinsky-12               13       12       13        12   2400.9   2357.5   2431.8         5         5     262       0       0    1938      0       0   2621.5   1233.9  797176  2524375
+hub-star-300-3               1      891        1       891   2031.6   2024.3   2031.6         0       439       1    1996    1411    2031      0       0    371.6      1.2     303      606
+hub-chain-1000-1          1000      999     1000       999   6499.6   6494.0   6505.7       154       154       3    6490    6490    6494      0       0    190.1      4.5    1003     3005
+hub-chain-200-2          19900    39402    19900     39402   4728.6   4728.2   4749.9      4208      8333      33    4601    4601    4654      0   19503    989.7     80.5     203      605
+hub-field-hop           100001   100000   100002    100001   5403.6   5289.7   5570.9     18507     18506    5153       0       0     124      0       0  13473.6    262.4    5405     5913
+hub-field-jump          200001   200000   200002    200001   5179.8   5132.3   5187.2     38612     38612    4475       0       0     521      2       0   1656.6    521.8    5404     5815
+hub-ring-1000-unstored  200001   200000   200002    200001    717.7    693.1    730.1    278678    278676     156       0       0     394      0       0   1653.3    521.1    1003     3006
+hub-ring-1000-counted   200001   200000   200002    200001   1220.3   1133.6   1226.5    163897    163896     483       0       0     507      0       0   2644.5   1026.8  201004   203007
+hub-wander-alap-20         191    65170      191     66197     34.7     28.2     38.3      5504   1907491       1       3       3      21      0      81     60.9     13.3      23       65
+hub-wander-100            4951     4950     4951     24355   1182.8   1179.5   1188.6      4186     20591       8    1020    1020    1150      0    2401    782.6     18.6     103      305
+hub-wander-200           19901    19900    19901     98705  17233.5  17198.2  17455.4      1155      5728      44   15762   15762   17015      3    9801   6587.1     87.7     203      605
+hub-wander-alap-60        1771  6058710     1771   6068977   3827.2   3822.0   3889.7       463   1585766      20     308     308    2181      0     841   4585.6   1188.4      63      185
+petrinet-pipe-8-8        12870    91520    12870     91520   2776.2   2763.6   2795.8      4636     32966     325    1840     939    2225      6       0   3973.9     85.1      89      177
+petrinet-pipe-9-9        48620   393822    48620    393822  11859.1  11793.7  11903.2      4100     33209    1053    8766    4786   10059     17       0  17880.2    340.3     109      217
+petrinet-join-100        20001    20000    20002     20001   7795.1   7728.1   7803.7      2566      2566    4102       0       0    1869     13       0  22953.0    483.2     502     1202
+petrinet-join-1000        2001     2000     2002      2001   8976.6   8793.8   9082.0       223       223    4286       0       0    2335     16       0  22489.2    418.4    5002    12002
+pump-8-4                  2143    38891     2143     38891    775.2    190.8    822.2      2764     50169      25     237     167     651      5    1703    332.5     13.4       5       61
+pump-12-6-dpo            36894  1231379    36894   1231379   6242.8   6168.5   6256.4      5910    197249     120    2821    1989    5524     16   32616  11736.3    344.0       7      125
+pump-12-6-spo            37026  1267481    37026   1267481   7024.6   7000.7   7034.5      5271    180435     118    3205    2186    6259     17   34380  12013.8    351.4       7      126
+mergers-6                  202      681      202       681     74.2     55.5     85.4      2722      9177       6       9       8      51      0     126      8.2      0.8       6       83
+mergers-9-simple         25145   255596    25145    255596   1370.5   1369.4   1544.2     18348    186502      88     380     273    1110      3   38740   2541.6    173.1       9      245
+mergers-9-injective      12775    60718    12775     60718    423.2    402.6    455.3     30185    143464      64     120      83     310      1    9744    726.0     81.1       9      236
+mergers-9-multi          26217   259850    26217    259850   1529.4   1515.7   1555.7     17142    169901      78     448     306    1247      9   39046   2705.1    181.5       9      314
+mergers-10-multi        222508  3320992   222508   3320992  23627.5  23524.6  25556.5      9417    140556     832    6983    4942   20076     46  467938  35811.8   1800.3      10      520
+mergers-11-dpo           70065   735888    70065    735888   5378.0   5210.1   5451.1     13028    136833     253    1037    1037    4200      8  235104   8218.5    574.8      11      208
+```
+
+Against the 2026-09-23 table (`med ms` new over old):
+
+- **The counter rows are 8 to 9 times faster** (`count-300000` 37.0 to 4.1 s, its
+  BigInteger twin 35.3 to 4.2 s, `count-100000` 4.0 to 1.3 s): finding 3.1/3.13. `gen`
+  carries the whole difference; the counter's `retMB` is unchanged.
+- **The confluent-diamond shortcut (2.1) shows on every row with `confl` in the hundreds
+  of thousands**: `leader-election-16` 0.33, `leader-election-14` 0.39,
+  `as-and-bs-equality` 0.38, `append-4-list-8-equality` 0.45, `hub-chain-200-2` 0.48,
+  `append-4-list-8` 0.51, `car-platooning-05` 0.62, `inheritance-12` 0.66, the mark-unmark
+  family 0.75. `iso` falls most (leader-election-16 8.6 to 1.8 s), then `gen`.
+- **`CHECK_IMAGES` off (1.2) is not visible at table resolution**: `hub-field-hop` 0.96 and
+  `hub-field-jump` 0.99, where the 2026-09-26 profile had attributed 10 % of the samples to
+  the containment probes. Either the sampling overstated the cost or the gain is inside the
+  noise of these 5 s rows; an A/B would settle it but the change is already in.
+- **The pump rows are 5 to 15 % slower** (`pump-12-6-spo` 1.15, `pump-12-6-dpo` 1.05,
+  `pump-8-4` 1.07) with `iso` and `gen` both up. These rows close diamonds
+  (34 380 at `pump-12-6-spo`) but few relative to their 1.27 M transitions, so the
+  suspect is the shortcut's conflict check paying without a payoff. Open; needs an A/B
+  of 2.1 on the pump rows. `mergers-6` at 1.75 is a 40 ms row.
+- **The first-row effect**: `leader-election-8` (37 against 210 and 288 ms) and `fib-15`
+  (61 against 414 and 470 ms) opened the second JVM and came out 5 to 8 times faster than
+  in their usual table position, which is the order effect noted under "Outcomes" for
+  `fib-15`: JIT state left by twenty preceding rows, not a change in the code.
+- Everything else is within 10 %; `hub-wander-200` at 0.85 recovers the 6 % it had lost
+  under 3.2.
+
 ### Quick-tier baseline (2026-09-23)
 
 All 53 smoke and quick rows. Desktop, JDK 25.0.4.1, the launch flags
@@ -978,8 +1075,9 @@ retention is their transitions, do not move.
   `fib-22`, `sierpinsky-12`) are within 15 % of their calibration at 8 GB, so for stored
   runs the cliff sits above 2.6 GB, and lower for unstored ones, whose live set is all
   soft.
-- **Confluence is always zero** (`confl` on every row of both tables), as finding 2.1
-  predicts.
+- **Confluence was always zero** (`confl` on every row of the 2026-09-22/23 tables), as
+  finding 2.1 predicted; since the 2026-09-25 fix the column is populated and the
+  2026-09-26 table shows its effect.
 - **Factory edge growth** (3.3): `car-platooning-05` mints 215 edges for a 5-node factory,
   `car-platooning-06` 306, `pacman` 228 and `pacman-four-ghosts` 441.
 - **One order effect, unexplained**: `fib-15` measures 388 and 470 ms in the two table
@@ -1013,6 +1111,21 @@ Suggestion: make `REPORT` a `static final boolean` initialised from a system pro
 (default false; C2 still constant-folds a static final set in `<clinit>`), move
 `synchronized` inside the flag check or drop it (the counters are single-threaded and
 the static `reportTime` is racy anyway), and drop the second clock read.
+Measured 2026-09-26 (JFR at 1 ms sampling, `-XX:+DebugNonSafepoints`, three quick rows
+at `aa6d4eb0c`, one warm-up and two runs per row; top-frame shares): `Reporter.start/stop`
+6.4 % on `car-platooning-05`, 3.2 % on `as-and-bs-4-3`, 0.2 % on `hub-field-hop`, almost
+all of it under `Search.find()`, so it scales with rules times states and vanishes on
+iso-bound and large-graph rows. A micro-benchmark puts one start/stop pair at 28 ns
+without lock coarsening (16 ns with), of which the four `currentTimeMillis` reads are
+2 ns each on Windows: the monitors are the cost, not the clock. The table's `rep` column
+(0 to 79 ms) measures none of this, since it only counts clock ticks that fall between
+two adjacent reads. Sampling skid inflates lock attribution, so the expected gain is 2 to
+6 % on rows with many `find()` calls per state. Decision (Arend, 2026-09-26): retire the
+class rather than gate it; its output is a millisecond-clock estimate over microsecond
+intervals, its self-time is undercounted by two orders of magnitude, and JFR gives the
+same breakdown per row in a minute (recipe under "Facts" in the state note). In progress
+on branch `retire-reporter`; the harness columns `match`, `iso`, `cert`, `gen` and `rep`
+go with it.
 
 **1.2 `CHECK_IMAGES` runs a graph containment query per candidate image.** High / small /
 high. `match/plan/PlanSearchStrategy.java:530-537` and `:572-579`, flag `true` at `:765`.
@@ -1022,6 +1135,16 @@ image tried and again on every rollback: the single hottest statement in the mat
 `containsNode` on a `DeltaHostGraph` is a `LinkedHashMap` key lookup, `containsEdge` a
 `TreeHashSet` probe. Suggestion: `assert !(image instanceof DefaultHostNode) ||
 host.containsNode(image) : ...`, or set the flag false.
+Measured 2026-09-26 (same profiles): the probes under `putNode`/`putEdge` take 10.0 % of
+the samples on `hub-field-hop`, 1.2 % on `car-platooning-05` and 0.7 % on
+`as-and-bs-4-3`: a large-graph cost, since the matcher iterates thousands of edges per
+state on the 5400-node field and each candidate pays a probe into a cold set, while on
+small graphs the probe is a hot 5 to 8 ns `TreeHashSet` lookup. Fixed on master in
+`1726ed599` (Arend, 2026-09-26): the flag is `false`; it was a debug switch left on. The
+2026-09-26 baseline shows `hub-field-hop` at 0.96 and `hub-field-jump` at 0.99 of their
+previous times, less than the profile suggested (see the baseline). Follow-up: a
+`@DebugFlag` marker plus a fast test that fails when one is `true`, proposed 2026-09-26
+and handed to a separate session.
 
 **1.3 `Factory.get()` takes a global static monitor on every read.** High / small to
 medium / high. `util/Factory.java:46-55` (every call enters `synchronized (lock)` on one
@@ -1034,6 +1157,23 @@ Hot callers: `Step.getParAssign()`/`getRecipeParAssign()` per control step per s
 change after grammar compilation. Suggestion: lock-free fast path `if (set) return
 value;` with a volatile holder, keeping the lock for the creating path only; or, for
 `Step`/`Frame`, which are fixed before exploration starts, a plain memo field.
+Measured 2026-09-26 (same profiles): `Factory.get()` is the top frame of 6.2 % of the
+samples on `car-platooning-05`, 7.6 % on `as-and-bs-4-3`, 1.0 % on `hub-field-hop`; one
+call costs 14 ns against 0.5 ns for a volatile fast path. The hot callers are not the
+`Step`/`Frame` factories listed above but the memoised `Rule` accessors (`isModifying`,
+`getCreatorEdges`, `getEraserEdges`, `getCreatorNodes`, `getMergers`, `getAnchor`,
+`getIndeterminates`, `getSubRules`, `getProver`), reached several times per event and
+transition from `RuleApplication.applyDelta`, `BasicEvent.recordEffect` and
+`TreeMatch.computeHashCode`; `Rule` has 29 lazy factories. Expected gain 3 to 8 % on
+transition-heavy rows. Design constraint (Arend): the lock also guards the static
+`builders` machinery against accidental concurrency, so the fast path must keep every
+build, `set`, `reset` and dependency registration under the lock. Advised shape: a
+`volatile Holder<T>` published after `create()`, `builders` made volatile, and
+`if (h != null && builders == null) return h.value;` before the `synchronized` block. A
+same-thread nested read during a build sees `builders` non-null and takes the slow path,
+so dependencies are still recorded; a cross-thread read during a build blocks as today;
+the only outcome removed is the spurious cross-thread dependency that lock order
+sometimes recorded. Not yet implemented.
 
 **1.4 `IsoChecker.isStrong()` is synchronized over a final field.** Low to medium /
 trivial / high. `graph/iso/IsoChecker.java:1027-1035`, called twice per `getCertifier`
@@ -1994,7 +2134,10 @@ the exploration thread itself, uncontended.
    graphs (11 to 33 times on the hub rows), but inherent to copying unless the sets
    become copy-on-write, so a design discussion before a commit.
 6. Section 1 (always-on instrumentation and locks): two-line changes in the innermost
-   loops, no design risk; a few per cent each.
+   loops, no design risk; a few per cent each. Profiled 2026-09-26 (figures under 1.1 to
+   1.3): section 1 as a whole is 11 to 16 % of the samples on the three profiled rows, with
+   1.6 (`java.util.Stack`) at 1.6 to 3.0 % and 1.4 (`isStrong`) at 1.3 % also visible. 1.2
+   fixed on master; 1.1 retirement on branch `retire-reporter`; 1.3 design advised.
 7. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
    certifier reference; each restores an optimisation that exists but does not work.
    2.1 done 2026-09-25 on branch `confluent-diamond` (up to 54 % off, see there); 2.2
