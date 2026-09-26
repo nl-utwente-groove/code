@@ -52,13 +52,20 @@ public abstract class Factory<T> implements Supplier<T> {
 
     @Override
     public T get() {
+        // lock-free fast path: the value exists and no factory is being built,
+        // so there is no dependency to record and nothing the lock protects
+        var holder = this.holder;
+        if (holder != null && builders == null) {
+            return holder.value();
+        }
         synchronized (lock) {
-            if (!isSet()) {
-                this.value = create();
-                this.set = true;
+            holder = this.holder;
+            if (holder == null) {
+                holder = new Holder<>(create());
+                this.holder = holder;
             }
             addBuilders();
-            return this.value;
+            return holder.value();
         }
     }
 
@@ -69,26 +76,26 @@ public abstract class Factory<T> implements Supplier<T> {
      */
     public void set(T value) throws IllegalStateException {
         synchronized (lock) {
-            if (isSet()) {
+            var holder = this.holder;
+            if (holder != null) {
                 throw Exceptions
-                    .illegalState("Value already set at %s, can't set it to %s", this.value, value);
+                    .illegalState("Value already set at %s, can't set it to %s", holder.value(),
+                                  value);
             }
-            this.value = value;
-            this.set = true;
+            this.holder = new Holder<>(value);
             addBuilders();
         }
     }
 
     /** Checks if the value has already been computed. */
     public boolean isSet() {
-        return this.set;
+        return this.holder != null;
     }
 
     /** Resets the computed value, if any. */
     public void reset() {
         synchronized (lock) {
-            this.set = false;
-            this.value = null;
+            this.holder = null;
             for (var used : getUsed()) {
                 used.removeUser(this);
             }
@@ -106,12 +113,20 @@ public abstract class Factory<T> implements Supplier<T> {
     /** Lazily creates the wrapped value, upon the first invocation of {@link #get()}. */
     abstract protected T create();
 
-    /** Field holding the value once it has been computed. */
+    /**
+     * Holder of the value once it has been computed, {@code null} before that.
+     * Volatile so that {@link #get()} can read it without taking the lock:
+     * the holder is only published after {@link #create()} has returned,
+     * so a reader that sees it sees the completed value.
+     */
     @Nullable
-    private T value;
+    private volatile Holder<T> holder;
 
-    /** Flag indicating whether the value has been computed. */
-    private boolean set;
+    /** Wrapper distinguishing a computed value (which may be {@code null}) from none. */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private record Holder<V>(V value) {
+        // no members
+    }
 
     /**
      * Adds the currently registered builders as users of this factory.
@@ -182,7 +197,10 @@ public abstract class Factory<T> implements Supplier<T> {
 
     @Override
     public String toString() {
-        var value = this.value;
+        var holder = this.holder;
+        var value = holder == null
+            ? null
+            : holder.value();
         return value instanceof Object[] a
             ? Arrays.toString(a)
             : Objects.toString(value);
@@ -240,8 +258,12 @@ public abstract class Factory<T> implements Supplier<T> {
 
     /** Lock to avoid concurrent building (which would mess up the builders registration). */
     static private final ReentrantLock lock = new ReentrantLock();
-    /** Set of factories currently running their {@link #create()} method. */
-    static private @Nullable Set<Factory<?>> builders;
+    /**
+     * Set of factories currently running their {@link #create()} method.
+     * Volatile so that the lock-free path of {@link #get()} sees a build in progress
+     * and falls back to the lock, where the dependency on this factory is recorded.
+     */
+    static private volatile @Nullable Set<Factory<?>> builders;
     /** Shared empty set, to save memory. */
     static private final Set<Factory<?>> EMPTY_SET = Collections.emptySet();
 }
