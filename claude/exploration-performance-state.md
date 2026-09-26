@@ -9,10 +9,11 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack", then the finding the next item names).
 
-## State as of 2026-09-24
+## State as of 2026-09-26
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
-master merged in up to `f529c7540` (2026-09-23). Everything the branch set out to build is
+master merged in up to `1726ed599` (2026-09-26; a fresh quick-tier baseline at that merge
+is in the note, stitched from two JVMs after another session disturbed the first run). Everything the branch set out to build is
 done and recorded in the note: the harness with its three tiers and the random-access
 switch; the grammar set (15 grammars, 58 rows); the quick-tier baseline (2026-09-23, re-run
 after gh #925), the long-tier baseline (2026-09-22) and the quick tier in the Simulator's
@@ -49,11 +50,17 @@ and outcomes" in the note).
 2. Finding 4.3.2 (per-node edge sets): the whole of the Simulator-mode cost on large
    graphs, 11 to 33 times on the hub rows; a design discussion first (copy-on-write
    sets or sharing), since copying is what the mode asks for.
-3. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
-   the `synchronized` accessors, `java.util.Stack`): one commit per item, each with
-   before/after numbers in the A/B shape. `Reporter` first: it is on the innermost loop
-   and also the harness's own breakdown source, so gate it on a system property and run
-   the harness once with it on (for the breakdown) and once off (for the headline).
+3. Section 1 of the note, profiled 2026-09-26 (JFR shares and unit costs under 1.1 to
+   1.3; section 1 is 11 to 16 % of the samples on the profiled rows). Status: 1.2
+   (`CHECK_IMAGES`) fixed on master `1726ed599`; 1.1 being retired, not gated, on branch
+   `retire-reporter` off master (Opus session, 2026-09-26). When that branch is merged
+   into master and then into this branch, the harness loses its `match`, `iso`, `cert`,
+   `gen` and `rep` columns (they read the reporter counters) and the note's harness
+   section needs the same cut; the profile recipe under "Facts" replaces them. 1.3: a
+   lock-preserving fast path is designed under 1.3 in the note, awaiting Arend's go;
+   the hot callers are the `Rule` accessors. 1.4 to 1.6 remain (each 1 to 3 % sampled),
+   1.6 (`java.util.Stack` to `ArrayDeque`) the cheapest. A `@DebugFlag` marker plus test,
+   so a `CHECK_IMAGES` cannot stay on unnoticed again, was handed to a separate session.
 4. Section 2 (dead optimisations): 2.1 done 2026-09-25 on branch `confluent-diamond`
    (shortcut revived with content-based event conflicts, up to 54 % off; figures under
    2.1 in the note); 2.2 dropped (footprint, see there). 2.4 and 2.3 done 2026-09-25 on
@@ -140,6 +147,10 @@ JVM per row), pin counts, one commit per grammar; only the harness reads
   wins over an attribute edge (which also binds its value node).
 
 ## Open decisions
+
+- The pump rows are 5 to 15 % slower in the 2026-09-26 baseline with the diamond
+  shortcut active but closing few diamonds per transition; an A/B of 2.1 on the pump rows
+  decides whether the conflict check needs a cheaper pre-test.
 
 - Whether the section 1 to 4 fixes go on this branch or one branch per section (the
   note is here, the fixes are independent; one branch per section is the house style).
