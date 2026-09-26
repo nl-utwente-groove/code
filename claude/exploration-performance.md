@@ -1196,7 +1196,30 @@ build, `set`, `reset` and dependency registration under the lock. Advised shape:
 same-thread nested read during a build sees `builders` non-null and takes the slow path,
 so dependencies are still recorded; a cross-thread read during a build blocks as today;
 the only outcome removed is the spurious cross-thread dependency that lock order
-sometimes recorded. Not yet implemented.
+sometimes recorded. Implemented in that shape on this branch (c8adba7b6, 2026-09-26): the
+value and the set flag are folded into one volatile `Holder` record, published after
+`create()` returns; `FactoryTest`, the fast suite and the null check pass.
+
+A/B 2026-09-26: A = the build with the previous `Factory` compiled alone and prepended to
+the classpath, B = the branch at c8adba7b6, six JVMs per row in the order A, B, B, A, A,
+B, JDK 25, `-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and three runs, no foreign Java
+process throughout. Mean of the three JVMs' `med ms`:
+
+| row | A | B | B/A | spread A | spread B |
+|---|---|---|---|---|---|
+| `car-platooning-05` | 2262 | 2192 | 0.97 | 1.15 | 1.19 |
+| `as-and-bs-4-3` | 3451 | 3361 | 0.97 | 1.02 | 1.02 |
+| `fib-function-22` | 1725 | 1579 | 0.92 | 1.19 | 1.06 |
+| `mark-unmark` | 1692 | 1511 | 0.89 | 1.26 | 1.04 |
+| `leader-election-14` | 2335 | 2288 | 0.98 | 1.17 | 1.19 |
+
+Every row moved the same way, by 2 to 11 %, which matches the profile's 3 to 8 %. The
+spread within one build (max/min of its three JVMs) is larger than the effect on all but
+`as-and-bs-4-3`, so no single row is conclusive; the direction across five rows is. The
+fastest A of every row is the first JVM of that row, so the JVM order favours A: the
+position effect (first JVM fastest, later ones 10 to 25 % slower) is the dominant noise
+source on these short rows and argues for interleaving A and B strictly (A, B, A, B, ...)
+in future A/Bs rather than the mirrored order used so far.
 
 **1.4 `IsoChecker.isStrong()` is synchronized over a final field.** Low to medium /
 trivial / high. `graph/iso/IsoChecker.java:1027-1035`, called twice per `getCertifier`

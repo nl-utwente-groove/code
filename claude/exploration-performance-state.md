@@ -56,9 +56,10 @@ and outcomes" in the note).
    `retire-reporter` off master (tip 61e000e7f, detached for review in its own worktree),
    already merged into this branch (f303e1ba7) with the harness columns `match`, `iso`,
    `cert`, `gen` and `rep` dropped (6a9670de9); merge `retire-reporter` into master before
-   or together with this branch. The profile recipe under "Facts" replaces the columns. 1.3: a
-   lock-preserving fast path is designed under 1.3 in the note, awaiting Arend's go;
-   the hot callers are the `Rule` accessors. 1.4 to 1.6 remain (each 1 to 3 % sampled),
+   or together with this branch. The profile recipe under "Facts" replaces the columns. 1.3: done on this
+   branch (c8adba7b6, 2026-09-26), lock-preserving fast path with a volatile holder; A/B
+   under 1.3 in the note: every row 2 to 11 % faster, direction uniform, single rows
+   inside the noise. 1.4 to 1.6 remain (each 1 to 3 % sampled),
    1.6 (`java.util.Stack` to `ArrayDeque`) the cheapest. A `@DebugFlag` marker plus test,
    so a `CHECK_IMAGES` cannot stay on unnoticed again, was handed to a separate session.
 4. Section 2 (dead optimisations): 2.1 done 2026-09-25 on branch `confluent-diamond`
@@ -111,6 +112,9 @@ JVM per row), pin counts, one commit per grammar; only the harness reads
 - The harness `main` takes row names as arguments; `-Dgroove.bench.run=<name>` is the
   JUnit route's selector and is ignored by `main` (a loop passing it ran the whole quick
   tier per iteration, 2026-09-22).
+- Across JVMs of one A/B the first JVM of a row is the fastest and later ones 10 to
+  25 % slower (1.3 A/B, 2026-09-26), so alternate strictly (A, B, A, B, ...) rather than
+  mirrored (A, B, B, A), which hands the favoured first slot to one build.
 - Run order in one JVM changes timings little (a few per cent; `fib-15` is the one
   large, unexplained case), machine load changes them a lot: a tier run during an
   Eclipse rebuild was 20 % off on three rows. Two clean tier runs differ by up to 10 %
