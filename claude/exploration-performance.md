@@ -1150,8 +1150,8 @@ and 0.5 % on `petrinet-pipe-8-8` (818 of 157,302). A lost certifier mostly makes
 it is recomputed only when the graphs then differ: none of 386,295 certifiers on
 leader-election-14, 42,223 of 870,913 on mark-unmark-18, 818 of 91,521 on
 petrinet-pipe-8-8. The soft reference was then built (with `hasCertifier` honouring
-`strong`) and measured A/B: A = master 3624a9a02, B1 = A plus the 2.4 commit, B2 = B1
-plus the soft reference; one JVM per row and build, 1 warm-up and 3 runs (pacman 1 run,
+`strong`) and measured A/B: A = master 3624a9a02, B1 = A plus the 2.4 commit (since dropped, see there,
+time-neutral), B2 = B1 plus the soft reference; one JVM per row and build, 1 warm-up and 3 runs (pacman 1 run,
 0 warm-ups), two rounds with the build order reversed, mean of the two `med ms`; counts
 identical wherever a run completed:
 
@@ -1186,11 +1186,11 @@ cannot refine anything. Fixes: store on iteration 0, and break as soon as
 partition, since `MyEdge2Cert.equals` at `:682-689` compares endpoint certificates).
 Certificate values change, so gate with `grammar-smoke`.
 
-Done on branch `iso-refinement` (76de3e5f0, 2026-09-25): the loop counts the partition
-from the first pass and stops as soon as it is discrete or stops growing; `setSingular`
-takes a boolean, since storing on pass 0 would otherwise have marked every certificate
-duplicate (`setSingular(round)` tested `round > 0`). The claim about the edge partition
-holds: `MyEdge2Cert.equals` compares end node certificates, and
+Tried on branch `iso-refinement` (2026-09-25) and dropped at review (2026-09-26). The
+change counted the partition from the first pass and stopped as soon as it was discrete
+or stopped growing; `setSingular` took a boolean, since counting on pass 0 would
+otherwise have marked every certificate duplicate (`setSingular(round)` tested
+`round > 0`). The claim about the edge partition holds: `MyEdge2Cert.equals` compares end node certificates, and
 `MyEdge1Cert.computeNewValue` is `(s << 8) + (s >> 24) + label`, injective in the source
 value `s` (the top byte survives in the second term, the rest in the first). Nothing pins
 certificate values (`CertificateStrategyTest` asserts equality across strategies and
@@ -1217,9 +1217,23 @@ certifier's construction (certificate objects, edge bundles, lookup) dominates t
 or two passes saved. `cert` leans up by 4 % on petrinet and pacman, within the two-JVM
 noise but possibly real: each trial refinement inside symmetry breaking now stops a pass
 earlier too, so its certificates discriminate less and more break rounds may follow.
-Impact rating: none. The commit stays on the branch as a simplification; whether a
-change of certificate values without a measured gain is worth merging is a review
-decision.
+Dropped for two reasons the finding missed. First, the old final pass was not a wasted
+counting pass: its `store` argument was already false once the partition was discrete,
+so it only advanced the values, and that has a purpose. The graph certificate sums every
+edge and node value of every pass, and the edge values of a pass hash the node values of
+the pass before; the final pass is therefore the only one whose edge terms hash adjacency
+under the discrete labelling, the strongest term the certificate can hold. Without it,
+non-isomorphic graphs with equal refinement histories up to the discrete round collide
+in the state set and are separated only in `areCertEqual`, after both certificate and
+partition maps are built (the verdict stays correct, since `MyEdge2Cert.equals` compares
+endpoint certificates by their current values). Second, skipping the count on pass 0
+looks deliberate: `setSingular(int round)` used 0 as the "duplicate" sentinel (the
+commented-out `singularRound` field records an earlier design), so the first counted
+round had to be 1; and refusing to compare counts before pass 2 guards against a
+premature stop when a hash collision hides a split for one round. A first-round
+distinction is not impossible (the initial values already carry the incident labels), so
+that is not the reason. With no measured gain and a weaker hash, the loop stays as it
+was. Impact rating: none; the finding is closed.
 
 **2.5 Frozen graphs are never taken when collapsing is off.** Medium / small / high.
 `lts/StateCache.java:293` (`isFreezeGraph` requires `freezeGraphs`, set from
@@ -1985,8 +1999,9 @@ the exploration thread itself, uncontended.
    certifier reference; each restores an optimisation that exists but does not work.
    2.1 done 2026-09-25 on branch `confluent-diamond` (up to 54 % off, see there); 2.2
    dropped as not worth its footprint. 2.4 and 2.3 done 2026-09-25 on branch
-   `iso-refinement`: 2.4 time-neutral, the soft reference of 2.3 measured and rejected
-   (see there). Next: 2.5 to 2.7.
+   `iso-refinement`: 2.4 time-neutral and dropped (the final pass strengthens the graph
+   certificate), the soft reference of 2.3 measured and rejected (see there). Next: 2.5
+   to 2.7.
 8. Section 3 (costs scaling with the wrong quantity): the certifier array, the eager
    certificate map, the interning edge probe. Each is small and independently measurable.
    3.1 done (item 4); 3.2 fixed on master in 19dbd4194, time-neutral (see there).
