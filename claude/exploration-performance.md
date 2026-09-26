@@ -1229,6 +1229,11 @@ in future A/Bs rather than the mirrored order used so far.
 trivial / high. `graph/iso/IsoChecker.java:1027-1035`, called twice per `getCertifier`
 (`:934-935`), which runs once in `getCode`, twice in `areGraphEqual` and twice in
 `areIsomorphic`: about ten monitor pairs on the shared singleton per state added.
+Measured 2026-09-26 (1 ms JFR of master 3cff97b63, six quick rows, one warm-up and two
+runs): `isStrong` is the top frame of 1.2 % of the samples on `as-and-bs-4-3`, 0.7 % on
+`mark-unmark`, 0.0 % on the other four. Fixed on branch `section1-locks` off master
+(f27865bee): the modifier is dropped, the field is final. Re-profile of the two rows on
+the branch: 0.0 % on both.
 
 **1.5 `NestedSwitch.getTransience()`, `getCall()` and `pop()` are synchronized.** Medium
 / small / medium to high. `control/template/NestedSwitch.java:70,147-152,171-178,183-185`.
@@ -1236,6 +1241,10 @@ Reached from `Frame.getTransience()` at `lts/StateMatches.java:113,136,179,206` 
 the per-step loop) and from `AbstractGraphState.setFrame` (`:465,473`). The values are
 immutable once frames are canonicalised. Suggestion: compute in the `Frame`/`Step`
 constructor into final fields.
+Moot since 2026-09-23: the immutable `NestedSwitch` (8bf2dd54b) computes transience and
+call in the constructor into final fields, no monitor left. The 2026-09-26 profile shows
+`NestedSwitch.getTransience/getCall` and `Frame.getTransience/getCall` at 0.0 to 0.1 %
+on all six rows. Nothing to do.
 
 **1.6 `java.util.Stack` (synchronized `Vector`) on per-state paths.** Low to medium /
 trivial / high. `explore/engine/ClosingStrategy.java:215` (`transientStack.isEmpty()`
@@ -1243,11 +1252,46 @@ on every `computeNextState`, `:124`), `explore/engine/LinearStrategy.java:109` (
 calls per state), `grammar/host/DeltaHostGraph.java:388` (basis chain in `initData`),
 `lts/RecipeTransition.java:159`, `util/collect/TreeHashSet.java:355,359` (also boxes
 `Integer`s). `ArrayDeque` is a drop-in replacement; `BeamPool` already uses it.
+Measured 2026-09-26 (same profile): `Stack`/`Vector` top frames 2.6 % on `as-and-bs-4-3`
+and 2.2 % on `mark-unmark`, nearly all under `DeltaHostGraph.initData` (`Vector.isEmpty`
+alone 1.6 to 1.8 %), `ClosingStrategy.computeNextState` 0.2 % at most, zero on
+`hub-field-hop`, `fib-function-22` and `leader-election-14`. `TreeHashSet`'s two
+`Stack<Integer>` fields belong to `sortedIterator`, which has no caller in the main tree,
+so they are not on any path. Fixed on `section1-locks` (da7559bc6): `ArrayDeque` at the
+four live sites, LIFO order kept (the `add` calls in `RecipeTransition.computeSteps`
+became `push`, since `Deque.add` appends at the end `pop` does not take from). Re-profile
+on the branch: `Stack`/`Vector` 0.0 %, `ArrayDeque` 0.3 %, `initData` itself unchanged at
+2.7 / 2.3 %; single-JVM `med ms` 3623 to 3464 (`as-and-bs-4-3`) and 2042 to 1893
+(`mark-unmark`), inside the noise. No A/B run: the profile puts the whole of 1.4 plus 1.6
+at 2 to 4 % on the two rows where they register and at zero elsewhere, below what the
+tier A/B can resolve (the 1.3 A/B showed up to 26 % spread within one build on these rows).
 
 **1.7 `Pool.canonical` reads a `HashMap` outside the lock it writes under.** Correctness
 smell rather than perf. `util/collect/Pool.java:30-42`. Used per transition via
 `RuleTransitionLabel.createLabel:227-229`. Either declare it single-threaded and drop the
 lock on the miss path, or use `ConcurrentHashMap`.
+Measured 2026-09-26: `Pool.canonical` is the top frame of 0.0 to 0.9 % of the samples,
+7.2 % within the top 3 frames on `fib-function-22`, 0.2 to 0.4 % elsewhere; the time is in
+`HashMap.getNode` under it, that is `Frame.equals`/`hashCode`, not the lock. No
+performance case; the correctness smell stands as written.
+
+**1.8 Factory dependency registration per `Step` on function-heavy rows.** High / small
+to medium / high. On `fib-function-22` the top frame of 10.0 % of the samples is
+`WeakHashMap.put`, reached from `Switch.assignSource2Target` (74 samples),
+`assignSource2Par` (64), `assignSource2Init` (57), `assignPar2Target` (19) and
+`Location.assignFinal2Par` (12): the `Switch` assignment factories registering each
+`Step` factory that reads them as a user. Function calls create fresh frames throughout
+the exploration (the call stack grows), each frame builds its `Step`s, each `Step`
+builds its `getParAssign`/`getRecipeParAssign`/`getApplyChange`/`getPush` factories
+(together with `Frame.getAttempt` the callers of the remaining 3.0 % `Factory.get`), and
+every build adds the `Step` to the weak user set of every `Switch` factory it reads. The
+registration buys nothing here: a `Switch` factory is reset only when the template is
+rebuilt, which discards the automaton and all its frames anyway. Together with the
+`ReferencePipeline` frames of the `Step` construction (about 9 %), frame building is
+roughly a fifth of that row. Suggestion: compute the `Step` values eagerly in the
+constructor into final fields (a `Step` is fixed on construction), or a factory variant
+that does not track dependencies for the per-frame factories of `Step` and `Frame`.
+Design decision pending (2026-09-26).
 
 ### 2. Dead or broken optimisations
 

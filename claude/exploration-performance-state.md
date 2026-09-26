@@ -60,8 +60,12 @@ and outcomes" in the note).
    `factory-fast-path` off master (tip 3e6e7f7f7, 2026-09-26, detached for review in its
    own worktree), lock-preserving fast path with a volatile holder; A/B
    under 1.3 in the note: every row 2 to 11 % faster, direction uniform, single rows
-   inside the noise. 1.4 to 1.6 remain (each 1 to 3 % sampled),
-   1.6 (`java.util.Stack` to `ArrayDeque`) the cheapest. A `@DebugFlag` marker plus test,
+   inside the noise. 1.4 and 1.6 done on branch `section1-locks` off master (tip
+   da7559bc6, 2026-09-26, detached for review; profile figures under 1.4 and 1.6 in the
+   note, 2 to 4 % on `as-and-bs-4-3` and `mark-unmark`, zero elsewhere, no A/B since
+   below the resolvable floor); 1.5 moot (immutable `NestedSwitch`); 1.7 no performance
+   case. New 1.8 (Factory dependency registration per `Step`, 10 % of `fib-function-22`)
+   awaits a design decision: eager `Step` fields or untracked factories. A `@DebugFlag` marker plus test,
    so a `CHECK_IMAGES` cannot stay on unnoticed again, was handed to a separate session.
 4. Section 2 (dead optimisations): 2.1 done 2026-09-25 on branch `confluent-diamond`
    (shortcut revived with content-based event conflicts, up to 54 % off; figures under
