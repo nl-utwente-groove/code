@@ -186,7 +186,10 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
 
     /**
      * Creates a dialog for the given graph and (possibly {@code null})
-     * simulator, and sets it to visible.
+     * simulator, and sets it to visible. A graph with the same name and
+     * role as one previewed less than a second ago is suppressed, so that a
+     * call from a loop or from a repeatedly evaluated Prolog query does not
+     * open a window per invocation.
      */
     public static <G extends Graph> void showGraph(Simulator simulator, G graph) {
         final GraphRole role = graph.getRole();
@@ -194,20 +197,18 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
         synchronized (recentPreviews) {
             final Set<String> previews = recentPreviews.get(role);
             assert previews != null; // all graph roles are pre-populated
-            if (!TIMER || previews.add(name)) {
+            if (previews.add(name)) {
                 new GraphPreviewDialog<>(simulator, graph).setVisible(true);
-                if (TIMER) {
-                    final Timer timer = new Timer();
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            synchronized (recentPreviews) {
-                                previews.remove(name);
-                            }
-                            timer.cancel();
+                final Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        synchronized (recentPreviews) {
+                            previews.remove(name);
                         }
-                    }, 1000);
-                }
+                        timer.cancel();
+                    }
+                }, 1000);
             }
         }
     }
@@ -225,8 +226,6 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
             recentPreviews.put(role, new HashSet<>());
         }
     }
-
-    private static final boolean TIMER = true;
 
     /** A panel showing a graph canvas. */
     public static class GraphPreviewPanel extends GraphPanel<@NonNull Graph> {
