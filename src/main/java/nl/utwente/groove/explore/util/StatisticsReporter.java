@@ -325,7 +325,7 @@ public class StatisticsReporter extends AExplorationReporter {
     private void reportTime() {
         time("Reporting time usage");
         // Timing figures.
-        long total = Exploration.getRunningTime();
+        long total = getExploration().getRunningTime();
         // total time doing matching-related computations,
         // including certificate calculation
         long matching = PlanSearchStrategy.searchFindReporter.getTotalTime();

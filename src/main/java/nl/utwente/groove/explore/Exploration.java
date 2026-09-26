@@ -30,7 +30,6 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.match.MatchBoundException;
 import nl.utwente.groove.util.Randomness;
-import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -136,9 +135,9 @@ public class Exploration {
      * Returns {@code this} for call chaining.
      */
     final public Exploration play() {
-        // initialize profiling and prepare graph listener
+        // start timing and prepare graph listener
         long drawCount = Randomness.getUseCount();
-        playReporter.start();
+        long startTime = System.nanoTime();
         for (ExplorationListener listener : this.listeners) {
             listener.start(this, this.gts);
         }
@@ -165,8 +164,8 @@ public class Exploration {
                 listener.stop(this.gts);
             }
         }
-        // stop profiling
-        playReporter.stop();
+        // stop timing
+        this.runningTime = (System.nanoTime() - startTime) / 1_000_000;
         if (Randomness.getUseCount() > drawCount) {
             // this run drew randomness, so record the master seed in the GTS
             // info; from there it is carried into saved LTS files (gh #897)
@@ -225,16 +224,13 @@ public class Exploration {
     }
 
     /**
-     * Returns the total running time of the exploration.
-     * This information can be used for profiling.
-     * @return the long holding the running time in number of seconds
+     * Returns the running time of the most recent {@link #play()} of this
+     * exploration, in milliseconds.
      */
-    static public long getRunningTime() {
-        return playReporter.getTotalTime();
+    public long getRunningTime() {
+        return this.runningTime;
     }
 
-    /** Reporter for profiling information. */
-    static private final Reporter reporter = Reporter.register(Exploration.class);
-    /** Handle for profiling {@link #play()}. */
-    static final Reporter playReporter = reporter.register("playScenario()");
+    /** Running time of the most recent {@link #play()}, in milliseconds. */
+    private long runningTime;
 }
