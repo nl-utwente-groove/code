@@ -53,6 +53,7 @@ import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.match.Prover;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.NoNonNull;
@@ -1288,5 +1289,6 @@ public class Rule implements Action, Fixable {
      */
     private static AnchorFactory anchorFactory = DefaultAnchorFactory.instance();
     /** Debug flag for the constructor. */
+    @DebugFlag
     private static final boolean PRINT = false;
 }

@@ -29,6 +29,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.DebugFlag;
 
 /**
  * Interface for algorithms to compute isomorphism certificates for a given
@@ -511,6 +512,7 @@ abstract public class CertificateStrategy {
     static private int[] iterateCountArray = {};
 
     /** Flag to turn on System.out-tracing. */
+    @DebugFlag
     static final boolean TRACE = false;
 
     /**

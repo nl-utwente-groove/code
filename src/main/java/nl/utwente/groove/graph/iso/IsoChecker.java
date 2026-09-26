@@ -38,6 +38,7 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.iso.CertificateStrategy.EdgeCertificate;
 import nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate;
 import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.collect.Bag;
 import nl.utwente.groove.util.collect.HashBag;
 import nl.utwente.groove.util.collect.NestedArrays;
@@ -1153,17 +1154,21 @@ public class IsoChecker {
      */
     static private int distinctSimCount;
     /** Flag to switch printing on, for debugging purposes. */
+    @DebugFlag
     static private final boolean ISO_PRINT = false;
     /**
      * Flag to check for false negatives in the certification, for debugging
      * purposes.
      */
+    @DebugFlag
     static private final boolean TEST_FALSE_NEGATIVES = false;
     /**
      * Flag to save false negatives and exit
      */
+    @DebugFlag
     static private final boolean SAVE_FALSE_NEGATIVES = false;
     /** Flag to switch assertions on, for debugging purposes. */
+    @DebugFlag
     static private final boolean ISO_ASSERT = false;
 
     // the following has to be defined here in order to avoid

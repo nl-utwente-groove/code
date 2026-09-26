@@ -29,6 +29,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Status;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -288,5 +289,6 @@ abstract public class ResourceModel<R> {
     /** The errors found during resource construction. */
     private final FormatErrorSet errors = new FormatErrorSet();
 
+    @DebugFlag
     private static final boolean DEBUG = false;
 }
