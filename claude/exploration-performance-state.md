@@ -9,7 +9,7 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack", then the finding the next item names).
 
-## State as of 2026-09-26
+## State as of 2026-09-27
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
 master merged in up to `1726ed599` (2026-09-26; a fresh quick-tier baseline at that merge
@@ -64,8 +64,10 @@ and outcomes" in the note).
    da7559bc6, 2026-09-26, detached for review; profile figures under 1.4 and 1.6 in the
    note, 2 to 4 % on `as-and-bs-4-3` and `mark-unmark`, zero elsewhere, no A/B since
    below the resolvable floor); 1.5 moot (immutable `NestedSwitch`); 1.7 no performance
-   case. New 1.8 (Factory dependency registration per `Step`, 10 % of `fib-function-22`)
-   awaits a design decision: eager `Step` fields or untracked factories. A `@DebugFlag` marker plus test,
+   case. 1.8 (Factory dependency registration per `Step`) done 2026-09-27 on branch
+   `step-eager-fields` off master (tip 20c222a12, detached for review): `Factory.untracked`
+   for the `Frame` factories plus eager `Step` fields; A/B under 1.8 in the note, 20 to
+   24 % on the fibonacci rows, control row level. Section 1 is finished. A `@DebugFlag` marker plus test,
    so a `CHECK_IMAGES` cannot stay on unnoticed again, was handed to a separate session.
 4. Section 2 (dead optimisations): 2.1 done 2026-09-25 on branch `confluent-diamond`
    (shortcut revived with content-based event conflicts, up to 54 % off; figures under

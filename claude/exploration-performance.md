@@ -1291,7 +1291,34 @@ rebuilt, which discards the automaton and all its frames anyway. Together with t
 roughly a fifth of that row. Suggestion: compute the `Step` values eagerly in the
 constructor into final fields (a `Step` is fixed on construction), or a factory variant
 that does not track dependencies for the per-frame factories of `Step` and `Frame`.
-Design decision pending (2026-09-26).
+Decision (Arend, 2026-09-26): eager `Step` fields. Analysis: the four values depend only
+on the template and on the final `Step` fields, none reads another `Step` or `Frame`
+factory, and the only reset on the path is `Location.addVars` from `Template.initVars`,
+before the automaton exists, so eager computation is safe; but the `Step` constructor
+runs inside `Frame.computeAttempt`, a tracked `Factory.lazy` build, so eager fields
+alone would have moved the registrations from the `Step` to the `Frame` (one
+`WeakHashMap.put` per read either way). Done 2026-09-27 on branch `step-eager-fields`
+off master (tip 20c222a12, detached for review): `Factory.untracked` (lazy without the
+builder registration) for the four `Frame` factories, and the four `Step` values as
+final fields computed in the constructor. Gates pass (null check, fast suite,
+`DeterminismTest`, `CacheReconstructionTest`, `ExplorationTest` 25/25).
+
+A/B 2026-09-27: A = the branch build with the master versions of `Factory`, `Frame` and
+`Step` compiled alone and prepended to the classpath, B = the branch at 20c222a12, six
+JVMs per row strictly alternating A, B, A, B, A, B, JDK 25, `-da -Xmx4g
+-XX:+UseParallelGC`, two warm-ups and three runs, no foreign Java process, state and
+transition counts identical across all JVMs. Mean of the three JVMs' `med ms`:
+
+| row | A | B | B/A | spread A | spread B |
+|---|---|---|---|---|---|
+| `fib-function-22` | 1749 | 1395 | 0.80 | 1.28 | 1.23 |
+| `fib-22` | 2070 | 1569 | 0.76 | 1.13 | 1.17 |
+| `car-platooning-05` (control, no procedures) | 2354 | 2331 | 0.99 | 1.05 | 1.02 |
+
+The gain exceeds the spread on both procedure rows and every B is below every A on
+`fib-22`; the control row is level, so the eager computation for never-matching steps
+costs nothing visible. The strict alternation kept the first-slot effect out of the
+comparison (the first JVM was again the outlier on `fib-function-22`, this time slow).
 
 ### 2. Dead or broken optimisations
 
