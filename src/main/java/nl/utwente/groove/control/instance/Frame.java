@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.control.instance;
 
-import static nl.utwente.groove.util.Factory.lazy;
+import static nl.utwente.groove.util.Factory.untracked;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -193,7 +193,7 @@ public class Frame implements Position<Frame,Step> {
         return this.pastAttempts.get();
     }
 
-    private Supplier<Set<NestedCall>> pastAttempts = lazy(() -> {
+    private Supplier<Set<NestedCall>> pastAttempts = untracked(() -> {
         var result = new HashSet<NestedCall>();
         if (!isPrime()) {
             var pred = getPred();
@@ -213,7 +213,7 @@ public class Frame implements Position<Frame,Step> {
         return this.pastCalls.get();
     }
 
-    private Supplier<Set<Call>> pastCalls = lazy(() -> {
+    private Supplier<Set<Call>> pastCalls = untracked(() -> {
         var result = new HashSet<Call>();
         getPastAttempts().stream().map(NestedCall::getInner).forEach(result::add);
         return result;
@@ -286,7 +286,7 @@ public class Frame implements Position<Frame,Step> {
         return this.propertiesTested.get();
     }
 
-    private final Factory<Boolean> propertiesTested = Factory.lazy(() -> {
+    private final Factory<Boolean> propertiesTested = untracked(() -> {
         var pred = getPred();
         return !getAut().getProgram().hasProperties() || isPropertyTrial()
             || (pred != null && pred.isPropertiesTested());
@@ -297,7 +297,7 @@ public class Frame implements Position<Frame,Step> {
         return this.attempt.get();
     }
 
-    private final Factory<StepAttempt> attempt = lazy(this::computeAttempt);
+    private final Factory<StepAttempt> attempt = untracked(this::computeAttempt);
 
     /** Computes the attempt of this frame. */
     private StepAttempt computeAttempt() {

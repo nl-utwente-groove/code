@@ -219,6 +219,24 @@ public abstract class Factory<T> implements Supplier<T> {
         };
     }
 
+    /**
+     * Creates an instance of this factory from a given supplier, without
+     * dependency tracking: factories read while the value is being built do not
+     * record this one as a user, so a {@link #reset()} of theirs does not reach it.
+     * Intended for factories whose owner is discarded together with everything it
+     * reads, such as the per-frame factories of the control automaton, where the
+     * registration would cost a weak-set insertion per read and buy nothing.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    static public <T> Factory<T> untracked(Supplier<T> create) {
+        return new Factory<>() {
+            @Override
+            protected T create() {
+                return create.get();
+            }
+        };
+    }
+
     /** Creates a supplier with a given value. */
     static public <T> Supplier<T> value(T init) {
         return new Supplier<>() {
