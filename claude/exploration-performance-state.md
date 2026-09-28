@@ -9,10 +9,10 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack", then the finding the next item names).
 
-## State as of 2026-09-27
+## State as of 2026-09-28
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
-master merged in up to `1726ed599` (2026-09-26; a fresh quick-tier baseline at that merge
+master merged in up to `3068fc23e` (2026-09-28; the latest quick-tier baseline, at `1726ed599`, a fresh quick-tier baseline at that merge
 is in the note, stitched from two JVMs after another session disturbed the first run). Everything the branch set out to build is
 done and recorded in the note: the harness with its three tiers and the random-access
 switch; the grammar set (15 grammars, 58 rows); the quick-tier baseline (2026-09-23, re-run
@@ -71,7 +71,9 @@ and outcomes" in the note).
    so a `CHECK_IMAGES` cannot stay on unnoticed again, was handed to a separate session.
 4. Section 2 (dead optimisations): 2.1 done 2026-09-25 on branch `confluent-diamond`
    (shortcut revived with content-based event conflicts, up to 54 % off; figures under
-   2.1 in the note); 2.2 dropped (footprint, see there). 2.4 and 2.3 done 2026-09-25 on
+   2.1 in the note); pump-row A/B 2026-09-28: neutral (B/A 0.99 to 1.00), so the
+   conflict check needs no pre-test and the 2026-09-26 pump slowdown was not 2.1;
+   2.2 dropped (footprint, see there). 2.4 and 2.3 done 2026-09-25 on
    branch `iso-refinement` (handoff note `claude/iso-refinement-state.md` there): 2.4
    measured time-neutral and dropped at review (the old final pass hashes adjacency under
    the discrete labelling into the graph certificate), 2.3's soft reference measured and
@@ -158,10 +160,6 @@ JVM per row), pin counts, one commit per grammar; only the harness reads
   wins over an attribute edge (which also binds its value node).
 
 ## Open decisions
-
-- The pump rows are 5 to 15 % slower in the 2026-09-26 baseline with the diamond
-  shortcut active but closing few diamonds per transition; an A/B of 2.1 on the pump rows
-  decides whether the conflict check needs a cheaper pre-test.
 
 - Decided 2026-09-26: fixes go on their own branches off master (`retire-reporter`,
   `factory-fast-path`); this branch carries only the note, the state file, the harness

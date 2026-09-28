@@ -827,8 +827,9 @@ Against the 2026-09-23 table (`med ms` new over old):
 - **The pump rows are 5 to 15 % slower** (`pump-12-6-spo` 1.15, `pump-12-6-dpo` 1.05,
   `pump-8-4` 1.07) with `iso` and `gen` both up. These rows close diamonds
   (34 380 at `pump-12-6-spo`) but few relative to their 1.27 M transitions, so the
-  suspect is the shortcut's conflict check paying without a payoff. Open; needs an A/B
-  of 2.1 on the pump rows. `mergers-6` at 1.75 is a 40 ms row.
+  suspect is the shortcut's conflict check paying without a payoff. Refuted by an A/B of
+  2.1 on the pump rows (2026-09-28, under 2.1): the shortcut is neutral there.
+  `mergers-6` at 1.75 is a 40 ms row.
 - **The first-row effect**: `leader-election-8` (37 against 210 and 288 ms) and `fib-15`
   (61 against 414 and 470 ms) opened the second JVM and came out 5 to 8 times faster than
   in their usual table position, which is the order effect noted under "Outcomes" for
@@ -1374,6 +1375,26 @@ a symmetric parent transition (interchangeable tokens), and the rest involve com
 events, for which `conflicts` answers true; lifting that (sound pairwise over sub-events,
 given the `forall` handling of `RuleDependencies`) would still close none, since those
 candidates have no explored sibling or create token nodes, which the node guard refuses.
+
+Pump-row A/B (2026-09-28), for the 5 to 15 % the pump rows lost in the 2026-09-26
+baseline: A = master 3068fc23e with the diamond branch disabled (`false &&` prefixed to
+its condition), B = master; JDK 25.0.4.1, `-da -Xmx4g -XX:+UseParallelGC`, harness
+default of 2 warm-ups and 3 runs, one JVM per row and build, one discarded B JVM per row,
+then four rounds in strict alternation A, B; mean of the four `med ms`; counts identical,
+`confl` 0 in every A run:
+
+| row | diamonds | A | B | B/A | allocMB A | allocMB B |
+|---|---|---|---|---|---|---|
+| `pump-8-4` | 1,703 | 138 | 137 | 0.99 | 323 | 316 |
+| `pump-12-6-dpo` | 32,616 | 5502 | 5523 | 1.00 | 11,758 | 11,698 |
+| `pump-12-6-spo` | 34,380 | 5627 | 5614 | 1.00 | 12,073 | 12,011 |
+
+The shortcut is neutral on the pump rows: the per-JVM spread (1 to 3 %) covers the
+difference, and allocation is half a per cent lower with it. The candidates the conflict
+check rejects cost nothing measurable, so it needs no cheaper pre-test, and the
+2026-09-26 slowdown was tier-table noise or another change of that merge, not 2.1. The
+pump rows also stand 7 to 12 % below that baseline now (`pump-12-6-dpo` 6243 to 5.5 s),
+consistent with the section 1 fixes merged since.
 
 **2.2 `getKey()` allocates inside the stub set's hash and equality functions.** Medium
 to high / medium / high. Consequence of 2.1: `StateCache.createStubSet`
@@ -2261,7 +2282,8 @@ the exploration thread itself, uncontended.
    fixed on master; 1.1 retirement on branch `retire-reporter`; 1.3 design advised.
 7. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
    certifier reference; each restores an optimisation that exists but does not work.
-   2.1 done 2026-09-25 on branch `confluent-diamond` (up to 54 % off, see there); 2.2
+   2.1 done 2026-09-25 on branch `confluent-diamond` (up to 54 % off, see there; neutral
+   on the pump rows, A/B 2026-09-28); 2.2
    dropped as not worth its footprint. 2.4 and 2.3 done 2026-09-25 on branch
    `iso-refinement`: 2.4 time-neutral and dropped (the final pass strengthens the graph
    certificate), the soft reference of 2.3 measured and rejected (see there). Next: 2.5
