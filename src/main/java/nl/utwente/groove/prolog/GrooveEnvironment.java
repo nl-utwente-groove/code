@@ -55,6 +55,7 @@ import nl.utwente.groove.prolog.builtin.LtsPredicates;
 import nl.utwente.groove.prolog.builtin.RulePredicates;
 import nl.utwente.groove.prolog.builtin.TransPredicates;
 import nl.utwente.groove.prolog.builtin.TypePredicates;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
@@ -373,12 +374,14 @@ public class GrooveEnvironment extends Environment {
      * The result can be included in the TokenMakerMaker input for the
      * {@code RSyntaxTextArea} syntax highlighting.
      */
+    @DebugFlag
     private static final boolean PRINT_PROLOG_FUNCTORS = false;
     /**
      * Flag that causes all Groove functor names to be printed on stdout.
      * The result can be included in the TokenMakerMaker input for the
      * {@code RSyntaxTextArea} syntax highlighting.
      */
+    @DebugFlag
     private static final boolean PRINT_GROOVE_FUNCTORS = false;
 
     /** Alphabetically and arity-wise ordered set of compound tags. */

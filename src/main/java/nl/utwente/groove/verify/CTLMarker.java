@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -459,6 +460,7 @@ public class CTLMarker {
     }
 
     /** Debug flag */
+    @DebugFlag
     static private boolean DEBUG = false;
 
     /** Satisfaction vector for a given proposition. */

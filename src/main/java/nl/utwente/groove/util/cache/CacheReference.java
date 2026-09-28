@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.util.DebugFlag;
+
 /**
  * Reference subclass with the following features:
  * <ul>
@@ -327,9 +329,12 @@ public class CacheReference<C> extends SoftReference<@Nullable C> {
     static final private ReferenceQueue<@Nullable Object> queue = new ReferenceQueue<>();
 
     /** Debug flag. */
+    @DebugFlag
     static final private boolean DEBUG = false;
     /** Debug flag preventing references from becoming soft. */
+    @DebugFlag
     static final private boolean NEVER_SOFTEN = false;
     /** Debug flag ensuring resurrected references are always strong. */
+    @DebugFlag
     static final private boolean REINCARNATE_STRONG = false;
 }

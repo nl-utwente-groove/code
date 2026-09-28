@@ -46,6 +46,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.Visitor.Finder;
@@ -783,5 +784,6 @@ public class RuleApplication implements DeltaApplier {
         image.add(hostNode);
     }
 
+    @DebugFlag
     private final static boolean DEBUG = false;
 }

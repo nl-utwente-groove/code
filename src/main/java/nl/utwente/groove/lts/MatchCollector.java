@@ -45,6 +45,7 @@ import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleEvent;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.collect.KeySet;
 
@@ -402,5 +403,6 @@ public class MatchCollector {
     private static int parentOutReuse;
 
     /** Debug flag for the match collector. */
+    @DebugFlag
     private final static boolean DEBUG = false;
 }

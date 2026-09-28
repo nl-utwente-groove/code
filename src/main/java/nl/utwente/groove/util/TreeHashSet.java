@@ -1255,10 +1255,13 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     /** Factor by which the arrays grow if more space is needed. */
     static private final double GROWTH_FACTOR = 1.5;
     /** Flag indicating that some fill statistics should be printed. */
+    @DebugFlag
     static private final boolean FILL_PRINT = false;
     /** Flag indicating that extra asserts should be used. */
+    @DebugFlag
     static private final boolean DEBUG = false;
     /** Flag indicating that some size statistics should be printed. */
+    @DebugFlag
     static private final boolean SIZE_PRINT = false;
 
     /**

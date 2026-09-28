@@ -16,15 +16,16 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.Stack;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -156,8 +157,8 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         // mapping from states to sets of incoming transitions
         Map<GraphState,@Nullable Set<RuleTransition>> inMap = new LinkedHashMap<>();
         // build the incoming transition map
-        Stack<GraphState> pool = new Stack<>();
-        pool.add(getLaunch().target());
+        Deque<GraphState> pool = new ArrayDeque<>();
+        pool.push(getLaunch().target());
         while (!pool.isEmpty()) {
             GraphState next = pool.pop();
             for (RuleTransition trans : next.getRuleTransitions()) {
@@ -177,7 +178,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                     assert inSet != null; // just set in case it was not set
                     inSet.add(trans);
                     if (fresh && target != target()) {
-                        pool.add(target);
+                        pool.push(target);
                     }
                 }
             }
@@ -186,14 +187,14 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         // backward reachability to build up the result set
         Set<RuleTransition> result = new LinkedHashSet<>();
         result.add(getLaunch());
-        pool.add(target());
+        pool.push(target());
         while (!pool.isEmpty()) {
             GraphState next = pool.pop();
             var inSet = inMap.remove(next);
             if (inSet != null) {
                 for (RuleTransition in : inSet) {
                     result.add(in);
-                    pool.add(in.source());
+                    pool.push(in.source());
                 }
             }
         }

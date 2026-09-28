@@ -62,6 +62,7 @@ import nl.utwente.groove.graph.plain.PlainFactory;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainLabel;
 import nl.utwente.groove.graph.plain.PlainNode;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.Pair;
@@ -850,6 +851,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     private static final AspectParser parser = AspectParser.getInstance();
 
     /** Debug flag. */
+    @DebugFlag
     static private final boolean DEBUG = false;
 
     /** Factory for AspectGraph elements. */

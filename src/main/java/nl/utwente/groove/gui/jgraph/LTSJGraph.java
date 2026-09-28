@@ -43,6 +43,7 @@ import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.collect.Matrix;
 import nl.utwente.groove.util.line.MatrixFormat;
 
@@ -202,6 +203,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements LTSGraphCanvas, S
     private final Matrix<Dimension2D> sizeMatrix = new Matrix<>();
 
     /** Flag indicating if the label size computation should be fast and sloppy. */
+    @DebugFlag
     static private final boolean FAST_SIZE = false;
 
     @Override

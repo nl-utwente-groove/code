@@ -26,6 +26,7 @@ import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.History;
 import nl.utwente.groove.util.Trace;
 
@@ -323,5 +324,6 @@ public class StepHistory implements SimulatorListener {
     }
 
     /** Debug flag. */
+    @DebugFlag
     private static final boolean DEBUG = false;
 }

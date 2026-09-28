@@ -51,6 +51,7 @@ import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
@@ -1169,5 +1170,6 @@ public class StateCache implements Cache {
     }
 
     /** Debug flag. */
+    @DebugFlag
     private static final boolean DEBUG = false;
 }

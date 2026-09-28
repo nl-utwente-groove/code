@@ -57,6 +57,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.match.SearchEngine;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Observable;
 import nl.utwente.groove.util.collect.Bag;
@@ -157,6 +158,7 @@ public class PlanSearchEngine extends SearchEngine {
     private static PlanSearchEngine multiInstance;
 
     /** Flag to control search plan printing. */
+    @DebugFlag
     static private final boolean PRINT = false;
 
     /**

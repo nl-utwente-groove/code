@@ -20,11 +20,12 @@ import static nl.utwente.groove.graph.GraphRole.HOST;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayDeque;
 import java.util.ConcurrentModificationException;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -389,7 +390,7 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             } else {
                 // back up to the first initialised graph
                 // or the first graph without a basis
-                Stack<DeltaHostGraph> basisChain = new Stack<>();
+                Deque<DeltaHostGraph> basisChain = new ArrayDeque<>();
                 basisChain.push(this);
                 DeltaHostGraph backward = basis;
                 var backwardBasis = backward.basis;

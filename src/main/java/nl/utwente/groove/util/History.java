@@ -185,5 +185,6 @@ public class History<T> {
      */
     protected int index = -1;
 
+    @DebugFlag
     private static final boolean DEBUG = false;
 }

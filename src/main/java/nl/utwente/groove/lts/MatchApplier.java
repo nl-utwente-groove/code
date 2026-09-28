@@ -30,7 +30,6 @@ import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.RuleEffect;
 import nl.utwente.groove.transform.RuleEffect.Fragment;
 import nl.utwente.groove.transform.RuleEvent;
-import nl.utwente.groove.util.Reporter;
 
 /**
  * Provides functionality to add states and transitions to a GTS, based on known
@@ -67,7 +66,6 @@ public class MatchApplier {
      * @throws InterruptedException if an oracle input was cancelled
      */
     public RuleTransition apply(GraphState source, MatchResult match) throws InterruptedException {
-        addTransitionReporter.start();
         RuleTransition transition = null;
         Rule rule = match.getAction();
         if (!match.getStep().isModifying()) {
@@ -118,9 +116,7 @@ public class MatchApplier {
         }
         if (transition == null) {
             GraphNextState freshTarget = createState(source, match);
-            addStateReporter.start();
             GraphState isoTarget = getGTS().addState(freshTarget);
-            addStateReporter.stop();
             if (isoTarget == null) {
                 transition = freshTarget;
             } else {
@@ -132,7 +128,6 @@ public class MatchApplier {
         }
         // add transition to gts
         getGTS().addTransition(transition);
-        addTransitionReporter.stop();
         return transition;
     }
 
@@ -281,22 +276,8 @@ public class MatchApplier {
     }
 
     /**
-     * Returns the time spent generating successors.
-     */
-    public static long getGenerateTime() {
-        return addTransitionReporter.getTotalTime();
-    }
-
-    /**
      * Constant empty node array, to be shared among rule applications that
      * create no nodes.
      */
     private static final HostNode[] EMPTY_NODE_ARRAY = {};
-
-    /** Reporter for profiling information. */
-    static private final Reporter reporter = Reporter.register(MatchApplier.class);
-    /** Profiling aid for adding states. */
-    static public final Reporter addStateReporter = reporter.register("addState");
-    /** Profiling aid for adding transitions. */
-    static public final Reporter addTransitionReporter = reporter.register("addTransition");
 }

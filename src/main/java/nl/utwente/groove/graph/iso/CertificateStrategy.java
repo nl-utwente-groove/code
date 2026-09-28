@@ -29,7 +29,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.Reporter;
+import nl.utwente.groove.util.DebugFlag;
 
 /**
  * Interface for algorithms to compute isomorphism certificates for a given
@@ -138,10 +138,8 @@ abstract public class CertificateStrategy {
     /** Computes the node and edge certificate arrays. */
     void computeCertificates() {
         // we compute the certificate map
-        computeCertReporter.start();
         initCertificates();
         iterateCertificates();
-        computeCertReporter.stop();
     }
 
     /** Iterates and so finishes the computation of the certificates. */
@@ -384,13 +382,11 @@ abstract public class CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<NodeCertificate> computeNodePartitionMap() {
-        getPartitionReporter.start();
         PartitionMap<NodeCertificate> result = new PartitionMap<>();
         // invert the certificate map
         for (NodeCertificate cert : getNodeCertificates()) {
             result.add(cert);
         }
-        getPartitionReporter.stop();
         return result;
     }
 
@@ -417,7 +413,6 @@ abstract public class CertificateStrategy {
      * of graph elements having those certificates.
      */
     private PartitionMap<EdgeCertificate> computeEdgePartitionMap() {
-        getPartitionReporter.start();
         PartitionMap<EdgeCertificate> result = new PartitionMap<>();
         // invert the certificate map
         var edgeCerts = getEdgeCertificates();
@@ -425,7 +420,6 @@ abstract public class CertificateStrategy {
         for (int i = 0; i < bound; i++) {
             result.add(edgeCerts[i]);
         }
-        getPartitionReporter.stop();
         return result;
     }
 
@@ -518,15 +512,8 @@ abstract public class CertificateStrategy {
     static private int[] iterateCountArray = {};
 
     /** Flag to turn on System.out-tracing. */
+    @DebugFlag
     static final boolean TRACE = false;
-
-    // --------------------------- reporter definitions ---------------------
-    /** Reporter instance to profile methods of this class. */
-    static public final Reporter reporter = IsoChecker.reporter;
-    /** Handle to profile {@link #computeCertificates()}. */
-    static public final Reporter computeCertReporter = reporter.register("computeCertificates()");
-    /** Handle to profile {@link #getNodePartitionMap()}. */
-    static protected final Reporter getPartitionReporter = reporter.register("getPartitionMap()");
 
     /**
      * Type of the certificates constructed by the strategy. A value of this

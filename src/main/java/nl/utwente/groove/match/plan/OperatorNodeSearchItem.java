@@ -34,6 +34,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
+import nl.utwente.groove.util.DebugFlag;
 
 /**
  * A search item for an operator node.
@@ -329,6 +330,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
          */
         private ValueNode image;
         /** Flag to control debug printing. */
+        @DebugFlag
         static private final boolean PRINT = false;
     }
 

@@ -38,9 +38,9 @@ import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.match.SearchEngine;
 import nl.utwente.groove.match.SearchStrategy;
 import nl.utwente.groove.match.TreeMatch;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.Visitor;
 
 /**
@@ -365,11 +365,6 @@ public class PlanSearchStrategy implements SearchStrategy, Fixable {
      */
     private boolean fixed;
 
-    /** Reporter instance to profile matcher methods. */
-    static private final Reporter reporter = Reporter.register(PlanSearchStrategy.class);
-    /** Handle for profiling {@link Search#find()} */
-    static public final Reporter searchFindReporter = reporter.register("Search.find()");
-
     /**
      * Class implementing an instantiation of the search plan algorithm for a
      * given graph.
@@ -444,7 +439,6 @@ public class PlanSearchStrategy implements SearchStrategy, Fixable {
          * @return <code>true</code> if there is a next result.
          */
         public boolean find() {
-            searchFindReporter.start();
             final int planSize = PlanSearchStrategy.this.plan.size();
             boolean found = this.found;
             // if an image was found before, roll back the result
@@ -496,7 +490,6 @@ public class PlanSearchStrategy implements SearchStrategy, Fixable {
                     }
                 }
             }
-            searchFindReporter.stop();
             return found;
         }
 
@@ -761,7 +754,9 @@ public class PlanSearchStrategy implements SearchStrategy, Fixable {
         /** Forward influence count of the records. */
         private final int[] influenceCount;
 
+        @DebugFlag
         private final static boolean PRINT_MATCHES = false;
+        @DebugFlag
         private final static boolean CHECK_IMAGES = false;
     }
 

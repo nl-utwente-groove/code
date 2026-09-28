@@ -16,12 +16,9 @@
  */
 package nl.utwente.groove.control.instance;
 
-import static nl.utwente.groove.util.Factory.lazy;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -61,6 +58,13 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         this.fullStack = fullStack.build();
         this.onFinish = onFinish;
         this.source = source;
+        // the derived values are computed eagerly: they depend only on the
+        // template and on the final fields above, and computing them here keeps
+        // this step out of the factory dependency tracking (see Factory#untracked)
+        this.parAssign = computeParAssign();
+        this.recipeParAssign = computeRecipeParAssign();
+        this.push = computePush();
+        this.applyChange = computeApplyChange();
     }
 
     /** Returns the source frame of this step. */
@@ -167,15 +171,15 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * based on the source variables of the outer call.
      */
     public Assignment getParAssign() {
-        return this.assignSource2Par.get();
+        return this.parAssign;
     }
 
-    /** Lazily computed assignment to the parameters of the inner call of this step,
+    /** Assignment to the parameters of the inner call of this step,
      * based on the source variables of the outer call.
      */
-    private final Supplier<Assignment> assignSource2Par = lazy(this::computeParAssign);
+    private final Assignment parAssign;
 
-    /** Computes the value for {@link #assignSource2Par}. */
+    /** Computes the value for {@link #parAssign}. */
     private Assignment computeParAssign() {
         var switchIter = getStack().outIterator();
         var result = switchIter.next().assignSource2Par();
@@ -193,13 +197,13 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     public Assignment getRecipeParAssign() {
-        return this.recipeParAssign.get();
+        return this.recipeParAssign;
     }
 
-    /** Lazily computed assignment to the parameters of the recipe entered by this
+    /** Assignment to the parameters of the recipe entered by this
      * step, based on the source variables of the outer call.
      */
-    private final Supplier<Assignment> recipeParAssign = lazy(this::computeRecipeParAssign);
+    private final Assignment recipeParAssign;
 
     /** Computes the value for {@link #recipeParAssign}. */
     @AIGenerated("Claude Fable 5, 2026-08")
@@ -233,14 +237,14 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * respective switch.
      */
     public CallStackChange getPush() {
-        return this.push.get();
+        return this.push;
     }
 
     /**
-     * Lazily created call stack change for entering this step.
+     * Call stack change for entering this step.
      * @see #getPush()
      */
-    private final Supplier<CallStackChange> push = lazy(this::computePush);
+    private final CallStackChange push;
 
     /**
      * Computes the value for {@link #push}
@@ -288,16 +292,16 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      * procedures explicitly exited by this step.
      */
     public CallStackChange getApplyChange() {
-        return this.applyChange.get();
+        return this.applyChange;
     }
 
     /**
-     * Lazily computes the call stack changes involved in applying this step.
+     * Call stack changes involved in applying this step.
      * These consist of modifications and pushes due to fresh
      * procedure calls and the action of this step, followed by pops due to
      * procedures explicitly exited by this step.
      */
-    private Supplier<CallStackChange> applyChange = lazy(this::computeApplyChange);
+    private final CallStackChange applyChange;
 
     /** Computes the value of {@link #applyChange}. */
     private CallStackChange computeApplyChange() {

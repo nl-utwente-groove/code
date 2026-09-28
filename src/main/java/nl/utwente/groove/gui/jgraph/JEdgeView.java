@@ -54,6 +54,7 @@ import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.collect.Matrix;
 import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.HTMLLineFormat;
@@ -799,5 +800,6 @@ public class JEdgeView extends EdgeView {
     }
 
     /** Flag indicating if the label size computation should be fast and sloppy. */
+    @DebugFlag
     static private final boolean FAST_SIZE = false;
 }

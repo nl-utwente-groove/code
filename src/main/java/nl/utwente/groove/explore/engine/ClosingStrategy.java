@@ -20,8 +20,9 @@ import static nl.utwente.groove.explore.engine.StopMode.INCLUDE;
 import static nl.utwente.groove.explore.engine.StopMode.NONE;
 import static nl.utwente.groove.explore.engine.StopMode.UP_TO;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -219,5 +220,5 @@ abstract public class ClosingStrategy extends GTSStrategy {
     }
 
     /** Local stack of transient states; these should be explored first. */
-    private final Stack<GraphState> transientStack = new Stack<>();
+    private final Deque<GraphState> transientStack = new ArrayDeque<>();
 }

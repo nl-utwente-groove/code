@@ -27,6 +27,7 @@ import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
+import nl.utwente.groove.util.DebugFlag;
 
 /**
  *
@@ -335,5 +336,6 @@ public class DefaultGraphNextState extends AbstractGraphState
      */
     private final HostNode[] addedNodes;
     /** Flag to switch on debugging info. */
+    @DebugFlag
     private final static boolean DEBUG = false;
 }

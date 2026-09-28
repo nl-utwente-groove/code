@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Trace;
 
 /**
@@ -130,5 +131,6 @@ public abstract class FilterIterator<T> implements Iterator<T> {
      */
     private boolean removeAllowed = false;
 
+    @DebugFlag
     private static final boolean ITERATE_DEBUG = false;
 }

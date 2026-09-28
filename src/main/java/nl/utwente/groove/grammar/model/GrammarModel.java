@@ -58,6 +58,7 @@ import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.DeltaMap.Delta;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
@@ -890,6 +891,7 @@ public class GrammarModel implements PropertyChangeListener {
         //        this.typeTracker = createChangeTracker(TYPE);
     }
 
+    @DebugFlag
     static private final boolean DEBUG = false;
 
     // ========================================================================

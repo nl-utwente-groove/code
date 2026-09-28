@@ -44,6 +44,7 @@ import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.AspectViewVertex;
 import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
 import nl.utwente.groove.gui.view.cell.AspectVertexCell;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.QualName;
 
 /**
@@ -274,6 +275,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         getViewModel().removeGraphChangeListener(listener);
     }
 
+    @DebugFlag
     static private final boolean GUI_DEBUG = false;
 
     /** Prints the own-code part of the stack trace to the given output.

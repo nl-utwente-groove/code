@@ -21,6 +21,7 @@ import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Trace;
 
 /**
@@ -96,5 +97,6 @@ public class EdgeEmbargo extends Condition {
      */
     protected final RuleEdge embargoEdge;
 
+    @DebugFlag
     private final static boolean CONSTRUCTOR_DEBUG = false;
 }

@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import picocli.CommandLine.Option;
 
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Log;
 import nl.utwente.groove.util.Verbosity;
 
@@ -229,5 +230,6 @@ public abstract class GrooveCmdLineTool<T> {
         // by default, there is nothing to wait for
     };
 
+    @DebugFlag
     static private final boolean DEBUG = false;
 }
