@@ -24,6 +24,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.collect.IntSet;
 import nl.utwente.groove.util.collect.TreeIntSet;
 
@@ -211,6 +212,7 @@ public class Bisimulator extends CertificateStrategy {
     /** Debug flag to switch the use of {@link MyEdge1Cert}s on and off. */
     static private final boolean USE_EDGE1_CERTIFICATES = true;
     /** Debug flag to switch the use symmetry breaking on and off. */
+    @DebugFlag
     static private final boolean BREAK_SYMMETRIES = false;
     /** Total number of times the symmetry was broken. */
     static private int totalSymmetryBreakCount;

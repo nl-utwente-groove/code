@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.utwente.groove.lts.Status.Flag;
+import nl.utwente.groove.util.DebugFlag;
 
 /** Class counting various statistics of a GTS under exploration. */
 public class GTSCounter implements GTSListener {
@@ -188,5 +189,6 @@ public class GTSCounter implements GTSListener {
     private int ruleTransitionCount;
     private int absentTransitionCount;
     private final Map<GraphState,List<RuleTransition>> inTransMap = new HashMap<>();
+    @DebugFlag
     private final static boolean DEBUG = false;
 }

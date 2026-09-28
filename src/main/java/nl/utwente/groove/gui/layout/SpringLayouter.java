@@ -28,6 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.util.DebugFlag;
 
 /**
  * Action to set up the standard touchgraph layout algorithm on a given
@@ -392,8 +393,10 @@ public class SpringLayouter extends AbstractLayouter {
 
     // ---------------------- INSTANCE DEFINITIONS --------------------------
 
+    @DebugFlag
     private static final boolean DEBUG = false;
 
+    @DebugFlag
     private static final boolean MOVE_NODES_DEBUG = false;
 
     /** Maximal running time of the layouter (in milliseconds). */

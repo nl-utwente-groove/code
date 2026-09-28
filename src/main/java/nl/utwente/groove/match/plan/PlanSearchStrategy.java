@@ -38,6 +38,7 @@ import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.match.SearchEngine;
 import nl.utwente.groove.match.SearchStrategy;
 import nl.utwente.groove.match.TreeMatch;
+import nl.utwente.groove.util.DebugFlag;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Visitor;
@@ -753,7 +754,9 @@ public class PlanSearchStrategy implements SearchStrategy, Fixable {
         /** Forward influence count of the records. */
         private final int[] influenceCount;
 
+        @DebugFlag
         private final static boolean PRINT_MATCHES = false;
+        @DebugFlag
         private final static boolean CHECK_IMAGES = false;
     }
 

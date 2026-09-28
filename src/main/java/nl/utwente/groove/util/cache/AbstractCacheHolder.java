@@ -5,6 +5,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.DebugFlag;
 
 /**
  * Abstract implementation of the {@link CacheHolder} interface. Provides a
@@ -146,5 +147,6 @@ abstract public class AbstractCacheHolder<C extends Cache> implements CacheHolde
     /** The internally stored reference. */
     private CacheReference<C> reference;
 
+    @DebugFlag
     private final static boolean DEBUG = false;
 }

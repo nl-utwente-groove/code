@@ -73,8 +73,6 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 @NonNullByDefault
 public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable {
-    /** Debug flag controlling whether states are compared for control location equality. */
-    protected final static boolean CHECK_CONTROL_LOCATION = true;
     /**
      * The number of transitions generated but not added (due to overlapping
      * existing transitions)
@@ -1128,7 +1126,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             if (this.collapse == COLLAPSE_NONE) {
                 return newState == oldState;
             }
-            if (CHECK_CONTROL_LOCATION && newState.getPrimeFrame() != oldState.getPrimeFrame()) {
+            if (newState.getPrimeFrame() != oldState.getPrimeFrame()) {
                 return false;
             }
             Object[] newCallStack = newState.getPrimeStack();
@@ -1183,11 +1181,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                         .hashCode(stateKey.getPrimeStack(), certifier.getCertificateMap());
                 }
             }
-            if (CHECK_CONTROL_LOCATION) {
-                // prime frames are normalised, so their canonical numbers can
-                // be used; this is deterministic across runs
-                result += stateKey.getPrimeFrame().getNumber();
-            }
+            // prime frames are normalised, so their canonical numbers can
+            // be used; this is deterministic across runs
+            result += stateKey.getPrimeFrame().getNumber();
             return result;
         }
 
