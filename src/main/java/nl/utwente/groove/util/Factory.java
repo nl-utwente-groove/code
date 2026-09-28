@@ -223,9 +223,8 @@ public abstract class Factory<T> implements Supplier<T> {
      * Creates an instance of this factory from a given supplier, without
      * dependency tracking: factories read while the value is being built do not
      * record this one as a user, so a {@link #reset()} of theirs does not reach it.
-     * Intended for factories whose owner is discarded together with everything it
-     * reads, such as the per-frame factories of the control automaton, where the
-     * registration would cost a weak-set insertion per read and buy nothing.
+     * Intended for factories whose owner's lifetime does not exceed that of its
+     * of its dependencies.
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     static public <T> Factory<T> untracked(Supplier<T> create) {
@@ -278,6 +277,7 @@ public abstract class Factory<T> implements Supplier<T> {
     static private volatile @Nullable Set<Factory<?>> builders;
     /** Shared empty set, to save memory. */
     static private final Set<Factory<?>> EMPTY_SET = Collections.emptySet();
+
     /** Wrapper distinguishing a computed value (which may be {@code null}) from none. */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     private record Holder<V>(V value) {
