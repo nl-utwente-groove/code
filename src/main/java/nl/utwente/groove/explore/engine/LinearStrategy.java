@@ -18,7 +18,8 @@ package nl.utwente.groove.explore.engine;
 
 import static nl.utwente.groove.transform.RuleEvent.Reuse.NONE;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -106,7 +107,7 @@ public class LinearStrategy extends GTSStrategy {
         }
     }
 
-    private final Stack<GraphState> pool = new Stack<>();
+    private final Deque<GraphState> pool = new ArrayDeque<>();
 
     /** Listener to keep track of states added to the GTS. */
     private final ExploreListener exploreListener = new ExploreListener();

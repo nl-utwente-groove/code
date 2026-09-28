@@ -1012,7 +1012,7 @@ public class IsoChecker {
      * Indicates if the checker is currently set to strong.
      * If the checker is strong, no false negatives will be returned.
      */
-    public synchronized boolean isStrong() {
+    public boolean isStrong() {
         return this.strong;
     }
 
