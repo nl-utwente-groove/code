@@ -638,6 +638,13 @@ trace, so its own counts describe the storage policy, not the work; for persiste
 the two coincide); `med ms`, `min ms`, `max ms`;
 `states/s` and `trans/s`; `confl`, the confluent-diamond count of 2.1; `allocMB`, the
 per-thread allocated bytes of the exploring thread; `retMB`, the retained heap after two GCs with the GTS still referenced;
+`evict`, the number of caches the collector cleared during the run
+(`CacheReference.getCollectCount`, over all cache holders, polled lazily when a reference
+is created, so a run's last collections may be charged to the next run; the incarnation
+frequencies were tried first and rejected, since event caches are cleared and rebuilt
+explicitly and gave thousands of rebuilds on a 756-state run with 3 MB retained; zero
+means the soft state caches survived the run, a large count means the row ran above the
+collector cliff and paid for graph reconstruction, see the third run shape below);
 `fNodes` and `fEdges`, the host factory's node and edge counts, which are the elements it
 ever made, not the final graph's (the signal for 3.3 and for value-node growth).
 Non-timing columns come from the median run. Since the `Reporter`'s retirement (branch
@@ -678,7 +685,7 @@ the GTS plus the softly reachable state caches (3.6).
 tier. Quick rows run at `-Xmx4g`; long rows are sized for two to five minutes at
 `-Xmx8g`.
 
-Two run shapes, for two purposes:
+Three run shapes, for three purposes:
 
 - **The table run**: the whole quick tier in one JVM in table order, two warm-ups and
   three measured runs, the launch flags. It yields pinned counts and the order of
@@ -696,6 +703,21 @@ for c in $(names); do java -da -Xmx8g -XX:+UseParallelGC \
   -Dgroove.bench.runs=2 -Dgroove.bench.timeout=1200 -cp "<cp>" \
   nl.utwente.groove.test.performance.ExplorationBenchmark $c; done
 ```
+
+- **Above the cliff**: the one-JVM-per-row loop at a heap chosen so that the soft state
+  caches do not survive the run, which puts graph reconstruction (`StateCache.computeGraph`,
+  the delta replay from the nearest cached or frozen ancestor) on the hot path. The table
+  rows are calibrated to stay below the cliff, so a change to reconstruction, freezing or
+  anything else that only costs or pays once the caches are gone (findings 2.5 to 2.7,
+  and any per-state data held softly, see 2.3) is invisible in the other two shapes.
+  The `evict` column is the check: it must be well above zero in every JVM of the run,
+  and comparable between the builds compared, since the count itself depends on
+  collector timing. The shape is the A/B shape otherwise (alternating builds, one JVM per
+  row, mean of the `med ms`), with the retained heap read alongside the time, since the
+  retained heap is what moves a row across the cliff. The rows and heaps are calibrated
+  once (single cold runs, `evict` and `med ms` against the heap) and listed here; a
+  harness `Tier` would not do, since the heap is a launch flag, not a row property.
+  Calibration pending (2026-10-20).
 
 Calibration of a new row uses the same loop: `-1` counts, no warm-up, one run.
 

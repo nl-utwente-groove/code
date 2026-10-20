@@ -78,7 +78,10 @@ and outcomes" in the note).
    measured time-neutral and dropped at review (the old final pass hashes adjacency under
    the discrete labelling into the graph certificate), 2.3's soft reference measured and
    rejected (state caches evicted; leader-election-16 2.9 times slower), only the
-   `strong` argument honoured. Next: 2.5 to 2.7 freezing and chain replay.
+   `strong` argument honoured. Next: 2.5 to 2.7 freezing and chain replay; they only
+   pay once the soft state caches are gone, so the harness gained the `evict` column and
+   an above-the-cliff run shape (2026-10-20, see "Tiers and run shapes" in the note);
+   the shape's rows and heaps still need calibrating before 2.5 to 2.7 can be measured.
 5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
    does not fit 8 GB; intermediate edge densities untried); then section 3.
 

@@ -56,6 +56,7 @@ import nl.utwente.groove.lts.MatchApplier;
 import nl.utwente.groove.test.SlowTest;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.cache.CacheReference;
 
 /**
  * Throughput harness for state-space exploration.
@@ -88,7 +89,11 @@ import nl.utwente.groove.util.QualName;
  * benchmark.launch} runs it with {@code -da -Xmx4g -XX:+UseParallelGC} from the
  * project root. The heap matters: at {@code -Xmx2g} the three largest
  * configurations spend most of their time in the collector, which triples the
- * spread of the measurement. Arguments are configuration names (empty means
+ * spread of the measurement; the {@code evict} column (caches cleared by the
+ * collector during the run) shows whether a row ran in that regime, and
+ * the above-the-cliff run shape documented in
+ * {@code claude/exploration-performance.md} uses a reduced heap on purpose, to
+ * measure graph reconstruction. Arguments are configuration names (empty means
  * all); the run shape is set through system properties {@code groove.bench.warmups} (default
  * {@value #DEFAULT_WARMUPS}), {@code groove.bench.runs} (default
  * {@value #DEFAULT_RUNS}) and {@code groove.bench.timeout} (seconds, default
@@ -784,6 +789,7 @@ public class ExplorationBenchmark {
         }
         Exploration exploration = exploreType.newExploration(gts, null);
         int confluentBefore = MatchApplier.getConfluentDiamondCount();
+        int evictedBefore = CacheReference.getCollectCount();
         Runner runner = new Runner(exploration);
         Thread thread = new Thread(runner, "exploration-benchmark");
         long startNanos = System.nanoTime();
@@ -813,7 +819,8 @@ public class ExplorationBenchmark {
         return new Measurement(wallNanos, states, transitions, counter.getStates(),
             counter.getTransitions(),
             MatchApplier.getConfluentDiamondCount() - confluentBefore, runner.getAllocatedBytes(),
-            retained, factoryNodes, factoryEdges);
+            retained, CacheReference.getCollectCount() - evictedBefore, factoryNodes,
+            factoryEdges);
     }
 
     /**
@@ -910,21 +917,21 @@ public class ExplorationBenchmark {
 
     /** Format of the table rows, with every column taken as a string. */
     private static final String HEAD_FORMAT
-        = "%-22s %7s %8s %8s %9s %8s %8s %8s %9s %9s %7s %8s %8s %7s %8s";
+        = "%-22s %7s %8s %8s %9s %8s %8s %8s %9s %9s %7s %8s %8s %7s %7s %8s";
 
     /** Format of a data row, matching {@link #HEAD_FORMAT} column for column. */
     private static final String ROW_FORMAT
-        = "%-22s %7d %8d %8d %9d %8.1f %8.1f %8.1f %9.0f %9.0f %7d %8.1f %8.1f %7d %8d";
+        = "%-22s %7d %8d %8d %9d %8.1f %8.1f %8.1f %9.0f %9.0f %7d %8.1f %8.1f %7d %7d %8d";
 
     /** Format of a CSV row, in the same column order. */
     private static final String CSV_FORMAT
-        = "%s,%d,%d,%d,%d,%.3f,%.3f,%.3f,%.1f,%.1f,%d,%d,%d,%d,%d%n";
+        = "%s,%d,%d,%d,%d,%.3f,%.3f,%.3f,%.1f,%.1f,%d,%d,%d,%d,%d,%d%n";
 
     /** Column headers of the report table. */
     private static final String HEADER_ROW = String
         .format(Locale.ROOT, HEAD_FORMAT, "config", "states", "trans", "disc.st", "disc.tr",
                 "med ms", "min ms", "max ms", "states/s", "trans/s", "confl", "allocMB", "retMB",
-                "fNodes", "fEdges");
+                "evict", "fNodes", "fEdges");
 
     /** Separator below the column headers. */
     private static final String RULE_ROW = "-".repeat(HEADER_ROW.length());
@@ -943,8 +950,8 @@ public class ExplorationBenchmark {
                     median.discoveredStates() / medianSeconds,
                     median.discoveredTransitions() / medianSeconds, median.confluent(),
                     median.allocatedBytes() / 1048576.0,
-                    median.retainedBytes() / 1048576.0, median.factoryNodes(),
-                    median.factoryEdges());
+                    median.retainedBytes() / 1048576.0, median.evictedCaches(),
+                    median.factoryNodes(), median.factoryEdges());
     }
 
     /** Appends a result row to the CSV file named by {@code groove.bench.csv}, if any. */
@@ -962,8 +969,8 @@ public class ExplorationBenchmark {
                 writer
                     .println("config,states,transitions,discoveredStates,discoveredTransitions,"
                         + "medianMs,minMs,maxMs,statesPerSec,"
-                        + "transPerSec,confluent,allocBytes,retainedBytes,factoryNodes,"
-                        + "factoryEdges");
+                        + "transPerSec,confluent,allocBytes,retainedBytes,evictedCaches,"
+                        + "factoryNodes,factoryEdges");
             }
             double medianSeconds = median.wallNanos() / 1e9;
             writer
@@ -973,8 +980,9 @@ public class ExplorationBenchmark {
                         result.minNanos() / 1e6, result.maxNanos() / 1e6,
                         median.discoveredStates() / medianSeconds,
                         median.discoveredTransitions() / medianSeconds, median.confluent(),
-                        median.allocatedBytes(),
-                        median.retainedBytes(), median.factoryNodes(), median.factoryEdges());
+                        median.allocatedBytes(), median.retainedBytes(),
+                        median.evictedCaches(), median.factoryNodes(),
+                        median.factoryEdges());
         } catch (IOException exc) {
             System.out
                 .printf(Locale.ROOT, "Could not append to %s: %s%n", fileName, exc.getMessage());
@@ -1043,9 +1051,18 @@ public class ExplorationBenchmark {
      * @param factoryNodes number of host nodes the GTS's host factory holds
      * @param factoryEdges number of host edges the GTS's host factory holds
      */
+    /**
+     * One measured exploration. {@code evictedCaches} is the number of caches
+     * the collector cleared during the run ({@link CacheReference#getCollectCount()},
+     * which counts all cache holders and is polled lazily when a reference is
+     * created, so a run's last collections may be charged to the next): zero
+     * means the soft state caches survived the run, a large count means the
+     * row ran above the collector cliff and paid for graph reconstruction.
+     */
     public record Measurement(long wallNanos, int states, int transitions, int discoveredStates,
                               int discoveredTransitions, int confluent, long allocatedBytes,
-                              long retainedBytes, int factoryNodes, int factoryEdges) {
+                              long retainedBytes, int evictedCaches, int factoryNodes,
+                              int factoryEdges) {
         // no additional members
     }
 
