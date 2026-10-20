@@ -709,20 +709,75 @@ for c in $(names); do java -da -Xmx8g -XX:+UseParallelGC \
   nl.utwente.groove.test.performance.ExplorationBenchmark $c; done
 ```
 
-- **Above the cliff**: the one-JVM-per-row loop at a heap chosen so that the soft state
-  caches do not survive the run, which puts graph reconstruction (`StateCache.computeGraph`,
-  the delta replay from the nearest cached or frozen ancestor) on the hot path. The table
-  rows are calibrated to stay below the cliff, so a change to reconstruction, freezing or
-  anything else that only costs or pays once the caches are gone (findings 2.5 to 2.7,
-  and any per-state data held softly, see 2.3) is invisible in the other two shapes.
-  The `evict` column is the check: it must be well above zero in every JVM of the run,
-  and comparable between the builds compared, since the count itself depends on
-  collector timing. The shape is the A/B shape otherwise (alternating builds, one JVM per
-  row, mean of the `med ms`), with the retained heap read alongside the time, since the
-  retained heap is what moves a row across the cliff. The rows and heaps are calibrated
-  once (single cold runs, `evict` and `med ms` against the heap) and listed here; a
-  harness `Tier` would not do, since the heap is a launch flag, not a row property.
-  Calibration pending (2026-10-20).
+- **Above the cliff**: the one-JVM-per-row loop with the soft state caches forced out,
+  which puts graph reconstruction (`StateCache.computeGraph`, the delta replay from the
+  nearest cached or frozen ancestor) on the hot path. The table rows are calibrated to
+  stay below the cliff, so a change to reconstruction, freezing or anything else that
+  only costs or pays once the caches are gone (findings 2.5 to 2.7, and any per-state
+  data held softly, see 2.3) is invisible in the other two shapes. The knob is
+  `-XX:SoftRefLRUPolicyMSPerMB=0` at the normal heap, which makes the collector clear
+  every soft reference it finds unreferenced, so the caches behave as if weak; `rebuilt`
+  is the check and must be well above zero in every JVM of the run, `evict` and `gc ms`
+  show that the collector did the clearing without being starved. A reduced heap is not
+  the knob: it is JDK-dependent, and on JDK 25 it measures only the collector (below).
+  The shape is the A/B shape otherwise (alternating builds, one JVM per row, mean of the
+  `med ms`), with `rebuilt` and `gc ms` read alongside the time; a harness `Tier` would
+  not do, since the flag is a launch flag, not a row property.
+
+  Calibrated 2026-10-20 at `9345621c7`, single cold runs, one JVM per row, `-da
+  -XX:+UseParallelGC`, on the rows that retain the most. Three passes. First, reduced
+  heaps on JDK 25 (Temurin 25.0.4.1; the Oracle 25 of the September tables is gone):
+  nothing is evicted at all, since ParallelGC's LRU policy keeps every soft reference
+  touched within the last `free MB` seconds, and the collector takes the time instead:
+
+  | row | heap | med ms | evict | rebuilt | gc ms | retMB |
+  |---|---|---|---|---|---|---|
+  | `leader-election-16` | 4g | 10478 | 0 | 0 | 576 | 1145 |
+  | `leader-election-16` | 1500m | 11849 | 0 | 0 | 2457 | 1154 |
+  | `mark-unmark-21` | 4g | 42115 | 0 | 0 | 913 | 1283 |
+  | `mark-unmark-21` | 1500m | 56301 | 0 | 0 | 15611 | 1284 |
+  | `inheritance-12` | 4g | 12774 | 0 | 0 | 1023 | 1725 |
+  | `inheritance-12` | 2g | 22251 | 0 | 0 | 10236 | 1727 |
+  | `pacman-four-ghosts` | 4g | 117658 | 0 | 0 | 2067 | 1887 |
+  | `pacman-four-ghosts` | 2500m | 140508 | 0 | 0 | 24139 | 1882 |
+
+  So the "collector cliff" of the September tables is collector time with zero
+  reconstruction, and the 2.3 result (soft certifiers, leader-election-16 2.9 times
+  slower) was the same regime driven past the point where the collector gives up the
+  soft references. Second, the policy flag at 4 GB on the same JDK 25: the caches go
+  (retained heap a tenth), the rebuild counts stay small against the state counts, and
+  the time is within 4 % of the reference row above:
+
+  | row | med ms | evict | rebuilt | gc ms | retMB |
+  |---|---|---|---|---|---|
+  | `leader-election-16` | 10733 | 30527 | 2 | 526 | 91 |
+  | `mark-unmark-21` | 43614 | 4261 | 2845 | 825 | 149 |
+  | `inheritance-12` | 13134 | 1244 | 1152 | 1007 | 188 |
+  | `pacman-four-ghosts` | 117481 | 197169 | 39197 | 1987 | 452 |
+
+  Third, JDK 27 (GA), whose ParallelGC does clear soft references under heap pressure:
+  the reduced heaps evict most caches, rebuild far more of them, and still run level
+  with their 4 GB references; the policy flag at 4 GB rebuilds 83 k caches of
+  `inheritance-12` for no measurable time at all, and the 9 % of its 2 GB row is
+  collector time (`gc ms`):
+
+  | row | heap | med ms | evict | rebuilt | gc ms | retMB |
+  |---|---|---|---|---|---|---|
+  | `leader-election-16` | 4g | 10353 | 0 | 0 | 702 | 1066 |
+  | `leader-election-16` | 1500m | 10351 | 181834 | 26 | 950 | 242 |
+  | `mark-unmark-21` | 4g | 41135 | 0 | 0 | 997 | 1170 |
+  | `mark-unmark-21` | 1500m | 41790 | 131583 | 63825 | 1683 | 652 |
+  | `inheritance-12` | 4g | 13154 | 0 | 0 | 1340 | 1596 |
+  | `inheritance-12` | 2g | 14371 | 229375 | 133353 | 2457 | 952 |
+  | `inheritance-12` | 4g, policy 0 | 13189 | 115600 | 82888 | 1319 | 151 |
+  | `pacman-four-ghosts` | 2500m | 116272 | 197554 | 40882 | 3115 | 634 |
+
+  (`pacman-four-ghosts` has no JDK 27 reference with the columns; a 3 GB run before
+  they existed took 120.7 s with nothing evicted.) Outcome: in breadth-first stored
+  exploration a cleared cache is rarely needed again (26 rebuilds for 182 k evictions on
+  the ring), and where it is, the rebuild is cheap: 133 k rebuilds on `inheritance-12`
+  are not separable from noise. The shape therefore exists and works, but the findings
+  it was built for have nothing to show on it; see 2.5 to 2.7.
 
 Calibration of a new row uses the same loop: `-1` counts, no warm-up, one run.
 
@@ -1091,7 +1146,9 @@ retention is their transitions, do not move.
   `hub-field-hop` and `hub-field-jump` (5.1, 5.2), and over half of the petrinet join rows
   (4.1.2).
 - **The collector cliff.** A row retaining over about 2 GB at `-Xmx4g` measures the
-  collector. `binary-tree-dfs-unstored-9` was the quick row affected (28.9 s in the
+  collector, and only the collector: the 2026-10-20 calibration of the above-the-cliff
+  run shape ("Tiers and run shapes") found zero evictions and zero rebuilds on the
+  reduced-heap rows under JDK 25, with the collector taking up to 24 s of a row. `binary-tree-dfs-unstored-9` was the quick row affected (28.9 s in the
   previous quick-tier table against 14 s in its cold calibration at 8 GB, with 1.7 GB
   retained plus the soft caches of 4 M discovered states) and was dropped from the tier
   for it; depths 8 (smoke) and 10 (long) cover the family. The other quick rows above
@@ -1552,11 +1609,23 @@ reconstruction on a long trace walks the delta chain back to the start state. Fr
 also requires `isClosed()` (`:207`), so a deep chain of open frontier states never
 freezes. The coupling to collapsing looks historical.
 
+Measured 2026-10-20 through the above-the-cliff run shape (see "Tiers and run shapes"):
+reconstruction is not a throughput cost in exploration. With the soft caches forced out
+(`-XX:SoftRefLRUPolicyMSPerMB=0`) every calibrated row runs within 4 % of its reference,
+with up to 133 k of 297 k state caches rebuilt (`inheritance-12`, JDK 27) for no
+separable time; the September "collector cliff" was collector time with zero
+reconstruction. What remains of 2.5 is latency after a linear or unstored run, where
+touching state k costs k deltas instead of about ten; a fix must weigh the frozen copies
+(a full graph per ten states along the trace) against that.
+
 **2.6 Only the tip of a replayed chain is frozen.** Medium / small / medium.
 `lts/StateCache.java:201-210`: after replaying `depth` deltas only the tip state gets a
 frozen graph; the intermediate states whose graphs were just materialised are not
 considered, though they are what makes the next sibling reconstruction expensive.
 Freezing the chain midpoint halves the worst case for the subtree.
+
+Measured 2026-10-20 (see 2.5): no measurable case in exploration, since rebuilds are rare
+and cheap even with the caches forced out. Not worth a commit on its own.
 
 **2.7 Graph reconstruction can still recurse.** Medium / small / medium.
 `lts/StateCache.java:192`: the backward walk stops at an ancestor that *has a cache*,
@@ -1564,6 +1633,11 @@ not one that *has a graph*; a cached-but-graphless ancestor (e.g. type policy OF
 `checkInitConstraints` never asked for the graph) ends the loop and `backward.getGraph()`
 at `:200` re-enters `computeGraph` recursively. Use `getCache(false)` plus
 `StateCache.hasGraph()` (`:128`) in the stop condition.
+
+Measured 2026-10-20 (see 2.5): no time case; the recursion is a robustness issue (a
+frame per graphless cached ancestor on a deep chain) and makes the freeze depth
+undercount. Fix with 2.6 if that is ever done, otherwise on its own as a correctness
+change.
 
 ### 3. Costs that scale with the wrong quantity
 

@@ -78,10 +78,15 @@ and outcomes" in the note).
    measured time-neutral and dropped at review (the old final pass hashes adjacency under
    the discrete labelling into the graph certificate), 2.3's soft reference measured and
    rejected (state caches evicted; leader-election-16 2.9 times slower), only the
-   `strong` argument honoured. Next: 2.5 to 2.7 freezing and chain replay; they only
-   pay once the soft state caches are gone, so the harness gained the `evict` column and
-   an above-the-cliff run shape (2026-10-20, see "Tiers and run shapes" in the note);
-   the shape's rows and heaps still need calibrating before 2.5 to 2.7 can be measured.
+   `strong` argument honoured. 2.5 to 2.7 (freezing and chain replay) only pay once
+   the soft state caches are gone, so the harness gained the columns `evict`, `rebuilt`
+   and `gc ms` and an above-the-cliff run shape (2026-10-20, calibrated, see "Tiers and
+   run shapes" in the note: the knob is `-XX:SoftRefLRUPolicyMSPerMB=0` at the normal
+   heap, a reduced heap only measures the collector on JDK 25). Verdict under 2.5 to
+   2.7: reconstruction is not a throughput cost (up to 133 k rebuilds for no separable
+   time), the September collector cliff was pure collector time; 2.5 is a latency fix
+   for after-run access, 2.7 a robustness fix, 2.6 not worth a commit. Section 2 is
+   closed; next is item 5 and section 3.
 5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
    does not fit 8 GB; intermediate edge densities untried); then section 3.
 
@@ -152,8 +157,11 @@ JVM per row), pin counts, one commit per grammar; only the harness reads
   nl.utwente.groove.test.performance.ExplorationBenchmark <rows>` (used 2026-09-24 for the
   three counter rows incl. the long `count-600000`; whether the tier property is needed
   for named long rows was not checked).
-- Profiling a row: the JDK 25 binary is `C:/Program Files/Java/jdk-25.0.4.1/bin/java`
-  (plain `java` is 26 here); add `-XX:StartFlightRecording=filename=<f>.jfr,settings=profile`
+- Profiling a row: since 2026-10 plain `java` is 27 (`C:/Program Files/Java/jdk-27`),
+  the Oracle JDK 25 is gone, and Maven's JDK 25 is Temurin at
+  `C:/Users/Rensink/scoop/apps/temurin25-jdk/current` (`JAVA_HOME`); JDK 27's ParallelGC
+  clears soft references under heap pressure where JDK 25's does not (see the
+  above-the-cliff calibration in the note), so keep one JDK within a comparison; add `-XX:StartFlightRecording=filename=<f>.jfr,settings=profile`
   to the harness command with `warmups=0 runs=1`, then `jfr view hot-methods`,
   `jfr view allocation-by-site` and `jfr print --events jdk.ExecutionSample` with an awk
   count of the first `StateCache` frame per sample give the breakdown in a minute.
