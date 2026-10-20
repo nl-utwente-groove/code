@@ -927,8 +927,8 @@ public enum AspectKind {
             h = "Rule input parameter";
             b
                 .and("Declares rule input parameter %s.")
-                .and("The value must be provided through a control program,")
-                .add("or by setting the 'algebra family' in the system properties to POINT");
+                .and("The value must be provided as an argument in a control program;")
+                .add("for values provided by the value oracle, use an 'ask' parameter instead");
             p.and(parPar);
             break;
 

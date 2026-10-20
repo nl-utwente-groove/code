@@ -17,6 +17,7 @@
 package nl.utwente.groove.test.control;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -277,6 +278,29 @@ public class ProgramBuildTest {
             fail(e.toString());
         }
         return result;
+    }
+
+    /** The error for an argument-less call of a rule with a data-valued input parameter
+     * points at {@code ask:} parameters; for a node-valued one it does not. */
+    @Test
+    public void testInputParameterHint() {
+        assertTrue(buildErrors("iInt;").contains("not applicable without arguments (use 'ask:'"));
+        String nodeErrors = buildErrors("iNode;");
+        assertTrue(nodeErrors.contains("not applicable without arguments"));
+        assertFalse(nodeErrors.contains("ask:"));
+    }
+
+    /** Returns the textual errors of building a control expression, which must be erroneous. */
+    private String buildErrors(String program) {
+        try {
+            Namespace namespace = createNamespace();
+            CtrlTree tree = parse(namespace, QualName.parse("wrong"), program, false);
+            buildProgram(namespace, Collections.singleton(tree));
+            fail(String.format("Expected %s to be erronous, but it isn't", program));
+            return "";
+        } catch (FormatException e) {
+            return e.getErrors().toString();
+        }
     }
 
     /** Attempts to build a program object from a control expression;
