@@ -17,6 +17,7 @@
 
 package nl.utwente.groove.grammar.model;
 
+import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_IN;
 import static nl.utwente.groove.grammar.model.ResourceKind.GROOVY;
 import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
@@ -157,6 +158,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             /* Only input parameters are problematic for conditions */
             if (node.has(PARAM_IN)) {
                 return new FormatError("input parameter not allowed", node);
+            }
+            /* Interactive parameters are also problematic: their value node is
+             * not matched but created at application time */
+            if (node.has(PARAM_ASK)) {
+                return new FormatError("interactive parameter not allowed", node);
             }
             if (node.hasColor()) {
                 return new FormatError("colour change not allowed", node);
