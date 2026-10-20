@@ -643,9 +643,14 @@ per-thread allocated bytes of the exploring thread; `retMB`, the retained heap a
 is created, so a run's last collections may be charged to the next run; the incarnation
 frequencies were tried first and rejected, since event caches are cleared and rebuilt
 explicitly and gave thousands of rebuilds on a 756-state run with 3 MB retained; zero
-means the soft state caches survived the run, a large count means the row ran above the
-collector cliff and paid for graph reconstruction, see the third run shape below);
-`fNodes` and `fEdges`, the host factory's node and edge counts, which are the elements it
+means the soft state caches survived the run); `rebuilt`, the number of state caches
+rebuilt after such a clearance (the sum of the stored states' cache incarnations, which
+the cleared null reference carries on; only stored states count, so under
+`persistence=none` the column describes the retained trace), which is the count that
+costs, since a cleared cache that is never needed again is free; `gc ms`, the collector
+time during the run over all collectors (`GarbageCollectorMXBean`, reached reflectively
+like the other beans), which is where a row above the collector cliff spends its extra
+time (see the third run shape below); `fNodes` and `fEdges`, the host factory's node and edge counts, which are the elements it
 ever made, not the final graph's (the signal for 3.3 and for value-node growth).
 Non-timing columns come from the median run. Since the `Reporter`'s retirement (branch
 `retire-reporter`, 2026-09-26) the per-phase breakdown comes from a JFR profile of the
