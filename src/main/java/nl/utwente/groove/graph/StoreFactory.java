@@ -18,6 +18,7 @@ package nl.utwente.groove.graph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -425,11 +426,34 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
      * The computation mirrors {@link AEdge#computeHashCode()} for simple edges.
      */
     protected int getStoredCode(E edge) {
-        int labelCode = edge.label().hashCode();
-        int sourceCode = 3 * edge.source().hashCode();
-        int targetCode = (labelCode + 2) * edge.target().hashCode();
+        return getStoredCode(edge.source(), edge.label(), edge.target());
+    }
+
+    /**
+     * The hash code used by the edge store, computed from the content an edge
+     * would have, so that the store can be probed for that content without
+     * constructing an edge (see {@link #getStoredEdges(int)}).
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    protected int getStoredCode(Node source, Label label, Node target) {
+        int labelCode = label.hashCode();
+        int sourceCode = 3 * source.hashCode();
+        int targetCode = (labelCode + 2) * target.hashCode();
         return labelCode ^ ((sourceCode << 1) + (sourceCode >>> 31))
             + ((targetCode << 2) + (targetCode >>> 30));
+    }
+
+    /**
+     * Returns the canonical edges whose stored code is a given value (see
+     * {@link #getStoredCode(Node, Label, Node)}), for a lookup by content
+     * that neither allocates nor registers an edge. The iterator is a shared
+     * constant for an empty bucket, the common case when the content is
+     * absent. In a non-simple factory the store holds one head per content,
+     * so a lookup finds a copy, not all of them.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    protected Iterator<E> getStoredEdges(int code) {
+        return this.edgeStore.get(code);
     }
 
     /**
