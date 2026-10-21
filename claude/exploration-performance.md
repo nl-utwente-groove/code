@@ -1714,6 +1714,34 @@ that computes `getStoredCode` from the components and probes `edgeStore`
 (`TreeHashSet.get(int)` exists, `TreeHashSet.java:461`) without allocating or
 registering.
 
+Done on branch `nac-probe-edge` off master (ce8f0e842, 2026-10-21):
+`HostFactory.findEdge(source, type, target)` computes the store's content code from the
+components (`StoreFactory.getStoredCode(Node, Label, Node)`) and walks the store's bucket
+(`getStoredEdges(code)`, a shared empty iterator when the content is absent), and the
+singular edge record fails directly when the factory has no such edge. Suite, determinism
+and null-check clean. The leak is real but overstated above: the pool deduplicated the
+probes, so only the first probe per absent content was ever registered, and the rest
+were garbage; the factory therefore held one edge per distinct absent content, hundreds,
+not one per check. A/B against master 96634ad19, one JVM per row and build, 1 warm-up
+and 3 runs (pacman 1 run), two rounds with the order reversed, JDK 25, mean of the two
+`med ms`, counts identical:
+
+| row | A | B | B/A | fEdges A | fEdges B |
+|---|---|---|---|---|---|
+| `as-and-bs-equality` | 3282 | 2979 | 0.91 | 27 | 27 |
+| `as-and-bs-4-3` | 3128 | 2933 | 0.94 | 35 | 35 |
+| `car-platooning-05` | 2024 | 1959 | 0.97 | 215 | 195 |
+| `leader-election-16` | 10038 | 9920 | 0.99 | 414 | 413 |
+| `pacman-four-ghosts` (1 run) | 117701 | 116638 | 0.99 | 441 | 168 |
+| `mark-unmark-21` | 44440 | 44012 | 0.99 | 42 | 42 |
+| `append-4-list-8` | 814 | 839 | 1.03 | 293 | 272 |
+| `hub-chain-200-2` | 5345 | 5560 | 1.04 | 605 | 605 |
+
+The factory counts show where binary embargoes with both ends bound occur (pacman: 273
+of its 441 factory edges were probes); the time is inside the noise everywhere, the
+as-and-bs rows leaning faster behind a slow first JVM. Impact rating: low; kept as a
+correct, allocation-free lookup and for the bounded leak.
+
 **3.4 `HostFactory.normalise` grows without bound.** Medium (memory) / medium / medium.
 `grammar/host/HostFactory.java:272-288`: every node-creating event's created-node array
 is looked up in `normalHostNodeMap`, keyed by `Arrays.asList(nodes)` (a wrapper per
@@ -2391,7 +2419,10 @@ the exploration thread itself, uncontended.
    to 2.7.
 8. Section 3 (costs scaling with the wrong quantity): the certifier array, the eager
    certificate map, the interning edge probe. Each is small and independently measurable.
-   3.1 done (item 4); 3.2 fixed on master in 19dbd4194, time-neutral (see there).
+   3.1 done (item 4); 3.2 fixed on master in 19dbd4194, time-neutral (see there); 3.3
+   done 2026-10-21 on branch `nac-probe-edge`, time-neutral, leak bounded and removed
+   (see there). Left: 3.5, 3.6, 3.8 to 3.10 (cache pinning and tooling costs, to be
+   judged on `retMB` and `gc ms` of the large rows), 3.4.
 9. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
    `Search` reuse, NAC context maps, algebra reflection, `Valuator` lambdas, match-set
    sizing.

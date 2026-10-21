@@ -86,7 +86,10 @@ and outcomes" in the note).
    2.7: reconstruction is not a throughput cost (up to 133 k rebuilds for no separable
    time), the September collector cliff was pure collector time; 2.5 is a latency fix
    for after-run access, 2.7 a robustness fix, 2.6 not worth a commit. Section 2 is
-   closed; next is item 5 and section 3.
+   closed. Section 3: 3.3 done 2026-10-21 on branch `nac-probe-edge` off master
+   (ce8f0e842, detached for review): lookup-only `HostFactory.findEdge`, time-neutral,
+   leak bounded (one probe per absent content) and removed; figures under 3.3. Left in
+   section 3: 3.5, 3.6, 3.8 to 3.10, 3.4.
 5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
    does not fit 8 GB; intermediate edge densities untried); then section 3.
 
