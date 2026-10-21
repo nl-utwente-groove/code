@@ -70,9 +70,31 @@ Regular-expression matching with a path cache, NACs. Generated start graphs
 | `start-4-3` | `collapse=equality` | | | out of heap at 8 GB |
 | `start-5-3` | | > 1.7 M | > 15 M | too large, stopped |
 | `start-4-4` | | > 2.2 M | > 16 M | too large, stopped |
+| `start-5-3` minus 1, 2, 3 `b` edges | | > 3.5 M, > 3.8 M, > 3.1 M | | 900 s timeout at 8 GB |
+| `start-4-4` minus 2, 4 `b` edges | | > 3.7 M, > 3.9 M | | 900 s timeout at 8 GB |
+| `start-4-3` | unstored(6) | 7.1 to 7.2 M | | 34 s, 24 s of it collector; count unstable (3.14) |
+| `start-4-3` | unstored(7) | 42 919 210 | | 315 s, 260 s collector; count unstable (3.14) |
+| `start-4-3` | unstored(8) | > 122 M | | 900 s timeout |
+| `start-5-3` | `bound=cost:8` | 4 374 | 30 537 | 0.6 s; growth 2.3 per level |
+| `start-5-3` | `bound=cost:13` | 125 518 | | 5.1 s |
+| `start-5-3` | `bound=cost:14` | 208 319 | | 7.9 s |
+| `start-5-3` | `bound=cost:15` | 326 332 | | 11.6 s |
+| `start-5-3` | `bound=cost:16` | 482 108 | | 16.8 s, 1.9 GB |
+| `start-5-3` | `bound=cost:17` | 671 760 | | 23.0 s, 2.8 GB |
+| `start-5-3` | `bound=cost:18` | 883 591 | 7 556 391 | long (29 s, 3.8 GB, collector 5 %) |
 
-Growth is steep in both directions, so there is no long-tier size; an intermediate edge
-density is untried. The equality rows cover 4.4.4.
+Growth is steep in both directions, and an intermediate `b`-edge density (tried
+2026-10-21, dropped edges spread over the B nodes) does not help: the state count is
+driven by the number of A-B pairs, whatever the `b` edges between them, so the stored
+count jumps from 131 k at `start-4-3` to over 3 M at the next node counts. Nor can a
+stored run reach the long tier's two minutes at all: at about 4 KB retained per state
+(`as-and-bs-4-3`: 563 MB for 131 k) 8 GB holds under 2 M states, some 40 s of
+exploration. The unstored depth-first tree of `start-4-3`, the binary tree's shape, was
+tried next and rejected: its time is nearly all collector time (depth 7: 260 of 315 s),
+and its state count depends on which caches the collector has kept (finding 3.14). The
+largest As-and-Bs row is therefore `as-and-bs-5-3-bfs-18`, the stored breadth-first
+exploration of `start-5-3` to depth 18, memory-sized rather than time-sized; it sits
+in the long tier for its heap, not its minutes. The equality rows cover 4.4.4.
 
 ### Mark-Unmark (`Mark-Unmark-List-regexp-benchmark.gps`)
 
@@ -555,6 +577,7 @@ row is below the quick tier's 5 s floor but pairs with `mergers-9-simple`;
 | `count-100000-big` | attribute-count-to-n | `bound-100000` | `algebra=big` | quick |
 | `count-300000-big` | attribute-count-to-n | `bound-300000` | `algebra=big` | quick |
 | `as-and-bs-equality` | As-and-Bs | `start` | `collapse=equality` | quick |
+| `as-and-bs-5-3-bfs-18` | As-and-Bs | `start-5-3` | `bound=cost:18` | long |
 | `sierpinsky-12` | sierpinsky | `start12` | linear | quick |
 | `car-platooning-06` | car-platooning | `start-06` | | long |
 | `binary-tree-dfs-unstored-10` | generate-binary-tree | `start` | unstored(10) | long |
@@ -1029,7 +1052,7 @@ quick-tier baseline ran on 25.0.4.1, so the two tables are not to be compared ac
 44 minutes in all. `count-600000` predates the `probe-odd` rule (with it: 131 s in a
 single cold run, 1 500 001 transitions); `petrinet-pipe-11-11` and `pump-16-8-dpo` were
 added to the tier afterwards and have calibration runs only (249 s and 169 s, see the
-grammar set). The four multigraph rows (`append-4-list-10`, `car-platooning-06`, the
+grammar set), as has `as-and-bs-5-3-bfs-18` (29 s, 2026-10-21, JDK 25). The four multigraph rows (`append-4-list-10`, `car-platooning-06`, the
 unstored tree and `mark-unmark-22`) were re-run on 2026-09-25 at `67008a05e` after the
 coanchor edge leak fix: factory counts identical, times within 7 %, so the table stands.
 
@@ -1904,6 +1927,26 @@ indexing by node number in a per-thread array shared by all certifiers, grown on
 its used entries cleared when `initCertificates` ends. A/B against master, alternating
 builds: `leader-election-14` level over four pairs, `as-and-bs` and `mergers-9-multi`
 level, `count-100000` 4.9 to 2.1 s, `count-300000` 28.0 to 4.9 s.
+
+**3.14 Unstored bounded depth-first exploration discovers a cache-dependent number of
+states.** High (correctness) / unknown / verified 2026-10-21. Found while sizing an
+As-and-Bs long row: `as-and-bs-4-3` under `next=newest cost=uniform bound=cost:5
+persistence=none` discovered 3,063,835 states in one run and 3,006,811 in the next
+(8 GB, JDK 25), and at `bound=cost:6` 7,178,800 and 7,126,885; with
+`-XX:SoftRefLRUPolicyMSPerMB=0`, which lets the collector clear every soft cache it
+finds unreferenced, both depths are stable across runs and far smaller: 411,040 and
+4,651,252. Live caches thus make the unstored tree larger, by a factor of seven at
+depth 5. Stored exploration is unaffected: `as-and-bs-4-3`, `mark-unmark-18` and
+`append-4-list-8` reproduce their pinned counts under the flag with thousands of caches
+rebuilt, and `binary-tree-dfs-unstored-10` (one rule) reproduces its pinned
+43,954,714; `DeterminismTest`'s unstored ferryman case (bound 4) is too small to show
+it. Without storing every state is fresh, so the tree size is fixed by the matches of
+each state; a cache-dependent count means a cache-dependent match set. Suspects: the
+reuse of parent matches by `MatchCollector` (3.6) producing duplicates that a stored
+run deduplicates in its transition set but an unstored run turns into extra fresh
+states, or the depth bookkeeping of `StackPool` under `readd`. To be filed as an issue
+and found before any unstored row with more than one rule is trusted; the
+`as-and-bs-4-3-unstored-*` rows are not test cases.
 
 ### 4. Allocation on the per-state and per-match path
 

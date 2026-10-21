@@ -90,8 +90,14 @@ and outcomes" in the note).
    (ce8f0e842, detached for review): lookup-only `HostFactory.findEdge`, time-neutral,
    leak bounded (one probe per absent content) and removed; figures under 3.3. Left in
    section 3: 3.5, 3.6, 3.8 to 3.10, 3.4.
-5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
-   does not fit 8 GB; intermediate edge densities untried); then section 3.
+5. Done 2026-10-21: As-and-Bs cannot fill the long tier's minutes (intermediate
+   `b`-edge densities tried, all over 3 M states; 4 KB retained per state caps a stored
+   run at some 40 s in 8 GB; the unstored depth-first tree is collector-bound and its
+   count unstable, finding 3.14), so the largest row is `as-and-bs-5-3-bfs-18`,
+   stored breadth-first to depth 18 (883591 states, 29 s), in the long tier for
+   its heap. **New finding 3.14** (unstored bounded DFS discovers a cache-dependent
+   number of states; stored runs deterministic under cache loss): file an issue and
+   investigate before trusting any unstored multi-rule row.
 
 ## Grammar set (complete)
 

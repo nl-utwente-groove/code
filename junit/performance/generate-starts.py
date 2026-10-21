@@ -323,7 +323,7 @@ def mergers(n):
 
 SIZES = [
     ("Mark-Unmark-List-regexp-benchmark.gps", mark_unmark, [(18,), (21,), (22,)]),
-    ("As-and-Bs-reg-exp-benchmark.gps", as_and_bs, [(4, 3)]),
+    ("As-and-Bs-reg-exp-benchmark.gps", as_and_bs, [(4, 3), (5, 3)]),
     ("inheritance.gps", inheritance, [(12,)]),
     ("append.gps", append, [(4, 10)]),
     ("leader-election.gps", leader_election, [(8,), (14,), (16,), (18,)]),

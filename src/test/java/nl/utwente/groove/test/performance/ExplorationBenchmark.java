@@ -419,6 +419,16 @@ public class ExplorationBenchmark {
             new Config("binary-tree-dfs-unstored-10", "generate-binary-tree.gps", "start",
                 "next=newest cost=uniform bound=cost:10 persistence=none", 43954714, 43954713,
                 Tier.LONG),
+            // As-and-Bs cannot fill the long tier's two minutes: at 4 KB retained
+            // per state a stored run of 8 GB holds under 2 M states, the full
+            // state spaces jump from 131 k (start-4-3) to over 3 M at the next node
+            // counts whatever the b-edge density, and the unstored depth-first
+            // tree discovers a cache-dependent number of states (finding 3.14).
+            // So the largest As-and-Bs row is the stored breadth-first exploration
+            // of start-5-3 to a fixed depth, memory-sized rather than time-sized
+            // (calibrated 2026-10-21: depth 16 482 k states, 17 672 k, 18 884 k at 3.8 GB)
+            new Config("as-and-bs-5-3-bfs-18", "As-and-Bs-reg-exp-benchmark.gps", "start-5-3",
+                "cost=uniform bound=cost:18", 883591, 7556391, Tier.LONG),
             // Mark-Unmark: tree-22 is twice tree-21; tree-23, a different
             // shape, is smaller than either
             new Config("mark-unmark-22", "Mark-Unmark-List-regexp-benchmark.gps", "tree-22", "",
