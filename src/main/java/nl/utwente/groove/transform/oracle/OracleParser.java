@@ -127,6 +127,11 @@ public class OracleParser extends Parser.AParser<ValueOracleFactory> {
                 throw new FormatException("Reader oracle should specify filename");
             }
             return new ReaderOracleFactory(par);
+        case PROCESS:
+            if (par == null) {
+                throw new FormatException("Process oracle should specify a command");
+            }
+            return new ProcessOracleFactory(par);
         default:
             throw Exceptions.unreachable();
         }

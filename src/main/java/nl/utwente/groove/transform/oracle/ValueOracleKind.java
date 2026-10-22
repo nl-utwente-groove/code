@@ -30,7 +30,9 @@ public enum ValueOracleKind implements DocumentedEnum {
     /** User dialog input. */
     DIALOG,
     /** (File) reader input. */
-    READER,;
+    READER,
+    /** Process input. */
+    PROCESS;
 
     @Override
     public String getName() {
@@ -50,6 +52,8 @@ public enum ValueOracleKind implements DocumentedEnum {
             return "Returns a random value of the type";
         case READER:
             return "Reads values from a file";
+        case PROCESS:
+            return "Start a process and read from stdout to obtain the value";
         default:
             throw Exceptions.unreachable();
         }
