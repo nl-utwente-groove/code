@@ -841,7 +841,7 @@ public class SystemStore implements GrammarSource {
      */
     private void loadProperties() throws IOException {
         var properties = loadGrammarProperties();
-        UserSignature.setUserClass(properties.getUserOperations());
+        UserSignature.setUserClass(properties.getUserOperations(), this.file);
         NodeNrDispenser.setIdBased(properties.isUseStoredNodeIds());
         this.properties = properties;
     }
@@ -1406,6 +1406,15 @@ public class SystemStore implements GrammarSource {
         try {
             SystemStore result = new SystemStore(file, true);
             result.reload();
+            // carry the grammar-local class path along, before the properties
+            // are put: a change of user operations reloads the store
+            for (var dirName : List.of(UserSignature.CLASSES_DIR, UserSignature.LIB_DIR)) {
+                var source = new File(store.getLocation(), dirName);
+                var target = new File(file, dirName);
+                if (source.isDirectory() && !source.equals(target)) {
+                    FileUtils.copyDirectory(source, target, true);
+                }
+            }
             // save properties
             for (ResourceKind kind : ResourceKind.values()) {
                 if (kind == PROPERTIES) {

@@ -83,8 +83,11 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
     /** Name of a class containing user-defined algebraic operations. */
     USER_OPS("userOperations",
-        "List of qualified class name of a class containing used-defined data operations. "
-            + "<p>Static methods annotated with @UserOperation can be used in rules.",
+        "List of qualified names of classes containing user-defined data operations. "
+            + "<p>Static methods annotated with @UserOperation can be used in rules. "
+            + "<p>The classes are loaded from the grammar-local class path "
+            + "(the subdirectory <tt>classes</tt> and the jars in the subdirectory <tt>lib</tt> "
+            + "of the grammar directory) on top of GROOVE's own class path.",
         ValueType.QUAL_NAME_LIST),
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,

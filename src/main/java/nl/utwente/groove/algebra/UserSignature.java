@@ -16,19 +16,33 @@
  */
 package nl.utwente.groove.algebra;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Callback;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FallibleObject;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -40,9 +54,28 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision: 6239 $
  */
 public sealed abstract class UserSignature implements Signature permits UserAlgebra {
-    /** Sets the used-defined class containing the operator definitions.
-     * All methods with an {@link UserOperation}-annotations are taken as operators.
-    * Silently ignores any annotation errors in the class; to check for those, call {@link #checkUserClass} instead
+    /** Sets the user-defined classes containing the operator definitions,
+     * loaded through the grammar-local class path of a given grammar directory
+     * on top of GROOVE's own class path (see {@link #newLoader(File)}).
+     * All methods with an {@link UserOperation}-annotation are taken as operators.
+     * Silently ignores any annotation errors in the classes; to check for those,
+     * call {@link #checkUserClass} afterwards.
+     * @param classNames the names of the classes to load
+     * @param grammarDir the grammar directory holding the grammar-local class path;
+     * if {@code null}, the classes are loaded from GROOVE's own class path only
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    public static void setUserClass(List<QualName> classNames, @Nullable File grammarDir) {
+        setLoader(grammarDir);
+        setUserClass(classNames);
+    }
+
+    /** Sets the user-defined classes containing the operator definitions,
+     * loaded through the currently installed class loader
+     * (see {@link #setUserClass(List, File)}).
+     * All methods with an {@link UserOperation}-annotation are taken as operators.
+     * Silently ignores any annotation errors in the classes; to check for those,
+     * call {@link #checkUserClass} instead.
      */
     public static void setUserClass(List<QualName> classNames) {
         methods.clear();
@@ -54,8 +87,9 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         resetUsers();
     }
 
-    /** Checks whether a given set of named classes can be loaded and have suitable user-defined operations,
-     * and returns the operations as executables.
+    /** Checks whether a given set of named classes can be loaded through the currently
+     * installed class loader (see {@link #setUserClass(List, File)}) and have suitable
+     * user-defined operations, and returns the operations as executables.
      * @throws FormatException if there are annotation errors in the class
      */
     public static Map<Operator,Executable> checkUserClass(List<QualName> classNames) throws FormatException {
@@ -75,10 +109,9 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     /** Returns the loadable classes among a list of class names. */
     static private FallibleObject<? extends Set<Class<?>>> toClasses(List<QualName> classNames) {
         var result = new FallibleObject<>(new LinkedHashSet<Class<?>>());
-        var loader = ClassLoader.getSystemClassLoader();
         for (var className : classNames) {
             try {
-                result.get().add(loader.loadClass(className.toString()));
+                result.get().add(UserSignature.loader.loadClass(className.toString()));
             } catch (ClassNotFoundException exc) {
                 result.addError("Class '%s' cannot be loaded", className);
             }
@@ -198,6 +231,111 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         }
         errors.throwException();
         return m;
+    }
+
+    /** Name of the grammar subdirectory that serves as a class directory for user-defined classes. */
+    public static final String CLASSES_DIR = "classes";
+    /** Name of the grammar subdirectory holding jars with user-defined classes. */
+    public static final String LIB_DIR = "lib";
+
+    /** Replaces the class loader for the user-defined classes by one for a given
+     * grammar directory, closing the previous one.
+     * @see #newLoader(File)
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    static private void setLoader(@Nullable File grammarDir) {
+        if (loader instanceof GrammarClassLoader old) {
+            try {
+                old.close();
+            } catch (IOException exc) {
+                // the loader is discarded in any case
+            }
+        }
+        loader = newLoader(grammarDir);
+    }
+
+    /**
+     * Creates a class loader for the grammar-local class path of a given grammar directory:
+     * the {@link #CLASSES_DIR} subdirectory (if it exists) followed by the jars in the
+     * {@link #LIB_DIR} subdirectory (if any), in alphabetical order, with GROOVE's own
+     * class loader as parent. If the grammar directory has no grammar-local class path,
+     * the parent loader itself is returned.
+     * The jars are loaded from temporary copies, so that the originals stay writable
+     * (on Windows, a jar that is open in a class loader cannot be overwritten);
+     * closing the loader deletes the copies.
+     * @param grammarDir the grammar directory; if {@code null}, the parent loader is returned
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    static ClassLoader newLoader(@Nullable File grammarDir) {
+        if (grammarDir == null) {
+            return PARENT_LOADER;
+        }
+        var urls = new ArrayList<URL>();
+        var copies = new ArrayList<Path>();
+        var classesDir = new File(grammarDir, CLASSES_DIR);
+        if (classesDir.isDirectory()) {
+            urls.add(toURL(classesDir.toPath()));
+        }
+        var jars = new File(grammarDir, LIB_DIR)
+            .listFiles(f -> f.isFile() && FileType.JAR.hasExtension(f));
+        if (jars != null) {
+            Arrays.sort(jars);
+            for (var jar : jars) {
+                try {
+                    var copy = Files.createTempFile("groove-user-", FileType.JAR.getExtension());
+                    Files.copy(jar.toPath(), copy, StandardCopyOption.REPLACE_EXISTING);
+                    copy.toFile().deleteOnExit();
+                    copies.add(copy);
+                    urls.add(toURL(copy));
+                } catch (IOException exc) {
+                    // fall back to the jar itself
+                    urls.add(toURL(jar.toPath()));
+                }
+            }
+        }
+        return urls.isEmpty()
+            ? PARENT_LOADER
+            : new GrammarClassLoader(urls.toArray(new URL[0]), copies, PARENT_LOADER);
+    }
+
+    static private URL toURL(Path path) {
+        try {
+            return path.toUri().toURL();
+        } catch (MalformedURLException exc) {
+            throw Exceptions.unreachable();
+        }
+    }
+
+    /** GROOVE's own class loader, the parent of every grammar-local class loader. */
+    static private final ClassLoader PARENT_LOADER;
+    static {
+        var parent = UserSignature.class.getClassLoader();
+        assert parent != null : "GROOVE is not loaded by the bootstrap loader";
+        PARENT_LOADER = parent;
+    }
+
+    /** Class loader through which the user classes are loaded. */
+    static private ClassLoader loader = PARENT_LOADER;
+
+    /** Class loader for the grammar-local class path of a grammar directory;
+     * closing it deletes the temporary jar copies it was created from.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    static private final class GrammarClassLoader extends URLClassLoader {
+        GrammarClassLoader(URL[] urls, List<Path> copies, ClassLoader parent) {
+            super("groove-grammar", urls, parent);
+            this.copies = copies;
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            for (var copy : this.copies) {
+                Files.deleteIfExists(copy);
+            }
+        }
+
+        private final List<Path> copies;
     }
 
     /** Returns the set of operators defined in the user classes. */
