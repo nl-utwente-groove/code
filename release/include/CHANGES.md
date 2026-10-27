@@ -3,8 +3,13 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
-Upcoming release
+Release 7.6.0, 27 October 2026
 -------------------------------
+- User-defined types and operations can now be shipped inside the grammar: the
+  classes named in the `userOperations` property are loaded from the subdirectory
+  `classes` and the jars in the subdirectory `lib` of the `.gps` directory, on top
+  of GROOVE's own class path, so the runnable jars and the installers can use them
+  and no launch command with an explicit class path is needed any more
 - Removed the remote exploration strategy (`remote:host`), which sent the explored
   state space as a symbolic transition system (STS) to a remote server; command lines
   or saved explorations using `remote` now fail with an unknown-strategy error
