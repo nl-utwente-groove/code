@@ -26,7 +26,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import picocli.CommandLine.Option;
 
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Log;
+import nl.utwente.groove.util.UserClassPath;
 
 /**
  * Command-line tool superclass that implements help and verbosity options.
@@ -117,6 +119,21 @@ public abstract class GrooveCmdLineTool<T> {
     @Option(names = LogHandler.NAME, paramLabel = LogHandler.VAR,
         description = LogHandler.USAGE, converter = LogHandler.class)
     private List<Log.Setting> logSettings = new ArrayList<>();
+
+    /** Sets the installation-level user class path for this run, overriding the
+     * stored preference, by setting the system property {@link UserClassPath#PROPERTY}.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    @Option(names = USER_CLASS_PATH_NAME, paramLabel = "path",
+        description = "Directories and jars with user-defined data operations, "
+            + "separated by the platform path separator; overrides the user class path "
+            + "stored in the preferences for this run")
+    private void setUserClassPath(String path) {
+        System.setProperty(UserClassPath.PROPERTY, path);
+    }
+
+    /** Name of the user class path option. */
+    public static final String USER_CLASS_PATH_NAME = "--user-classpath";
 
     /**
      * Returns the parser used for parsing the command-line arguments

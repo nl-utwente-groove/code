@@ -841,7 +841,9 @@ public class SystemStore implements GrammarSource {
      */
     private void loadProperties() throws IOException {
         var properties = loadGrammarProperties();
-        UserSignature.setUserClass(properties.getUserOperations(), this.file);
+        UserSignature
+            .setUserClass(properties.getUserOperations(), this.file,
+                          properties.getUserClassPath());
         NodeNrDispenser.setIdBased(properties.isUseStoredNodeIds());
         this.properties = properties;
     }

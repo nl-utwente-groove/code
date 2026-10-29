@@ -49,13 +49,16 @@ import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.UserClassPath;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Tests the grammar-local class path for user-defined operations: a class that is
+ * Tests the class path sources for user-defined operations: a class that is
  * not on the application class path is found in the {@code lib} jars or the
- * {@code classes} directory of the grammar. The class is compiled at run time with
- * the JDK's compiler tool, so the tests are skipped on a runtime without it.
+ * {@code classes} directory of the grammar, through the grammar's
+ * {@code userClassPath} property, or through the installation-level user class
+ * path. The class is compiled at run time with the JDK's compiler tool, so the
+ * tests are skipped on a runtime without it.
  */
 @AIGenerated("Claude Fable 5.1, 2026-10")
 @NonNullByDefault
@@ -65,6 +68,7 @@ public class UserClassPathTest {
      */
     @AfterEach
     void resetUserSignature() {
+        System.clearProperty(UserClassPath.PROPERTY);
         UserSignature.setUserClass(List.of(), null);
     }
 
@@ -140,6 +144,78 @@ public class UserClassPathTest {
         assertEquals(Files.size(jar),
                      Files.size(copy.resolve(UserSignature.LIB_DIR).resolve("ops.jar")));
         assertTwice();
+    }
+
+    /** Tests that a jar outside the grammar is found through a grammar-relative
+     * entry of the {@code userClassPath} property, and that a missing entry is
+     * reported on the property.
+     */
+    @Test
+    void grammarClassPathIsResolvedAgainstTheGrammar(@TempDir Path tmp) throws IOException {
+        Path grammar = tmp.resolve("rel.gps");
+        Files.createDirectories(grammar);
+        writeJar(tmp.resolve("ext").resolve("ops.jar"), compile(tmp.resolve("build")));
+        Files
+            .writeString(grammar.resolve("system.properties"),
+                         GrammarKey.USER_OPS.getName() + "=" + CLASS_NAME + "\n"
+                             + GrammarKey.USER_CLASS_PATH.getName() + "=../ext/ops.jar\n");
+        var model = SystemStore.newStore(grammar.toFile(), false, true).toGrammarModel();
+        try {
+            model.getProperties().check(model);
+        } catch (FormatException exc) {
+            fail(exc.getMessage());
+        }
+        assertTwice();
+        // a missing entry is an error on the property, with the class not found
+        Files
+            .writeString(grammar.resolve("system.properties"),
+                         GrammarKey.USER_OPS.getName() + "=" + CLASS_NAME + "\n"
+                             + GrammarKey.USER_CLASS_PATH.getName() + "=../missing\n");
+        model = SystemStore.newStore(grammar.toFile(), false, true).toGrammarModel();
+        try {
+            model.getProperties().check(model);
+            fail("The missing entry should be reported");
+        } catch (FormatException exc) {
+            var message = exc.getMessage();
+            assertNotNull(message);
+            assertTrue(message.contains("does not exist"), message);
+            assertTrue(message.contains("cannot be loaded"), message);
+        }
+        assertNull(UserSignature.getOperators().get(OP_NAME));
+    }
+
+    /** Tests that the installation-level user class path, set through its system
+     * property, is searched after the grammar sources.
+     */
+    @Test
+    void userClassPathIsSearched(@TempDir Path tmp) throws IOException {
+        Path grammar = tmp.resolve("inst.gps");
+        Files.createDirectories(grammar);
+        Path jar = tmp.resolve("elsewhere").resolve("ops.jar");
+        writeJar(jar, compile(tmp.resolve("build")));
+        Files
+            .writeString(grammar.resolve("system.properties"),
+                         GrammarKey.USER_OPS.getName() + "=" + CLASS_NAME + "\n");
+        System.setProperty(UserClassPath.PROPERTY, jar.toString());
+        assertEquals(List.of(jar), UserClassPath.get());
+        var model = SystemStore.newStore(grammar.toFile(), false, true).toGrammarModel();
+        try {
+            model.getProperties().check(model);
+        } catch (FormatException exc) {
+            fail(exc.getMessage());
+        }
+        assertTwice();
+    }
+
+    /** Tests the round trip between class path strings and entry lists. */
+    @Test
+    void userClassPathParsesAndFormats() {
+        assertEquals(List.of(), UserClassPath.parse(null));
+        assertEquals(List.of(), UserClassPath.parse(" " + File.pathSeparator + " "));
+        var entries = List.of(Path.of("a", "b.jar"), Path.of("c d"));
+        var text = UserClassPath.format(entries);
+        assertEquals("a" + File.separator + "b.jar" + File.pathSeparator + "c d", text);
+        assertEquals(entries, UserClassPath.parse(" " + text + File.pathSeparator));
     }
 
     /** Asserts that the compiled operation is available and computes what it should. */

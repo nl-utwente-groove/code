@@ -36,6 +36,7 @@ import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.transform.oracle.OracleParser;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Properties;
@@ -85,10 +86,20 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     USER_OPS("userOperations",
         "List of qualified names of classes containing user-defined data operations. "
             + "<p>Static methods annotated with @UserOperation can be used in rules. "
-            + "<p>The classes are loaded from the grammar-local class path "
-            + "(the subdirectory <tt>classes</tt> and the jars in the subdirectory <tt>lib</tt> "
-            + "of the grammar directory) on top of GROOVE's own class path.",
+            + "<p>The classes are loaded from the grammar directory "
+            + "(the subdirectory <tt>classes</tt> and the jars in the subdirectory <tt>lib</tt>), "
+            + "the grammar class path (see <tt>userClassPath</tt>), the installation-level "
+            + "user class path (see the Simulator options) or GROOVE's own class path, "
+            + "in that order.",
         ValueType.QUAL_NAME_LIST),
+    /** Class path entries, relative to the grammar directory, for the user-defined operations. */
+    USER_CLASS_PATH("userClassPath",
+        "Space-separated list of directories and jars from which the classes with user-defined "
+            + "data operations are loaded, relative to the grammar directory. "
+            + "<p>For operations whose implementation lives in its own code base next to the "
+            + "grammar; for shipping a grammar, put the classes in its <tt>classes</tt> or "
+            + "<tt>lib</tt> subdirectory instead.",
+        ValueType.STRING_LIST),
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
      * all rules should be matched injectively. Default is <code>false</code>.
@@ -367,7 +378,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case ALGEBRA -> new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT);
             case SEMANTICS -> new Parser.EnumParser<>(Semantics.class, Semantics.SPO_MULTI,
                 "SPO-simple", "SPO-multi", "DPO");
-            case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
+            case COMMON_LABELS, CONTROL_LABELS, USER_CLASS_PATH -> Parser.splitter;
             case REG_EXP_MATCHING -> new Parser.EnumParser<>(RegExpMatching.class,
                 RegExpMatching.FAITHFUL);
             case CREATOR_EDGE, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
@@ -422,6 +433,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         case TYPE_NAMES -> ResourceChecker.get(ResourceKind.TYPE);
         case RULE_ENABLING -> RuleDeltaChecker.instance();
         case USER_OPS -> UserOperationsChecker.instance;
+        case USER_CLASS_PATH -> userClassPathChecker;
         case EXPLORE_CONFIG -> exploreConfigChecker;
         default -> trueChecker;
         };
@@ -452,7 +464,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
     /** Computes the value for {@link #reloadKeys}. */
     static private Set<GrammarKey> createReloadKeys() {
-        return EnumSet.of(USE_STORED_NODE_IDS, USER_OPS);
+        return EnumSet.of(USE_STORED_NODE_IDS, USER_OPS, USER_CLASS_PATH);
     }
 
     /** Returns the grammar key with a given name, if any; or {@code null} if the name is not a recognisable key */
@@ -647,6 +659,21 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         /** The singleton instance of this class. */
         public static UserOperationsChecker instance = new UserOperationsChecker();
     }
+
+    /** Checker that tests whether the entries of the grammar class path exist. */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    private static GrammarChecker userClassPathChecker = (g, v) -> {
+        FormatErrorSet result = new FormatErrorSet();
+        var base = g.getProperties().getLocation();
+        for (var entry : v.value(ValueType.STRING_LIST)) {
+            var resolved = base.resolve(entry).normalize();
+            if (!java.nio.file.Files.isDirectory(resolved)
+                && !java.nio.file.Files.isRegularFile(resolved)) {
+                result.add("Class path entry '%s' does not exist (resolved as '%s')", entry, resolved);
+            }
+        }
+        return result;
+    };
 
     /** Checker that tests whether a value oracle can be generated from the grammar properties. */
     private static GrammarChecker oracleChecker = (g, v) -> {

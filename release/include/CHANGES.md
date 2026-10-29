@@ -5,11 +5,14 @@ This document describes the major changes in the GROOVE tool set
 
 Release 7.6.0, 27 October 2026
 -------------------------------
-- User-defined types and operations can now be shipped inside the grammar: the
-  classes named in the `userOperations` property are loaded from the subdirectory
-  `classes` and the jars in the subdirectory `lib` of the `.gps` directory, on top
-  of GROOVE's own class path, so the runnable jars and the installers can use them
-  and no launch command with an explicit class path is needed any more
+- User-defined types and operations no longer need a launch command with an
+  explicit class path, so the runnable jars and the installers can use them: the
+  classes named in the `userOperations` property are looked up in the grammar
+  directory (subdirectory `classes` and the jars in `lib`), in the entries of the
+  new grammar property `userClassPath` (relative to the grammar directory), in the
+  installation-level user class path (set once in the Simulator's Options menu, or
+  per run with `--user-classpath` on the command-line tools or the system property
+  `groove.user.classpath`) and on GROOVE's own class path, in that order
 - Multigraph transformation: new `semantics` property (`SPO-simple`, `SPO-multi`,
   `DPO`) and `mult=k:` host aspect; grammar version 3.12
 - Regular expressions are no longer witnessed by edges the rule erases
