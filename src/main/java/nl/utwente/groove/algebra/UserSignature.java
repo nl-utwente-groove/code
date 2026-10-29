@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -46,8 +47,10 @@ import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.UserClassPath;
 import nl.utwente.groove.util.parse.FallibleObject;
+import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * The signature for the user algebra.
@@ -101,33 +104,69 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
 
     /** Checks whether a given set of named classes can be loaded through the currently
      * installed class loader (see {@link #setUserClass(List, File, List)}) and have suitable
-     * user-defined operations, and returns the operations as executables.
-     * @throws FormatException if there are annotation errors in the class
+     * user-defined operations, and returns the operations as executables, together with
+     * the errors found: a class that cannot be loaded or has annotation errors is an
+     * error, a class that exists in more than one place on the class path is a warning.
      */
-    public static Map<Operator,Executable> checkUserClass(List<QualName> classNames) throws FormatException {
-        var result = new LinkedHashMap<Operator,Executable>();
-        var errors = new FormatErrorSet();
+    public static FallibleObject<Map<Operator,Executable>> checkUserClass(List<QualName> classNames) {
+        var result = new FallibleObject<Map<Operator,Executable>>(new LinkedHashMap<>());
         var classes = toClasses(classNames);
-        classes.throwException();
-        for (var claz : classes.get()) {
-            var m = parseUserClass(claz, classes.get());
-            result.putAll(m.get());
-            errors.addAll(m.getErrors());
+        result.addErrors(classes.getErrors());
+        if (!classes.getErrors().hasErrors()) {
+            for (var claz : classes.get()) {
+                var m = parseUserClass(claz, classes.get());
+                result.get().putAll(m.get());
+                result.addErrors(m.getErrors());
+            }
         }
-        errors.throwException();
         return result;
     }
 
-    /** Returns the loadable classes among a list of class names. */
+    /** Returns the loadable classes among a list of class names.
+     * A class that cannot be loaded is an error; a class that exists in more than one
+     * place is a warning naming all places, the one actually used first.
+     */
     static private FallibleObject<? extends Set<Class<?>>> toClasses(List<QualName> classNames) {
         var result = new FallibleObject<>(new LinkedHashSet<Class<?>>());
         for (var className : classNames) {
             try {
                 result.get().add(UserSignature.loader.loadClass(className.toString()));
+                var copies = findCopies(className.toString());
+                if (copies.size() > 1) {
+                    result
+                        .getErrors()
+                        .add(new FormatError(Severity.WARNING,
+                            "Class '%s' is found in several places: %s (used), %s", className,
+                            copies.get(0), String.join(", ", copies.subList(1, copies.size()))));
+                }
             } catch (ClassNotFoundException exc) {
                 result
                     .addError("Class '%s' cannot be loaded from %s", className,
                               sourceDescription);
+            }
+        }
+        return result;
+    }
+
+    /** Returns the places where a given class is found by the current loader, as
+     * descriptions, in search order: GROOVE's own class path (the parent, consulted
+     * first) if it has the class, followed by the entries of the grammar loader.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    static private List<String> findCopies(String className) {
+        var result = new ArrayList<String>();
+        var resource = className.replace('.', '/') + ".class";
+        if (PARENT_LOADER.getResource(resource) != null) {
+            result.add(GROOVE_CLASS_PATH);
+        }
+        if (loader instanceof GrammarClassLoader grammarLoader) {
+            try {
+                var urls = grammarLoader.findResources(resource);
+                while (urls.hasMoreElements()) {
+                    result.add(grammarLoader.getLabel(urls.nextElement()));
+                }
+            } catch (IOException exc) {
+                // the enumeration is incomplete; report what was found
             }
         }
         return result;
@@ -269,13 +308,15 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     }
 
     /**
-     * Creates a class loader for the user-defined classes of a grammar, searching
-     * in this order: the grammar-local class path, consisting of the {@link #CLASSES_DIR}
-     * subdirectory of the grammar directory (if it exists) followed by the jars in its
-     * {@link #LIB_DIR} subdirectory (if any) in alphabetical order; the entries of the
-     * grammar class path, resolved against the grammar directory; the installation-level
-     * {@link UserClassPath}; and finally GROOVE's own class loader, which is the parent.
-     * Entries that do not exist are skipped. If nothing but the parent remains, the
+     * Creates a class loader for the user-defined classes of a grammar. GROOVE's own
+     * class loader is the parent and, by the standard delegation, is consulted first;
+     * the loader's own entries are then searched in this order: the grammar-local class
+     * path, consisting of the {@link #CLASSES_DIR} subdirectory of the grammar directory
+     * (if it exists) followed by the jars in its {@link #LIB_DIR} subdirectory (if any)
+     * sorted by file name, case-insensitively and so identically on all platforms; the
+     * entries of the grammar class path, resolved against the grammar directory; and the
+     * installation-level {@link UserClassPath}.
+     * Entries that do not exist are skipped. If no entry remains, the
      * parent loader itself is returned.
      * Jars are loaded from temporary copies, so that the originals stay writable
      * (on Windows, a jar that is open in a class loader cannot be overwritten);
@@ -288,23 +329,25 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      */
     @AIGenerated("Claude Fable 5.1, 2026-10")
     static ClassLoader newLoader(@Nullable File grammarDir, List<String> grammarEntries) {
-        var urls = new ArrayList<URL>();
+        var entries = new LinkedHashMap<URL,String>();
         var copies = new ArrayList<Path>();
         var sources = new ArrayList<String>();
         if (grammarDir != null) {
             var local = new ArrayList<String>();
             var classesDir = new File(grammarDir, CLASSES_DIR);
             if (classesDir.isDirectory()) {
-                urls.add(toURL(classesDir.toPath()));
-                local.add(CLASSES_DIR + File.separator);
+                var label = CLASSES_DIR + File.separator;
+                entries.put(toURL(classesDir.toPath()), label + GRAMMAR_DIR_SUFFIX);
+                local.add(label);
             }
             var jars = new File(grammarDir, LIB_DIR)
                 .listFiles(f -> f.isFile() && FileType.JAR.hasExtension(f));
             if (jars != null) {
-                Arrays.sort(jars);
+                Arrays.sort(jars, JAR_ORDER);
                 for (var jar : jars) {
-                    addEntry(jar.toPath(), urls, copies);
-                    local.add(LIB_DIR + File.separator + jar.getName());
+                    var label = LIB_DIR + File.separator + jar.getName();
+                    addEntry(jar.toPath(), label + GRAMMAR_DIR_SUFFIX, entries, copies);
+                    local.add(label);
                 }
             }
             if (!local.isEmpty()) {
@@ -313,7 +356,8 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
             var base = grammarDir.toPath();
             var found = new ArrayList<String>();
             for (var entry : grammarEntries) {
-                if (addEntry(base.resolve(entry).normalize(), urls, copies)) {
+                if (addEntry(base.resolve(entry).normalize(), entry + " (grammar class path)",
+                             entries, copies)) {
                     found.add(entry);
                 }
             }
@@ -323,32 +367,33 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         }
         var found = new ArrayList<String>();
         for (var entry : UserClassPath.get()) {
-            if (addEntry(entry, urls, copies)) {
+            if (addEntry(entry, entry + " (user class path)", entries, copies)) {
                 found.add(entry.toString());
             }
         }
         if (!found.isEmpty()) {
             sources.add("the user class path (" + String.join(", ", found) + ")");
         }
-        sources.add("GROOVE's own class path");
+        sources.add(0, GROOVE_CLASS_PATH);
         sourceDescription = sources.size() == 1
             ? sources.get(0)
             : String.join(", ", sources.subList(0, sources.size() - 1)) + " or "
                 + sources.get(sources.size() - 1);
-        return urls.isEmpty()
+        return entries.isEmpty()
             ? PARENT_LOADER
-            : new GrammarClassLoader(urls.toArray(new URL[0]), copies, PARENT_LOADER);
+            : new GrammarClassLoader(entries, copies, PARENT_LOADER);
     }
 
-    /** Adds a class path entry to a list of URLs: a directory as it is, a jar as a
-     * temporary copy (registered in the list of copies), falling back to the jar
-     * itself if the copy fails.
+    /** Adds a class path entry, with a label for messages, to a map of entries:
+     * a directory as it is, a jar as a temporary copy (registered in the list of
+     * copies), falling back to the jar itself if the copy fails.
      * @return {@code true} if the entry exists and was added
      */
     @AIGenerated("Claude Fable 5.1, 2026-10")
-    static private boolean addEntry(Path entry, List<URL> urls, List<Path> copies) {
+    static private boolean addEntry(Path entry, String label, Map<URL,String> entries,
+                                    List<Path> copies) {
         if (Files.isDirectory(entry)) {
-            urls.add(toURL(entry));
+            entries.put(toURL(entry), label);
             return true;
         } else if (Files.isRegularFile(entry)) {
             try {
@@ -356,9 +401,9 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 Files.copy(entry, copy, StandardCopyOption.REPLACE_EXISTING);
                 copy.toFile().deleteOnExit();
                 copies.add(copy);
-                urls.add(toURL(copy));
+                entries.put(toURL(copy), label);
             } catch (IOException exc) {
-                urls.add(toURL(entry));
+                entries.put(toURL(entry), label);
             }
             return true;
         } else {
@@ -366,8 +411,21 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         }
     }
 
+    /** Order of the jars in the {@link #LIB_DIR} subdirectory: by file name,
+     * case-insensitively, with the exact name as tie-break; the same on all platforms,
+     * unlike the natural order of {@link File}, which ignores case only on Windows.
+     */
+    static private final Comparator<File> JAR_ORDER
+        = Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER)
+            .thenComparing(File::getName);
+
+    /** Description of GROOVE's own class path, as a source of user classes. */
+    static private final String GROOVE_CLASS_PATH = "GROOVE's own class path";
+    /** Suffix of the labels of grammar-local entries. */
+    static private final String GRAMMAR_DIR_SUFFIX = " (grammar directory)";
+
     /** Description of the sources searched by the current loader, for error messages. */
-    static private String sourceDescription = "GROOVE's own class path";
+    static private String sourceDescription = GROOVE_CLASS_PATH;
 
     static private URL toURL(Path path) {
         try {
@@ -388,15 +446,32 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     /** Class loader through which the user classes are loaded. */
     static private ClassLoader loader = PARENT_LOADER;
 
-    /** Class loader for the grammar-local class path of a grammar directory;
+    /** Class loader for the user classes of a grammar, over labelled entries;
      * closing it deletes the temporary jar copies it was created from.
      */
     @AIGenerated("Claude Fable 5.1, 2026-10")
     static private final class GrammarClassLoader extends URLClassLoader {
-        GrammarClassLoader(URL[] urls, List<Path> copies, ClassLoader parent) {
-            super("groove-grammar", urls, parent);
+        GrammarClassLoader(Map<URL,String> entries, List<Path> copies, ClassLoader parent) {
+            super("groove-grammar", entries.keySet().toArray(new URL[0]), parent);
+            this.entries = entries;
             this.copies = copies;
         }
+
+        /** Returns the label of the entry from which a given resource URL stems,
+         * or the URL itself if none matches.
+         */
+        String getLabel(URL resource) {
+            var text = resource.toString();
+            for (var entry : this.entries.entrySet()) {
+                var base = entry.getKey().toString();
+                if (text.startsWith(base) || text.startsWith("jar:" + base + "!/")) {
+                    return entry.getValue();
+                }
+            }
+            return text;
+        }
+
+        private final Map<URL,String> entries;
 
         @Override
         public void close() throws IOException {

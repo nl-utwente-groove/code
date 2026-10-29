@@ -86,11 +86,11 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     USER_OPS("userOperations",
         "List of qualified names of classes containing user-defined data operations. "
             + "<p>Static methods annotated with @UserOperation can be used in rules. "
-            + "<p>The classes are loaded from the grammar directory "
+            + "<p>The classes are loaded from GROOVE's own class path, the grammar directory "
             + "(the subdirectory <tt>classes</tt> and the jars in the subdirectory <tt>lib</tt>), "
-            + "the grammar class path (see <tt>userClassPath</tt>), the installation-level "
-            + "user class path (see the Simulator options) or GROOVE's own class path, "
-            + "in that order.",
+            + "the grammar class path (see <tt>userClassPath</tt>) or the installation-level "
+            + "user class path (see the Simulator options), in that order; a class found in "
+            + "more than one place is reported as a warning.",
         ValueType.QUAL_NAME_LIST),
     /** Class path entries, relative to the grammar directory, for the user-defined operations. */
     USER_CLASS_PATH("userClassPath",
@@ -642,11 +642,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             var family = grammar.getProperties().getAlgebraFamily();
             var classNames = value.value(ValueType.QUAL_NAME_LIST);
             if (!classNames.isEmpty()) {
-                try {
-                    UserSignature.checkUserClass(classNames);
-                } catch (FormatException exc) {
-                    result.addAll(exc.getErrors());
-                }
+                result.addAll(UserSignature.checkUserClass(classNames).getErrors());
                 if (family != AlgebraFamily.DEFAULT && family != AlgebraFamily.POINT) {
                     result
                         .add("User-defined operations cannot be used with '%s' algebra family",

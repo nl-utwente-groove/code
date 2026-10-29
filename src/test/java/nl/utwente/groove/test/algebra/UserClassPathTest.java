@@ -15,6 +15,8 @@
 package nl.utwente.groove.test.algebra;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,6 +33,7 @@ import java.nio.file.Path;
 import java.security.CodeSource;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.spi.ToolProvider;
@@ -51,6 +54,7 @@ import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.UserClassPath;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Tests the class path sources for user-defined operations: a class that is
@@ -75,7 +79,7 @@ public class UserClassPathTest {
     @Test
     void classIsNotOnTheApplicationClassPath() {
         try {
-            UserSignature.checkUserClass(NAMES);
+            UserSignature.checkUserClass(NAMES).throwException();
             fail("The test class should not be loadable from the application class path");
         } catch (FormatException exc) {
             var message = exc.getMessage();
@@ -93,7 +97,7 @@ public class UserClassPathTest {
         assertTwice();
         // checking goes through the same loader
         try {
-            UserSignature.checkUserClass(NAMES);
+            UserSignature.checkUserClass(NAMES).throwException();
         } catch (FormatException exc) {
             fail(exc.getMessage());
         }
@@ -207,6 +211,71 @@ public class UserClassPathTest {
         assertTwice();
     }
 
+    /** Tests that a class present both in {@code classes/} and in a {@code lib/} jar
+     * is reported as a warning naming both places, with the copy used first, and
+     * that the jars are searched in case-insensitive name order.
+     */
+    @Test
+    void duplicateClassIsAWarning(@TempDir Path tmp) throws IOException {
+        Path grammar = tmp.resolve("dup.gps");
+        byte[] bytes = compile(tmp.resolve("build"));
+        Path classFile = grammar
+            .resolve(UserSignature.CLASSES_DIR)
+            .resolve(PACKAGE)
+            .resolve(SIMPLE_NAME + ".class");
+        Files.createDirectories(classFile.getParent());
+        Files.write(classFile, bytes);
+        // the case-insensitive order puts 'a.jar' before 'B.jar' on every platform
+        writeJar(grammar.resolve(UserSignature.LIB_DIR).resolve("B.jar"), bytes);
+        writeJar(grammar.resolve(UserSignature.LIB_DIR).resolve("a.jar"), bytes);
+        UserSignature.setUserClass(NAMES, grammar.toFile());
+        assertTwice();
+        var check = UserSignature.checkUserClass(NAMES);
+        assertFalse(check.getErrors().hasErrors(), check.getErrors().toString());
+        assertEquals(1, count(check.getErrors()));
+        var warning = check.getErrors().iterator().next();
+        assertEquals(Severity.WARNING, warning.getSeverity());
+        var message = warning.toString();
+        assertTrue(message.contains("classes" + File.separator + " (grammar directory) (used)"),
+                   message);
+        assertTrue(message.indexOf("lib" + File.separator + "a.jar") < message
+            .indexOf("lib" + File.separator + "B.jar"), message);
+    }
+
+    /** Tests that a class on GROOVE's own class path shadows a copy in the grammar,
+     * and that this is reported as a warning.
+     */
+    @Test
+    void grooveClassPathShadowsTheGrammar(@TempDir Path tmp) throws IOException {
+        Path grammar = tmp.resolve("shadow.gps");
+        var names = List.of(QualName.name(UserOps.class.getName()),
+                            QualName.name(UserTypeIntString.class.getName()));
+        var entries = new java.util.LinkedHashMap<String,byte[]>();
+        for (var claz : List.of(UserOps.class, UserTypeIntString.class)) {
+            try (var in = claz.getResourceAsStream(claz.getSimpleName() + ".class")) {
+                assertNotNull(in);
+                entries.put(claz.getName(), in.readAllBytes());
+            }
+        }
+        writeJar(grammar.resolve(UserSignature.LIB_DIR).resolve("shadow.jar"), entries);
+        UserSignature.setUserClass(names, grammar.toFile());
+        var check = UserSignature.checkUserClass(names);
+        assertFalse(check.getErrors().hasErrors(), check.getErrors().toString());
+        assertEquals(2, count(check.getErrors()));
+        for (var warning : check.getErrors()) {
+            assertEquals(Severity.WARNING, warning.getSeverity());
+            assertTrue(warning.toString().contains("GROOVE's own class path (used)"),
+                       warning.toString());
+        }
+        // the class in use is the one of the application loader
+        var one = UserSignature.getOperators().get("one");
+        assertNotNull(one);
+        var executable = UserSignature.getMethods().get(one);
+        assertNotNull(executable);
+        assertSame(UserOps.class.getClassLoader(),
+                   executable.getDeclaringClass().getClassLoader());
+    }
+
     /** Tests the round trip between class path strings and entry lists. */
     @Test
     void userClassPathParsesAndFormats() {
@@ -216,6 +285,15 @@ public class UserClassPathTest {
         var text = UserClassPath.format(entries);
         assertEquals("a" + File.separator + "b.jar" + File.pathSeparator + "c d", text);
         assertEquals(entries, UserClassPath.parse(" " + text + File.pathSeparator));
+    }
+
+    /** Returns the number of elements of an iterable. */
+    private static int count(Iterable<?> iterable) {
+        int result = 0;
+        for (var it = iterable.iterator(); it.hasNext(); it.next()) {
+            result++;
+        }
+        return result;
     }
 
     /** Asserts that the compiled operation is available and computes what it should. */
@@ -273,11 +351,18 @@ public class UserClassPathTest {
 
     /** Writes a jar containing the user class. */
     private static void writeJar(Path path, byte[] classBytes) throws IOException {
+        writeJar(path, Map.of(CLASS_NAME, classBytes));
+    }
+
+    /** Writes a jar containing the given classes, keyed by qualified name. */
+    private static void writeJar(Path path, Map<String,byte[]> classes) throws IOException {
         Files.createDirectories(path.getParent());
         try (var jar = new JarOutputStream(Files.newOutputStream(path))) {
-            jar.putNextEntry(new JarEntry(CLASS_NAME.replace('.', '/') + ".class"));
-            jar.write(classBytes);
-            jar.closeEntry();
+            for (var entry : classes.entrySet()) {
+                jar.putNextEntry(new JarEntry(entry.getKey().replace('.', '/') + ".class"));
+                jar.write(entry.getValue());
+                jar.closeEntry();
+            }
         }
     }
 
