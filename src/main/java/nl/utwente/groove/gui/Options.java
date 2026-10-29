@@ -615,6 +615,9 @@ public class Options implements Cloneable {
     public static final String TOGGLE_TO_ABS_ACTION_NAME = "Enter Abstraction Mode";
     /** To concrete mode action name */
     public static final String TOGGLE_TO_CONC_ACTION_NAME = "Return to Concrete Mode";
+    /** User class path action name */
+    @AIGenerated("Claude Opus 5, 2026-10")
+    public static final String USER_CLASS_PATH_ACTION_NAME = "User Class Path ...";
     private static final String SAVE_NAME_TEMPLATE = "Save %s";
     private static final String SAVE_AS_NAME_TEMPLATE = "Save %s As ...";
     /**

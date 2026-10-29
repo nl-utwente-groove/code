@@ -753,6 +753,7 @@ public class Simulator implements SimulatorListener {
         }
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
+        result.add(new JMenuItem(this.actions.getUserClassPathAction()));
         return result;
     }
 

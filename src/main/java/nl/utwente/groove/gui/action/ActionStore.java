@@ -32,6 +32,7 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.StateDisplay;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Collection of all Simulator-wide GUI actions.
@@ -647,6 +648,23 @@ public class ActionStore implements SimulatorListener {
 
     /** The grammar refresh action permanently associated with this simulator. */
     private RefreshGrammarAction refreshGrammarAction;
+
+    /**
+     * Returns the user class path action permanently associated with this
+     * simulator.
+     */
+    @AIGenerated("Claude Opus 5, 2026-10")
+    public UserClassPathAction getUserClassPathAction() {
+        // lazily create the action
+        if (this.userClassPathAction == null) {
+            this.userClassPathAction = new UserClassPathAction(this.simulator);
+        }
+        return this.userClassPathAction;
+    }
+
+    /** The user class path action permanently associated with this simulator. */
+    @AIGenerated("Claude Opus 5, 2026-10")
+    private UserClassPathAction userClassPathAction;
 
     /**
      * Returns the rule renaming action permanently associated with this
