@@ -119,7 +119,7 @@ public class LegacySyntaxParser {
             String keyword = keywordOf(strategy);
             if ("minimax".equals(keyword)) {
                 throw new FormatException(
-                    "The minimax strategy has been removed in release 8.0;"
+                    "The minimax strategy has been removed in release 7.6.0;"
                         + " see https://github.com/nl-utwente-groove/code/issues/890");
             }
             if (LTL_KEYWORDS.contains(keyword)) {
