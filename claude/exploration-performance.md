@@ -1929,7 +1929,7 @@ builds: `leader-election-14` level over four pairs, `as-and-bs` and `mergers-9-m
 level, `count-100000` 4.9 to 2.1 s, `count-300000` 28.0 to 4.9 s.
 
 **3.14 Unstored bounded depth-first exploration discovers a cache-dependent number of
-states.** High (correctness) / unknown / verified 2026-10-21. Found while sizing an
+states.** High (correctness) / unknown / verified 2026-10-21; filed as gh #928. Found while sizing an
 As-and-Bs long row: `as-and-bs-4-3` under `next=newest cost=uniform bound=cost:5
 persistence=none` discovered 3,063,835 states in one run and 3,006,811 in the next
 (8 GB, JDK 25), and at `bound=cost:6` 7,178,800 and 7,126,885; with
