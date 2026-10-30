@@ -7,6 +7,11 @@ states the facts, the options and their consequences, and the decision. First wr
 2026-09-09, after the edition was built and verified, as an open question; the decision below
 was taken the same day, once yWorks had confirmed the licence terms.
 
+**Superseded (2026-10-30).** yWorks rejected the add-on of the decision below on
+2026-10-28: a separately shipped backend over a generic interface is a wrapper API around
+yFiles (SLA §2.1d). The required shape and the reasoning are in `yfiles-restructure.md`;
+this note is kept for the facts and the options.
+
 ## Where things stand
 
 The release as built produces two distributions:

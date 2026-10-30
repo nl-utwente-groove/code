@@ -74,6 +74,8 @@ extension directory and offers to install itself; see "Phase 5b" below. What rem
 on Arend's side: the private repository and secret for the release workflow, the
 license correspondence with yWorks, the download page, and the merge into `master`; the
 backend module split (gh #887) stays an independent decision. The architecture allowlist is empty.
+**The add-on was rejected by yWorks on 2026-10-28** as a wrapper API around yFiles; the
+restructuring it requires is in `claude/yfiles-restructure.md`.
 **The public history was rewritten on 2026-09-10** with `git filter-repo`, removing
 `yfiles/` from `master` and `yworks-migration` and force-pushing both; the release tags
 were outside the rewritten range and kept their SHAs. Commit SHAs quoted in `claude/*.md`
@@ -147,7 +149,8 @@ rework.
   yFiles backend package stays unexported in `module-info`; the facade remains a
   GROOVE-internal seam. The add-on jar's public classes (service provider, canvases,
   layouter) are callable by third parties in principle; documented as internal, and
-  question (g) to yWorks.
+  question (g) to yWorks. **Answered 2026-10-28: the add-on is exactly such an API and
+  is not approved**; the required shape is in `claude/yfiles-restructure.md`.
 - **Project License (§2.2.3)** covers "different editions of the Authorized
   Application" and "an automated build process": CI builds and the add-on shape are
   within it.
