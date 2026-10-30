@@ -139,7 +139,7 @@ public class UserSignatureTest {
     private void loadFail(String... classNames) {
         var qualClassNames = Arrays.stream(classNames).map(PACKAGE_NAME::extend).toList();
         try {
-            UserSignature.checkUserClass(qualClassNames);
+            UserSignature.checkUserClass(qualClassNames).throwException();
             fail(classNames + " contain errors and should not be loadable");
         } catch (FormatException exc) {
             var message = exc.getMessage();
@@ -151,7 +151,7 @@ public class UserSignatureTest {
     private void load(String... classNames) {
         var qualClassNames = Arrays.stream(classNames).map(PACKAGE_NAME::extend).toList();
         try {
-            UserSignature.checkUserClass(qualClassNames);
+            UserSignature.checkUserClass(qualClassNames).throwException();
         } catch (FormatException exc) {
             fail(exc.getMessage());
         }

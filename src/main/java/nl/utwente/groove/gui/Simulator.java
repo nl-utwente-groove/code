@@ -749,6 +749,7 @@ public class Simulator implements SimulatorListener {
         }
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
+        result.add(new JMenuItem(this.actions.getUserClassPathAction()));
         // the backend choice exists only if there is a choice
         JMenu backendMenu = new BackendChooser(getFrame(), AddOn.YFILES).createMenu();
         if (backendMenu != null) {
