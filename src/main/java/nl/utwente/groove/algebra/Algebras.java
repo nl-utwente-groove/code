@@ -137,10 +137,10 @@ public class Algebras {
                 help
                     .addBody("<p style=\"margin-top:5;\"/>Declared in "
                         + Help.source(e.getValue().getDeclaringClass().getCanonicalName()));
-                // parameter documentation
-                for (var param : e.getValue().getParameterTypes()) {
-                    var sort = Sort.toSort(param);
-                    assert sort != null;
+                // parameter documentation, for the operands rather than the
+                // Java parameters: a non-static operation has its receiving
+                // object as additional first operand
+                for (var sort : e.getKey().getParamSorts()) {
                     help.addPar(sort.name() + "-typed expression");
                 }
                 result.add(help);
