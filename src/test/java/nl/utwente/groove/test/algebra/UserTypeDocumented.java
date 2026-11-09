@@ -18,14 +18,17 @@ package nl.utwente.groove.test.algebra;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import nl.utwente.groove.annotation.ToolTipBody;
+import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.ToolTipPars;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Example user type whose operations carry parameter documentation,
- * with as many lines as the operation has declared parameters, fewer, or more.
+ * Example user type whose operations carry tool tip annotations: parameter
+ * documentation with as many lines as the operation has declared parameters,
+ * fewer, or more, and texts that are or are not valid format strings.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -59,5 +62,21 @@ public record UserTypeDocumented(int value) {
     @ToolTipPars("no such parameter")
     static public int nought() {
         return 0;
+    }
+
+    /** Non-static operation whose body refers to its operands by position. */
+    @UserOperation
+    @ToolTipBody("Yields the sum of %1$s and %2$s.")
+    public int plus(int increment) {
+        return value() + increment;
+    }
+
+    /** Static operation none of whose tool tip texts is a valid format string. */
+    @UserOperation
+    @ToolTipHeader("Share of 100%")
+    @ToolTipBody("Yields %2$s, which does not exist.")
+    @ToolTipPars("the share, in %")
+    static public int whole(int share) {
+        return 100 * share;
     }
 }

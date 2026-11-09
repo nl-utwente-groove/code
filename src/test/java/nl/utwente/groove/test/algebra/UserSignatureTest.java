@@ -181,6 +181,26 @@ public class UserSignatureTest {
         checkParDocs(docMap, "nought");
     }
 
+    /** Tests that the tool tip texts of a user operation are format strings over
+     * its operands, and that a text that is not a valid format string is shown
+     * as it stands rather than failing the operator documentation.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.1, 2026-11")
+    public void testOpDocFormat() {
+        load("UserTypeDocumented");
+        var docMap = Algebras.getOpDocMap();
+        // valid format string: the operand positions have been filled in
+        var plusTip = getTip(docMap, "plus");
+        assertTrue(plusTip, plusTip.contains("Yields the sum of "));
+        assertFalse(plusTip, plusTip.contains("$s"));
+        // invalid format strings in header, body and parameter documentation
+        var wholeTip = getTip(docMap, "whole");
+        assertTrue(wholeTip, wholeTip.contains("Share of 100%"));
+        assertTrue(wholeTip, wholeTip.contains("Yields %2$s, which does not exist."));
+        checkParDocs(docMap, "whole", "the share, in %");
+    }
+
     /** Tests that the parameter documentation of a given user operation consists
      * of rows that contain the given fragments, in that order.
      */
@@ -198,6 +218,14 @@ public class UserSignatureTest {
      * user operation, which must have exactly one item in a given documentation map.
      */
     private List<String> getParDocs(HelpMap docMap, String opName) {
+        var rows = Arrays.asList(getTip(docMap, opName).split("<tr>", -1));
+        return rows.subList(1, rows.size());
+    }
+
+    /** Returns the tool tip of a given user operation, which must have
+     * exactly one item in a given documentation map.
+     */
+    private String getTip(HelpMap docMap, String opName) {
         var tips = docMap
             .entrySet()
             .stream()
@@ -207,8 +235,7 @@ public class UserSignatureTest {
         assertEquals(1, tips.size(), "Documentation items for " + opName);
         var tip = tips.get(0);
         assertNotNull(tip);
-        var rows = Arrays.asList(tip.split("<tr>", -1));
-        return rows.subList(1, rows.size());
+        return tip;
     }
 
     /** Fragment that marks a generated parameter documentation line. */
