@@ -38,6 +38,7 @@ import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
+import nl.utwente.groove.annotation.ToolTipPars;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.Exceptions;
@@ -140,8 +141,20 @@ public class Algebras {
                 // parameter documentation, for the operands rather than the
                 // Java parameters: a non-static operation has its receiving
                 // object as additional first operand
-                for (var sort : e.getKey().getParamSorts()) {
-                    help.addPar(sort.name() + "-typed expression");
+                var parSorts = e.getKey().getParamSorts();
+                // the lines provided by the user are for the Java parameters;
+                // they may be too few or too many, which should not be fatal
+                var pars = e.getValue().getAnnotation(ToolTipPars.class);
+                var userDocs = pars == null
+                    ? new String[0]
+                    : pars.value();
+                int receiverCount = parSorts.size() - e.getValue().getParameterCount();
+                for (int i = 0; i < parSorts.size(); i++) {
+                    int userIx = i - receiverCount;
+                    help
+                        .addPar(0 <= userIx && userIx < userDocs.length
+                            ? userDocs[userIx]
+                            : parSorts.get(i).name() + "-typed expression");
                 }
                 result.add(help);
             }

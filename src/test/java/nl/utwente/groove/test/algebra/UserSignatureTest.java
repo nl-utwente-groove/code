@@ -37,6 +37,8 @@ import nl.utwente.groove.algebra.Algebras;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.UserSignature;
+import nl.utwente.groove.annotation.HelpMap;
+import nl.utwente.groove.annotation.ToolTipPars;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -154,19 +156,63 @@ public class UserSignatureTest {
                 // record accessors are not documented
                 continue;
             }
-            var tips = docMap
-                .entrySet()
-                .stream()
-                .filter(e -> e.getKey().contains(name + "</"))
-                .map(e -> e.getValue())
-                .toList();
-            assertEquals(1, tips.size(), "Documentation items for " + name);
-            var tip = tips.get(0);
-            assertNotNull(tip);
-            assertEquals(op.getArity(), tip.split("<tr>", -1).length - 1,
+            assertEquals(op.getArity(), getParDocs(docMap, name).size(),
                          "Documented parameters of " + name);
         }
     }
+
+    /** Tests that the parameter documentation of a user operation takes its
+     * lines from {@link ToolTipPars} as far as that provides them for the
+     * declared parameters, and generates the others; in particular, building
+     * the operator documentation does not fail on such an annotation.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.1, 2026-11")
+    public void testOpDocPars() {
+        load("UserTypeDocumented");
+        var docMap = Algebras.getOpDocMap();
+        // non-static: the receiving object comes first and has a generated line
+        checkParDocs(docMap, "scaledBy", GENERATED, "the factor to scale by");
+        // as many lines as parameters
+        checkParDocs(docMap, "addUp", "the first summand", "the second summand");
+        // too few lines: the remaining parameters have a generated line
+        checkParDocs(docMap, "isBetween", "the lower bound", GENERATED, GENERATED);
+        // too many lines: the surplus is ignored
+        checkParDocs(docMap, "nought");
+    }
+
+    /** Tests that the parameter documentation of a given user operation consists
+     * of rows that contain the given fragments, in that order.
+     */
+    private void checkParDocs(HelpMap docMap, String opName, String... fragments) {
+        var parDocs = getParDocs(docMap, opName);
+        assertEquals(fragments.length, parDocs.size(), "Documented parameters of " + opName);
+        for (int i = 0; i < fragments.length; i++) {
+            var parDoc = parDocs.get(i);
+            assertTrue("Parameter " + i + " of " + opName + " is documented as " + parDoc,
+                       parDoc.contains(fragments[i]));
+        }
+    }
+
+    /** Returns the rows of the parameter table in the tool tip of a given
+     * user operation, which must have exactly one item in a given documentation map.
+     */
+    private List<String> getParDocs(HelpMap docMap, String opName) {
+        var tips = docMap
+            .entrySet()
+            .stream()
+            .filter(e -> e.getKey().contains(opName + "</"))
+            .map(e -> e.getValue())
+            .toList();
+        assertEquals(1, tips.size(), "Documentation items for " + opName);
+        var tip = tips.get(0);
+        assertNotNull(tip);
+        var rows = Arrays.asList(tip.split("<tr>", -1));
+        return rows.subList(1, rows.size());
+    }
+
+    /** Fragment that marks a generated parameter documentation line. */
+    static private final String GENERATED = "-typed expression";
 
     private void loadFail(String... classNames) {
         var qualClassNames = Arrays.stream(classNames).map(PACKAGE_NAME::extend).toList();
