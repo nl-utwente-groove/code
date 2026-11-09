@@ -33,9 +33,11 @@ import org.junit.After;
 import org.junit.Test;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.Algebras;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.UserSignature;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -133,6 +135,36 @@ public class UserSignatureTest {
             case "isPrefixOf" -> check(op, false, Sort.BOOL, Sort.USER, Sort.STRING);
             default -> fail("Unexpected operation " + op.getName());
             }
+        }
+    }
+
+    /** Tests that the operator documentation can be built for user operations,
+     * with one documentation line per parameter of the syntax line. This includes
+     * the receiving object of a non-static operation of a user type, which is
+     * the first operand without being a Java parameter (gh #929).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.1, 2026-11")
+    public void testOpDocMap() {
+        load("UserOps", "UserTypeIntString");
+        var docMap = Algebras.getOpDocMap();
+        for (var op : UserSignature.getOperators().values()) {
+            var name = op.getName();
+            if (name.equals("intField") || name.equals("stringField")) {
+                // record accessors are not documented
+                continue;
+            }
+            var tips = docMap
+                .entrySet()
+                .stream()
+                .filter(e -> e.getKey().contains(name + "</"))
+                .map(e -> e.getValue())
+                .toList();
+            assertEquals(1, tips.size(), "Documentation items for " + name);
+            var tip = tips.get(0);
+            assertNotNull(tip);
+            assertEquals(op.getArity(), tip.split("<tr>", -1).length - 1,
+                         "Documented parameters of " + name);
         }
     }
 
