@@ -242,8 +242,9 @@ public class Help {
         } catch (Exception e) {
             if (this.lenient) {
                 return text;
+            } else {
+                throw Exceptions.illegalArg(e.getMessage());
             }
-            throw Exceptions.illegalArg(e.getMessage());
         }
     }
 
