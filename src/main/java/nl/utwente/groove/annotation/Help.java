@@ -240,9 +240,26 @@ public class Help {
         try {
             return String.format(text, this.parNames.toArray());
         } catch (Exception e) {
+            if (this.lenient) {
+                return text;
+            }
             throw Exceptions.illegalArg(e.getMessage());
         }
     }
+
+    /**
+     * Makes this help item lenient with respect to its header, body and
+     * parameter documentation: a text that is not a valid format string over
+     * the parameters is then shown as it stands, rather than causing an exception.
+     * This is meant for texts from user classes, in which an error should
+     * not be fatal.
+     */
+    public void setLenient() {
+        this.lenient = true;
+    }
+
+    /** Flag indicating that invalid format strings are shown as they stand. */
+    private boolean lenient;
 
     @Override
     public String toString() {
@@ -303,13 +320,15 @@ public class Help {
      * (whose syntax is derived rather than {@link Syntax}-annotated).
      * The tool tip header and body annotations of the source are applied as in
      * {@link #createHelp(AccessibleObject, Map)}, with a generated
-     * "Operation" header as fallback. The parameter documentation is left
+     * "Operation" header as fallback, and the help item is made
+     * {@linkplain #setLenient() lenient}. The parameter documentation is left
      * to the caller, as the parameters of the syntax line need not be those
      * of the source.
      */
     public static Help createOpHelp(Executable source, String opName, String syntaxText,
                                     String resultSort, Map<String,String> tokenMap) {
         Help result = new Help(tokenMap);
+        result.setLenient();
         result.setSyntax(syntaxText);
         ToolTipHeader header = source.getAnnotation(ToolTipHeader.class);
         result
