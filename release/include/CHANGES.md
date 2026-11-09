@@ -3,6 +3,16 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.6.1, 9 November 2026
+-------------------------------
+- Bug fix release
+- Resolved gh #929: the Simulator crashed on loading a grammar with a user-defined
+  operation that is not static and has parameters, since the operator help had no
+  documentation line for the receiving object
+- The operator help of a user-defined operation also survives a `@ToolTipPars`
+  annotation, whose lines document the declared parameters of the method, and tool
+  tip texts that are not valid format strings, such as a text with a literal `%`
+
 Release 7.6.0, 29 October 2026
 -------------------------------
 - User-defined types and operations can be loaded more conveniently
