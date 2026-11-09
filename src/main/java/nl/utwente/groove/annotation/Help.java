@@ -301,9 +301,11 @@ public class Help {
      * Creates a syntax help object for an operation with an externally
      * constructed syntax line, as used for user-defined operations
      * (whose syntax is derived rather than {@link Syntax}-annotated).
-     * Tool tip annotations of the source are applied as in
+     * The tool tip header and body annotations of the source are applied as in
      * {@link #createHelp(AccessibleObject, Map)}, with a generated
-     * "Operation" header as fallback.
+     * "Operation" header as fallback. The parameter documentation is left
+     * to the caller, as the parameters of the syntax line need not be those
+     * of the source.
      */
     public static Help createOpHelp(Executable source, String opName, String syntaxText,
                                     String resultSort, Map<String,String> tokenMap) {
@@ -318,10 +320,6 @@ public class Help {
         ToolTipBody body = source.getAnnotation(ToolTipBody.class);
         if (body != null) {
             result.setBody(body.value());
-        }
-        ToolTipPars pars = source.getAnnotation(ToolTipPars.class);
-        if (pars != null) {
-            result.setPars(pars.value());
         }
         return result;
     }
