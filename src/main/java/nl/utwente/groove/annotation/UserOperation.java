@@ -26,6 +26,13 @@ import java.lang.annotation.Target;
  * The method thus annotated should be static and only have parameters
  * and return type int, double, boolean or String, or a {@link UserType}-annotated
  * record class.
+ * <p>
+ * The return type may also be a {@link java.util.Collection} (or a subtype, such as
+ * {@link java.util.List} or {@link java.util.Set}) of {@link Integer}, {@link Double},
+ * {@link Boolean}, {@link String} or a {@link UserType}-annotated record class.
+ * The operation is then <i>multi-valued</i>: in a rule, it is matched once for
+ * every value in the collection it returns. The order of the values is immaterial.
+ * A multi-valued operation cannot be indeterminate.
  * @author Arend Rensink
  * @version $Revision$
  */

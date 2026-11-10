@@ -25,6 +25,7 @@ import static nl.utwente.groove.util.parse.OpKind.NOT;
 import static nl.utwente.groove.util.parse.OpKind.OR;
 import static nl.utwente.groove.util.parse.OpKind.UNARY;
 
+import java.util.Collection;
 import java.util.List;
 
 import nl.utwente.groove.annotation.OpSymbol;
@@ -117,7 +118,7 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     @ToolTipHeader("Integer interval")
     @ToolTipBody({"Multi-valued: yields each of the integers from %2$s up to and including %3$s.",
         "Use on a quantified level to range over those values."})
-    public default List<MAIN> interval(MAIN arg0, MAIN arg1) {
+    public default Collection<MAIN> interval(MAIN arg0, MAIN arg1) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "interval", getSort());
     }
@@ -174,7 +175,7 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     @ToolTipHeader("Integer range")
     @ToolTipBody({"Multi-valued: yields each of the integers from 0 up to but not including %2$s.",
         "Use on a quantified level to range over those values."})
-    public default List<MAIN> range(MAIN arg) {
+    public default Collection<MAIN> range(MAIN arg) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "range", getSort());
     }

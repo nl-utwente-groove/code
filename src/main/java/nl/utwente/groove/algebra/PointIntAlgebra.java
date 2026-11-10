@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.algebra;
 
+import java.util.Collection;
 import java.util.List;
 
 import nl.utwente.groove.algebra.syntax.Expression;
@@ -120,7 +121,7 @@ public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Str
 
     /** The point algebra cannot count, so the interval collapses to the single point value. */
     @Override
-    public List<Integer> interval(Integer arg0, Integer arg1) {
+    public Collection<Integer> interval(Integer arg0, Integer arg1) {
         return List.of(singleInt);
     }
 
@@ -171,7 +172,7 @@ public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Str
 
     /** The point algebra cannot count, so the range collapses to the single point value. */
     @Override
-    public List<Integer> range(Integer arg) {
+    public Collection<Integer> range(Integer arg) {
         return List.of(singleInt);
     }
 

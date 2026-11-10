@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.algebra;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -79,7 +80,7 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
     }
 
     @Override
-    public List<Integer> interval(Integer arg0, Integer arg1) {
+    public Collection<Integer> interval(Integer arg0, Integer arg1) {
         return new IntInterval<>(arg0, arg1) {
             @Override
             Integer toValue(long number) {
@@ -143,7 +144,7 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
     }
 
     @Override
-    public List<Integer> range(Integer arg) {
+    public Collection<Integer> range(Integer arg) {
         return interval(0, arg - 1);
     }
 

@@ -271,7 +271,10 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                              parType.getName(), className, m.getName());
                 }
             }
-            var returnType = m.getReturnType();
+            var elementType = Operator.getElementType(m);
+            var returnType = elementType == null
+                ? m.getReturnType()
+                : elementType;
             if (op.getResultSort() == Sort.USER && !userClasses.contains(returnType)) {
                 errors
                     .add("User-defined return type %s of user operation '%s.%s' not declared in systems properties",

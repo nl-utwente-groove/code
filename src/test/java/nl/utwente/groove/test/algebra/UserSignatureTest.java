@@ -140,6 +140,27 @@ public class UserSignatureTest {
         }
     }
 
+    /** Tests the recognition of multi-valued user operations. */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testMultiValued() {
+        loadFail("UserOpsMultiValuedIndeterminate");
+        loadFail("UserOpsMultiValuedRaw");
+        load("UserOpsMultiValued");
+        var ops = UserSignature.getOperators();
+        assertEquals(4, ops.size());
+        for (var op : ops.values()) {
+            assertTrue(op.getName() + " should be multi-valued", op.isMultiValued());
+            switch (op.getName()) {
+            case "twice" -> check(op, false, Sort.INT, Sort.INT);
+            case "halves" -> check(op, false, Sort.STRING, Sort.STRING);
+            case "upTo" -> check(op, false, Sort.REAL, Sort.REAL);
+            case "both" -> check(op, false, Sort.BOOL);
+            default -> fail("Unexpected operation " + op.getName());
+            }
+        }
+    }
+
     /** Tests that the operator documentation can be built for user operations,
      * with one documentation line per parameter of the syntax line. This includes
      * the receiving object of a non-static operation of a user type, which is

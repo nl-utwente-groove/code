@@ -16,7 +16,12 @@
  */
 package nl.utwente.groove.algebra;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
@@ -79,6 +84,34 @@ public class UserOpsExample {
     @UserOperation
     static public boolean isPrefix(String prefix, String total) {
         return total.startsWith(prefix);
+    }
+
+    /** Multi-valued operation: yields the decimal digits of the absolute value
+     * of a number, as often as they occur in it. */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    @ToolTipHeader("Decimal digits")
+    @ToolTipBody("Multi-valued: yields each of the decimal digits of %s, with repetitions.")
+    @UserOperation
+    static public Collection<Integer> digits(int num) {
+        List<Integer> result = new ArrayList<>();
+        for (char c : Long.toString(Math.abs((long) num)).toCharArray()) {
+            result.add(c - '0');
+        }
+        return result;
+    }
+
+    /** Multi-valued operation with user-typed values: yields the distinct
+     * characters of a string, wrapped into {@link UserTypeString} values. */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    @ToolTipHeader("Distinct characters")
+    @ToolTipBody("Multi-valued: yields each of the distinct characters of %s, as a user value.")
+    @UserOperation
+    static public Set<UserTypeString> letters(String text) {
+        Set<UserTypeString> result = new LinkedHashSet<>();
+        for (char c : text.toCharArray()) {
+            result.add(new UserTypeString("" + c));
+        }
+        return result;
     }
 
     /** Non-static user operation. */

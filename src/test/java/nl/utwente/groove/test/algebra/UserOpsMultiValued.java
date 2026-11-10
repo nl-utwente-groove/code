@@ -1,0 +1,60 @@
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2026
+ * University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ * $Id$
+ */
+package nl.utwente.groove.test.algebra;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.util.AIGenerated;
+
+/**
+ * Example class with multi-valued user operations.
+ */
+@AIGenerated("Claude Fable 5.2, 2026-11")
+public class UserOpsMultiValued {
+    /** Multi-valued operation declared as a collection. */
+    @UserOperation
+    static public Collection<Integer> twice(int value) {
+        return List.of(value, value);
+    }
+
+    /** Multi-valued operation declared as a set. */
+    @UserOperation
+    static public Set<String> halves(String text) {
+        int mid = text.length() / 2;
+        return Set.of(text.substring(0, mid), "-" + text.substring(mid));
+    }
+
+    /** Multi-valued operation declared as a list. */
+    @UserOperation
+    static public List<Double> upTo(double bound) {
+        List<Double> result = new ArrayList<>();
+        for (double d = 0; d < bound; d++) {
+            result.add(d);
+        }
+        return result;
+    }
+
+    /** Multi-valued operation with boolean values. */
+    @UserOperation
+    static public Collection<Boolean> both() {
+        return List.of(true, false);
+    }
+}

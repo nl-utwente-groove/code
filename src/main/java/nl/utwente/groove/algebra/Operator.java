@@ -10,6 +10,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Strings;
@@ -41,7 +43,6 @@ public class Operator implements Comparable<Operator> {
         this.inverse = false;
         this.varArgs = false;
         this.zeroArgs = false;
-        this.multiValued = false;
         this.constructor = executable instanceof Constructor;
         this.name = switch (executable) {
         case Method m -> m.getName();
@@ -55,11 +56,17 @@ public class Operator implements Comparable<Operator> {
             this.parameterSorts.add(toParSort(t));
         }
         this.arity = this.parameterSorts.size();
-        var returnType = switch (executable) {
+        Class<?> returnType = switch (executable) {
         case Method m -> m.getReturnType();
         case Constructor<?> c -> c.getDeclaringClass();
         };
-        this.returnSort = toReturnSort(returnType);
+        var elementType = executable instanceof Method m
+            ? getElementType(m)
+            : null;
+        this.multiValued = elementType != null;
+        this.returnSort = toReturnSort(elementType == null
+            ? returnType
+            : elementType);
         this.symbol = null;
         this.kind = OpKind.CALL;
         this.description = "User-defined method '" + this.name + "'";
@@ -68,6 +75,43 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = annotation == null
             ? false
             : annotation.indeterminate();
+        if (this.multiValued && this.indeterminate) {
+            throw Exceptions.illegalArg("Multi-valued operation cannot be indeterminate");
+        }
+    }
+
+    /**
+     * Returns the type of the values of a multi-valued user-defined method,
+     * or {@code null} if the method is not multi-valued.
+     * A method is multi-valued if its return type is a {@link Collection}
+     * (or a subtype such as {@link List} or {@link java.util.Set}) with a class as type argument.
+     * For the system sorts, the type argument is the wrapper type (for instance {@link Integer});
+     * the type returned by this method is then the corresponding primitive type.
+     * @throws IllegalArgumentException if the return type is a collection type
+     * without a class as type argument
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static @Nullable Class<?> getElementType(Method method) throws IllegalArgumentException {
+        if (!Collection.class.isAssignableFrom(method.getReturnType())) {
+            return null;
+        }
+        if (method.getGenericReturnType() instanceof ParameterizedType parType
+            && parType.getActualTypeArguments().length == 1
+            && parType.getActualTypeArguments()[0] instanceof Class<?> argType) {
+            if (argType == Integer.class) {
+                return int.class;
+            } else if (argType == Double.class) {
+                return double.class;
+            } else if (argType == Boolean.class) {
+                return boolean.class;
+            } else {
+                return argType;
+            }
+        } else {
+            throw Exceptions
+                .illegalArg("Return type %s does not specify the type of its elements",
+                            method.getGenericReturnType().getTypeName());
+        }
     }
 
     /**
@@ -104,7 +148,7 @@ public class Operator implements Comparable<Operator> {
         Type returnType = method.getGenericReturnType();
         this.multiValued = returnType instanceof ParameterizedType;
         if (returnType instanceof ParameterizedType parType) {
-            if (parType.getRawType() != List.class) {
+            if (parType.getRawType() != Collection.class) {
                 throw Exceptions
                     .illegalArg("Method '%s' does not represent multi-valued operator", this.name);
             }
