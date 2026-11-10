@@ -1,7 +1,9 @@
 # Multi-valued operators (gh #931, second part): handoff state
 
-Branch `multi-valued-operators`, off master 530f0ab7b. Transient: delete when the last
-phase is merged.
+Branch `multi-valued-operators`, off tag `release-7_6_1` (ecab903cd), the yFiles-free line:
+until Arend gives the go-ahead on yFiles, extensions are built there and merged into master
+afterwards. The API differs from master in places (no `GrammarModel.toGrammar(family)`, no
+`DebugFlag`). Transient: delete when the last phase is merged.
 
 ## Goal
 
@@ -14,8 +16,15 @@ builds on this and is not started.
 
 - **Bag, no order.** The outcome is a bag: repeated values yield repeated matches, the order
   of the values is not promised and not observable. Order that matters is carried as data:
-  quantify over `range(size(x))` and access by index. Declared type is `List<T>`, as for the
-  parameters of the set operators.
+  quantify over `range(size(x))` and access by index. Declared type is `Collection<T>`
+  (user operations may declare any subtype, such as `List` or `Set`).
+- **Multiplicity is only half honoured: open decision.** Repeated values give repeated
+  sub-matches, which the fold operators see (`sum` over `digits(1211)` is 5). But equal
+  sub-matches have equal proofs, and the proofs of a match form a set, so a creator under
+  `forall` over `digits(1211)` makes two nodes, not four (rule `digitNodes` in `userOps.gps`
+  pins this). Options: remove repetitions in `MultiValuedOperatorNodeRecord` (set semantics
+  throughout, small change, Claude's recommendation), keep repeated proofs apart (deep
+  change to proofs and composite events), or keep and document the difference.
 - **Any level.** A multi-valued call needs no level check of its own. On the level of its
   arguments it is an existential choice (one rule match per element); under `forall` it
   quantifies over the elements; in a NAC it tests that no element qualifies. This falls out
@@ -32,8 +41,8 @@ builds on this and is not started.
 - **Indeterminate multi-valued user operations are forbidden** (phase 2 check): indeterminate
   operators are not supported on quantified levels anyway (gh #911).
 - Built-ins: `range(n)` = 0..n-1 and `interval(lo, hi)` = lo..hi inclusive. Two names because
-  a signature may not overload an operator name (`Operator.getOperatorMethod`). **The name
-  `interval` and its inclusive upper bound are Claude's choice, not yet confirmed.**
+  a signature may not overload an operator name (`Operator.getOperatorMethod`). Both are
+  empty when the bound is too low (`range(n)` for `n <= 0`, `interval(lo, hi)` for `hi < lo`).
 
 ## Phase 1 (done on this branch)
 
@@ -49,25 +58,23 @@ builds on this and is not started.
   `member`, `absent`) in `RuleApplicationTest`, with POINT and TERM tests; golden in
   `junit/rulecompilation/rules/multiValued.txt`.
 
-## Phase 2 (next): user operations
+## Phase 2 (done on this branch): user operations
 
-- `Operator(Executable)`: a `List<T>` return type with `T` a boxed system sort or a
-  `@UserType` class sets `multiValued`; `Sort.toSort` must map `Integer`, `Double`, `Boolean`.
-- `UserSignature.checkMethod`: accept that return type; reject it on constructors and in
-  combination with `indeterminate`.
-- `userOps` fixture: an operation that returns a list with a repeated value, under `forall`
-  with `sum` and with a creator. **This is the first test of bag multiplicity**; `range`
-  cannot produce repetitions. Phase 1 showed that `forall` over `range(3)` with an
-  unrelated creator makes three nodes although the sub-events are equal, so repetitions
-  are expected to behave alike, but that is untested.
-- A `DeterminismTest` row over a grammar using `range`.
+- `Operator.getElementType(Method)`: a return type assignable to `Collection` with a class as
+  type argument makes a user operation multi-valued; `Integer`, `Double`, `Boolean` map to
+  the system sorts. A wildcard or raw collection, and `indeterminate = true`, are errors.
+- `UserSignature.checkMethod` checks the element type against the declared user classes.
+- `UserOpsExample.digits` (repetitions) and `letters` (user-typed values); rules `digitSum`,
+  `digitNodes`, `letters` in `junit/rules/userOps.gps`; `UserSignatureTest.testMultiValued`.
+- `junit/samples/range-cells.gps` (17 states, 33 transitions) as a `DeterminismTest` row.
+- `@UserOperation` javadoc.
 
 ## Phase 3: documentation
 
-- `@UserOperation` javadoc, the user manual (website repository, `manual/`), CHANGES.
+- The user manual (website repository, `manual/`) and CHANGES.
 - gh #930 (fold direction for user operations) is independent; its "sort the values before
   the call" does not extend to user-type elements.
 
 ## Found in passing, not touched
 
-`TermIntAlgebra.bigmax` builds a `PROD` term and `bigmin` a `MIN` term; both look wrong.
+`TermIntAlgebra.bigmax` builds a `PROD` term and `bigmin` a `MIN` term: filed as gh #932.
