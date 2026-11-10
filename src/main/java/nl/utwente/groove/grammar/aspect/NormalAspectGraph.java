@@ -528,6 +528,10 @@ public class NormalAspectGraph extends AspectGraph {
         var levelErrors = new FormatErrorSet();
         AspectNode argLevel;
         Operator operator = call.getOperator();
+        if (operator.isMultiValued() && getRole() != RULE) {
+            throw new FormatException("Multi-valued operator '%s' only allowed in rules",
+                operator.getName(), holder);
+        }
         if (operator.isVarArgs()) {
             Expression arg = call.getArgs().get(0);
             argLevel = getLevel(arg);

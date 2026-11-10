@@ -112,6 +112,16 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
             .unsupportedOp("Operation %s not implemented for sort %s", "div", getSort());
     }
 
+    /** Interval of integers between given bounds. */
+    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
+    @ToolTipHeader("Integer interval")
+    @ToolTipBody({"Multi-valued: yields each of the integers from %2$s up to and including %3$s.",
+        "Use on a quantified level to range over those values."})
+    public default List<MAIN> interval(MAIN arg0, MAIN arg1) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "interval", getSort());
+    }
+
     /** Modulo of two integers. */
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipHeader("Modulo")
@@ -157,6 +167,16 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     public default MAIN prod(List<MAIN> arg) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "prod", getSort());
+    }
+
+    /** Range of integers below a given bound. */
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipHeader("Integer range")
+    @ToolTipBody({"Multi-valued: yields each of the integers from 0 up to but not including %2$s.",
+        "Use on a quantified level to range over those values."})
+    public default List<MAIN> range(MAIN arg) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "range", getSort());
     }
 
     /** Summation over a set of values. */

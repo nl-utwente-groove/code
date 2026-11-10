@@ -55,6 +55,9 @@ public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL gt(INT arg0, INT arg1);
 
     @Override
+    public abstract List<INT> interval(INT arg0, INT arg1);
+
+    @Override
     public abstract INT ite(BOOL arg0, INT arg1, INT arg2);
 
     @Override
@@ -83,6 +86,9 @@ public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
 
     @Override
     public abstract INT prod(List<INT> arg);
+
+    @Override
+    public abstract List<INT> range(INT arg);
 
     @Override
     public abstract INT sub(INT arg0, INT arg1);
@@ -122,6 +128,8 @@ public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
         GE,
         /** Value for {@link IntSignature#gt(Object, Object)}. */
         GT,
+        /** Value for {@link IntSignature#interval(Object, Object)}. */
+        INTERVAL,
         /** Value for {@link IntSignature#ite(Object, Object, Object)}. */
         ITE,
         /** Value for {@link IntSignature#le(Object, Object)}. */
@@ -142,6 +150,8 @@ public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
         NEG,
         /** Value for {@link IntSignature#prod(List)}. */
         PROD(true),
+        /** Value for {@link IntSignature#range(Object)}. */
+        RANGE,
         /** Value for {@link IntSignature#sub(Object, Object)}. */
         SUB,
         /** Value for {@link IntSignature#sum(List)}. */

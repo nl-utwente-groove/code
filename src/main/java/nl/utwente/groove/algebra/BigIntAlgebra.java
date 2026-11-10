@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.syntax.Expression;
 
 /**
@@ -79,6 +81,27 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     }
 
     @Override
+    public List<BigInteger> interval(BigInteger arg0, BigInteger arg1) {
+        // an empty interval may have bounds that do not fit into a long
+        if (arg1.compareTo(arg0) < 0) {
+            return List.of();
+        }
+        return new IntInterval<>(arg0.longValueExact(), arg1.longValueExact()) {
+            @Override
+            BigInteger toValue(long number) {
+                return BigInteger.valueOf(number);
+            }
+
+            @Override
+            @Nullable Long fromValue(Object value) {
+                return value instanceof BigInteger i && i.bitLength() < Long.SIZE
+                    ? Long.valueOf(i.longValue())
+                    : null;
+            }
+        };
+    }
+
+    @Override
     public BigInteger ite(Boolean arg0, BigInteger arg1, BigInteger arg2) {
         return arg0
             ? arg1
@@ -123,6 +146,11 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     @Override
     public BigInteger prod(List<BigInteger> arg) {
         return arg.stream().reduce(BigInteger.ONE, (i, j) -> i.multiply(j));
+    }
+
+    @Override
+    public List<BigInteger> range(BigInteger arg) {
+        return interval(BigInteger.ZERO, arg.subtract(BigInteger.ONE));
     }
 
     @Override

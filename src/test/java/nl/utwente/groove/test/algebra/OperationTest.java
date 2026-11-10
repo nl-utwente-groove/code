@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -59,6 +60,18 @@ public class OperationTest {
                 assertEquals(op, operation.getOperator());
                 Object result = operation.applyStrict(sampleArgs(family, op));
                 Algebra<?> resultAlgebra = family.getAlgebra(op.getResultSort());
+                if (op.isMultiValued() && !resultAlgebra.isErrorValue(result)) {
+                    // a multi-valued operation yields a collection of values of the result sort
+                    assertTrue(result instanceof Collection, op + " should yield a collection");
+                    for (Object value : (Collection<?>) result) {
+                        assertTrue(resultAlgebra.isValue(value),
+                                   String
+                                       .format("%s of %s yields element %s, not a value of %s", op,
+                                               family, value, resultAlgebra.getName()));
+                    }
+                    applied++;
+                    continue;
+                }
                 assertTrue(resultAlgebra.isValue(result),
                            String.format("%s of %s yields %s, not a value of %s", op, family,
                                          result, resultAlgebra.getName()));

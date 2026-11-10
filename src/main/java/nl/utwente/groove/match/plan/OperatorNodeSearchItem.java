@@ -34,6 +34,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * A search item for an operator node.
@@ -52,6 +53,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     public OperatorNodeSearchItem(OperatorNode node, AlgebraFamily family) {
         this.node = node;
         this.setOperator = node.getOperator().isVarArgs();
+        this.multiValued = node.getOperator().isMultiValued();
         this.operation = family.getOperation(node.getOperator());
         assert this.operation != null;
         this.arguments = node.getArguments();
@@ -69,10 +71,16 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     }
 
     @Override
-    public OperatorNodeRecord createRecord(nl.utwente.groove.match.plan.PlanSearchStrategy.Search matcher) {
-        return this.setOperator
-            ? new SetOperatorNodeRecord(matcher)
-            : new OperatorNodeRecord(matcher);
+    public Record createRecord(nl.utwente.groove.match.plan.PlanSearchStrategy.Search matcher) {
+        if (this.setOperator) {
+            return new SetOperatorNodeRecord(matcher);
+        } else if (this.multiValued && this.value == null && !this.targetFound) {
+            return new MultiValuedOperatorNodeRecord(matcher);
+        } else {
+            // this includes the case of a multi-valued operator with a known target,
+            // which comes down to a membership test
+            return new OperatorNodeRecord(matcher);
+        }
     }
 
     /**
@@ -163,6 +171,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     final OperatorNode node;
     /** Flag signalling that the operator is a set operator. */
     final boolean setOperator;
+    /** Flag signalling that the operator is multi-valued. */
+    final boolean multiValued;
     /** The operation determined by the product edge. */
     final Operation operation;
     /** The factory needed to create value nodes for the calculated outcomes. */
@@ -260,20 +270,29 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
             if (outcome == null) {
                 result = false;
             } else if (OperatorNodeSearchItem.this.value != null) {
-                result = OperatorNodeSearchItem.this.value.equals(outcome);
+                result = isOutcome(outcome, OperatorNodeSearchItem.this.value);
             } else if (OperatorNodeSearchItem.this.targetFound || this.targetPreMatch != null) {
                 HostNode targetFind = this.targetPreMatch;
                 if (targetFind == null) {
                     targetFind = this.search.getNode(OperatorNodeSearchItem.this.targetIx);
                 }
-                result = ((ValueNode) targetFind).getValue().equals(outcome);
+                result = isOutcome(outcome, ((ValueNode) targetFind).getValue());
             } else {
+                assert !OperatorNodeSearchItem.this.multiValued;
                 ValueNode targetImage = this.factory
                     .createNode(OperatorNodeSearchItem.this.operation.getResultAlgebra(), outcome);
                 this.image = targetImage;
                 result = write();
             }
             return result;
+        }
+
+        /**
+         * Tests if a given value is the outcome of the operation,
+         * or one of the outcomes if the operator is multi-valued.
+         */
+        private boolean isOutcome(Object outcome, Object value) {
+            return toOutcomes(outcome).contains(value);
         }
 
         @Override
@@ -330,6 +349,90 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         private ValueNode image;
         /** Flag to control debug printing. */
         static private final boolean PRINT = false;
+    }
+
+    /**
+     * Converts the outcome of the operation of this item into a collection of values:
+     * the outcome itself if the operator is multi-valued and the outcome is not
+     * an error, and the singleton collection consisting of the outcome otherwise.
+     */
+    Collection<?> toOutcomes(Object outcome) {
+        return this.multiValued && outcome instanceof Collection<?> outcomes
+            ? outcomes
+            : Collections.singleton(outcome);
+    }
+
+    /**
+     * Record for a multi-valued operator of which the target image is not known
+     * when the item is scheduled. The record yields one image for
+     * every value in the outcome of the operation, with repetitions if
+     * the outcome contains a value more than once.
+     * If the target turns out to have been seeded, the record instead
+     * tests for membership of the seeded value in the outcome.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private class MultiValuedOperatorNodeRecord extends MultipleRecord<HostNode> {
+        /**
+         * Creates a record based on a given underlying matcher.
+         */
+        MultiValuedOperatorNodeRecord(Search search) {
+            super(search);
+        }
+
+        @Override
+        public String toString() {
+            return String
+                .format("%s = %s", OperatorNodeSearchItem.this.toString(),
+                        this.search.getNode(OperatorNodeSearchItem.this.targetIx));
+        }
+
+        @Override
+        public void initialise(HostGraph host) {
+            super.initialise(host);
+            this.factory = host.getFactory();
+            this.targetSeed = this.search.getNodeSeed(OperatorNodeSearchItem.this.targetIx);
+        }
+
+        @Override
+        void init() {
+            List<Object> arguments = IntStream
+                .of(OperatorNodeSearchItem.this.argumentIxs)
+                .mapToObj(this.search::getNode)
+                .map(n -> ((ValueNode) n).getValue())
+                .collect(Collectors.toList());
+            // an error in the arguments or the operation yields the error as single value
+            var outcomes = toOutcomes(OperatorNodeSearchItem.this.operation.applyStrict(arguments));
+            var targetSeed = this.targetSeed;
+            if (targetSeed == null) {
+                var algebra = OperatorNodeSearchItem.this.operation.getResultAlgebra();
+                var factory = this.factory;
+                this.imageIter
+                    = outcomes.stream().map(v -> (HostNode) factory.createNode(algebra, v)).iterator();
+            } else if (outcomes.contains(((ValueNode) targetSeed).getValue())) {
+                this.imageIter = Collections.singleton(targetSeed).iterator();
+            } else {
+                this.imageIter = Collections.emptyIterator();
+            }
+        }
+
+        @Override
+        boolean write(HostNode image) {
+            // a seeded target is already in place
+            return this.targetSeed != null
+                || this.search.putNode(OperatorNodeSearchItem.this.targetIx, image);
+        }
+
+        @Override
+        void erase() {
+            if (this.targetSeed == null) {
+                this.search.putNode(OperatorNodeSearchItem.this.targetIx, null);
+            }
+        }
+
+        /** The pre-matched target node, if any. */
+        private HostNode targetSeed;
+        /** The factory for creating value nodes for the outcomes. */
+        private HostFactory factory;
     }
 
     private class SetOperatorNodeRecord extends OperatorNodeRecord {

@@ -41,6 +41,7 @@ public class Operator implements Comparable<Operator> {
         this.inverse = false;
         this.varArgs = false;
         this.zeroArgs = false;
+        this.multiValued = false;
         this.constructor = executable instanceof Constructor;
         this.name = switch (executable) {
         case Method m -> m.getName();
@@ -100,7 +101,20 @@ public class Operator implements Comparable<Operator> {
             }
             this.parameterSorts.add(toParSort(type));
         }
-        this.returnSort = toReturnSort(method.getGenericReturnType());
+        Type returnType = method.getGenericReturnType();
+        this.multiValued = returnType instanceof ParameterizedType;
+        if (returnType instanceof ParameterizedType parType) {
+            if (parType.getRawType() != List.class) {
+                throw Exceptions
+                    .illegalArg("Method '%s' does not represent multi-valued operator", this.name);
+            }
+            if (this.varArgs) {
+                throw Exceptions
+                    .illegalArg("Collection operator '%s' cannot be multi-valued", this.name);
+            }
+            returnType = parType.getActualTypeArguments()[0];
+        }
+        this.returnSort = toReturnSort(returnType);
         // look up the corresponding method declaration in GSignature, to find the annotations
         Method superMethod;
         try {
@@ -191,6 +205,19 @@ public class Operator implements Comparable<Operator> {
 
     private final boolean zeroArgs;
 
+    /** Indicates if this is a multi-valued operator, i.e., one that yields
+     * a collection of values of the result sort rather than a single one.
+     * A multi-valued operator is matched once for every value in the collection.
+     * The collection is a bag: its order is immaterial, but the number of occurrences
+     * of a value is not.
+     * @see #getResultSort()
+     */
+    public boolean isMultiValued() {
+        return this.multiValued;
+    }
+
+    private final boolean multiValued;
+
     /** If {@code true}, the outcome of this operation is not fully determined by its parameters.
      * This is true for, e.g., random number generation.
      */
@@ -229,6 +256,8 @@ public class Operator implements Comparable<Operator> {
 
     /**
      * Returns the result type of this operator.
+     * For a multi-valued operator, this is the sort of the individual values.
+     * @see #isMultiValued()
      */
     public Sort getResultSort() {
         return this.returnSort;

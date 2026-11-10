@@ -35,6 +35,7 @@ import org.junit.Test;
 import junit.framework.TestCase;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserOpsExample;
+import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -198,6 +199,55 @@ public class RuleApplicationTest extends TestCase {
     @Test
     public void testSums() {
         test("sums");
+    }
+
+    /** Tests the working of multi-valued operators:
+     * as existential choice, under a universal quantifier, and as membership test. */
+    @Test
+    public void testMultiValued() {
+        test("multiValued");
+    }
+
+    /** Tests that the point algebra collapses a multi-valued operator to a single value. */
+    @Test
+    public void testMultiValuedPoint() {
+        try {
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/multiValued");
+            grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
+            var pointGrammar = toGrammar(grammar, AlgebraFamily.POINT);
+            var rule = pointGrammar.getRule(QualName.parse("pick"));
+            Assert.assertNotNull(rule);
+            var start = pointGrammar.getStartGraph().clone(AlgebraFamily.POINT);
+            Assert.assertEquals(1, rule.getProver().getAllMatches(start).size());
+        } catch (FormatException | IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    /** Tests that multi-valued operators are rejected in the term algebra. */
+    @Test
+    public void testMultiValuedTerm() {
+        try {
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/multiValued");
+            grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
+            try {
+                toGrammar(grammar, AlgebraFamily.TERM);
+                Assert.fail("Multi-valued operators should be rejected in the term algebra");
+            } catch (FormatException e) {
+                var message = String.valueOf(e.getMessage());
+                Assert.assertTrue(message, message.contains("Multi-valued"));
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    /** Compiles a grammar model under a given algebra family. */
+    private Grammar toGrammar(GrammarModel model, AlgebraFamily family) throws FormatException {
+        var properties = model.getProperties().clone();
+        properties.setAlgebraFamily(family);
+        model.setProperties(properties);
+        return model.toGrammar();
     }
 
     /** Tests the integration of user-defined operations. */

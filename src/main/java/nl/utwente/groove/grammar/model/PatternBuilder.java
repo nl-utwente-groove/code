@@ -42,6 +42,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Constant;
+import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
@@ -339,6 +340,12 @@ class PatternBuilder {
                 //                    "Indeterminate operator '%s' not allowed on quantified level "
                 //                        + "(do a feature request if you want this constraint dropped!)",
                 //                    operator.getName(), operatorEdge);
+            }
+            if (operator.isMultiValued()
+                && getGrammarProperties().getAlgebraFamily() == AlgebraFamily.TERM) {
+                throw new FormatException(
+                    "Multi-valued operator '%s' not supported in the term algebra",
+                    operator.getName(), operatorEdge);
             }
             boolean embargo = productNode.has(ROLE, AspectKind::inNAC);
             List<VariableNode> arguments = new ArrayList<>();
