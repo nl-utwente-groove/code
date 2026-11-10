@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -83,17 +84,23 @@ public class Operator implements Comparable<Operator> {
     /**
      * Returns the type of the values of a multi-valued user-defined method,
      * or {@code null} if the method is not multi-valued.
-     * A method is multi-valued if its return type is a {@link Collection}
-     * (or a subtype such as {@link List} or {@link java.util.Set}) with a class as type argument.
+     * A method is multi-valued if its return type is a {@link Set}
+     * (or a subtype such as {@link java.util.SortedSet}) with a class as type argument.
      * For the system sorts, the type argument is the wrapper type (for instance {@link Integer});
      * the type returned by this method is then the corresponding primitive type.
-     * @throws IllegalArgumentException if the return type is a collection type
-     * without a class as type argument
+     * @throws IllegalArgumentException if the return type is a set type
+     * without a class as type argument, or a collection type that is not a set
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
     static @Nullable Class<?> getElementType(Method method) throws IllegalArgumentException {
-        if (!Collection.class.isAssignableFrom(method.getReturnType())) {
+        Class<?> returnType = method.getReturnType();
+        if (!Collection.class.isAssignableFrom(returnType)) {
             return null;
+        }
+        if (!Set.class.isAssignableFrom(returnType)) {
+            throw Exceptions
+                .illegalArg("Return type %s should be a set, as repeated values cannot be told apart",
+                            method.getGenericReturnType().getTypeName());
         }
         if (method.getGenericReturnType() instanceof ParameterizedType parType
             && parType.getActualTypeArguments().length == 1
@@ -148,7 +155,7 @@ public class Operator implements Comparable<Operator> {
         Type returnType = method.getGenericReturnType();
         this.multiValued = returnType instanceof ParameterizedType;
         if (returnType instanceof ParameterizedType parType) {
-            if (parType.getRawType() != Collection.class) {
+            if (parType.getRawType() != Set.class) {
                 throw Exceptions
                     .illegalArg("Method '%s' does not represent multi-valued operator", this.name);
             }
@@ -250,10 +257,11 @@ public class Operator implements Comparable<Operator> {
     private final boolean zeroArgs;
 
     /** Indicates if this is a multi-valued operator, i.e., one that yields
-     * a collection of values of the result sort rather than a single one.
-     * A multi-valued operator is matched once for every value in the collection.
-     * The collection is a bag: its order is immaterial, but the number of occurrences
-     * of a value is not.
+     * a set of values of the result sort rather than a single one.
+     * A multi-valued operator is matched once for every value in the set.
+     * The order of the values has no meaning, but the set has to iterate over them
+     * in an order that is the same in every run, as exploration would otherwise
+     * not be deterministic.
      * @see #getResultSort()
      */
     public boolean isMultiValued() {

@@ -18,8 +18,8 @@ package nl.utwente.groove.algebra;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -82,10 +82,10 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     }
 
     @Override
-    public Collection<BigInteger> interval(BigInteger arg0, BigInteger arg1) {
+    public Set<BigInteger> interval(BigInteger arg0, BigInteger arg1) {
         // an empty interval may have bounds that do not fit into a long
         if (arg1.compareTo(arg0) < 0) {
-            return List.of();
+            return Set.of();
         }
         return new IntInterval<>(arg0.longValueExact(), arg1.longValueExact()) {
             @Override
@@ -150,7 +150,7 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     }
 
     @Override
-    public Collection<BigInteger> range(BigInteger arg) {
+    public Set<BigInteger> range(BigInteger arg) {
         return interval(BigInteger.ZERO, arg.subtract(BigInteger.ONE));
     }
 

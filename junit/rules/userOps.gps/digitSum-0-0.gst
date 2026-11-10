@@ -31,7 +31,7 @@
         </edge>
         <edge from="b" to="b">
             <attr name="label">
-                <string>let:s = 5</string>
+                <string>let:s = 3</string>
             </attr>
         </edge>
     </graph>

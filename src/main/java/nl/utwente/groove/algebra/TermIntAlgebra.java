@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.algebra;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.util.Exceptions;
@@ -126,7 +126,7 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
 
     /** A symbolic interval cannot be enumerated. */
     @Override
-    public Collection<Expression> interval(Expression arg0, Expression arg1) {
+    public Set<Expression> interval(Expression arg0, Expression arg1) {
         throw Exceptions.unsupportedOp("Multi-valued operator 'interval' not supported in the term algebra");
     }
 
@@ -177,7 +177,7 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
 
     /** A symbolic range cannot be enumerated. */
     @Override
-    public Collection<Expression> range(Expression arg) {
+    public Set<Expression> range(Expression arg) {
         throw Exceptions.unsupportedOp("Multi-valued operator 'range' not supported in the term algebra");
     }
 

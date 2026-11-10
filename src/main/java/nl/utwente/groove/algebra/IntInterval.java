@@ -16,8 +16,9 @@
  */
 package nl.utwente.groove.algebra;
 
-import java.util.AbstractList;
-import java.util.Objects;
+import java.util.AbstractSet;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -25,7 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Immutable list view on an interval of consecutive integers,
+ * Immutable set view on an interval of consecutive integers, iterated in ascending order,
  * in the representation of some integer algebra.
  * The elements are computed on demand, so the memory footprint
  * does not depend on the size of the interval.
@@ -35,7 +36,7 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @AIGenerated("Claude Fable 5.2, 2026-11")
 @NonNullByDefault
-abstract class IntInterval<T> extends AbstractList<T> {
+abstract class IntInterval<T> extends AbstractSet<T> {
     /**
      * Creates the interval from a lower bound up to and including an upper bound.
      * The interval is empty if the upper bound is smaller than the lower bound.
@@ -54,9 +55,24 @@ abstract class IntInterval<T> extends AbstractList<T> {
     private final int size;
 
     @Override
-    public T get(int index) {
-        Objects.checkIndex(index, this.size);
-        return toValue(this.lower + index);
+    public Iterator<T> iterator() {
+        return new Iterator<>() {
+            @Override
+            public boolean hasNext() {
+                return this.next < IntInterval.this.size;
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                return toValue(IntInterval.this.lower + this.next++);
+            }
+
+            /** Offset of the next value to be returned. */
+            private int next;
+        };
     }
 
     @Override
@@ -65,25 +81,11 @@ abstract class IntInterval<T> extends AbstractList<T> {
     }
 
     @Override
-    public int indexOf(@Nullable Object o) {
+    public boolean contains(@Nullable Object o) {
         Long value = o == null
             ? null
             : fromValue(o);
-        if (value == null || value < this.lower || value - this.lower >= this.size) {
-            return -1;
-        } else {
-            return (int) (value - this.lower);
-        }
-    }
-
-    @Override
-    public int lastIndexOf(@Nullable Object o) {
-        return indexOf(o);
-    }
-
-    @Override
-    public boolean contains(@Nullable Object o) {
-        return indexOf(o) >= 0;
+        return value != null && value >= this.lower && value - this.lower < this.size;
     }
 
     /** Converts a number to the corresponding algebra value. */

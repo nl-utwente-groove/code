@@ -146,13 +146,14 @@ public class UserSignatureTest {
     public void testMultiValued() {
         loadFail("UserOpsMultiValuedIndeterminate");
         loadFail("UserOpsMultiValuedRaw");
+        loadFail("UserOpsMultiValuedList");
         load("UserOpsMultiValued");
         var ops = UserSignature.getOperators();
         assertEquals(4, ops.size());
         for (var op : ops.values()) {
             assertTrue(op.getName() + " should be multi-valued", op.isMultiValued());
             switch (op.getName()) {
-            case "twice" -> check(op, false, Sort.INT, Sort.INT);
+            case "around" -> check(op, false, Sort.INT, Sort.INT);
             case "halves" -> check(op, false, Sort.STRING, Sort.STRING);
             case "upTo" -> check(op, false, Sort.REAL, Sort.REAL);
             case "both" -> check(op, false, Sort.BOOL);

@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -352,12 +353,12 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     }
 
     /**
-     * Converts the outcome of the operation of this item into a collection of values:
+     * Converts the outcome of the operation of this item into a set of values:
      * the outcome itself if the operator is multi-valued and the outcome is not
      * an error, and the singleton collection consisting of the outcome otherwise.
      */
     Collection<?> toOutcomes(Object outcome) {
-        return this.multiValued && outcome instanceof Collection<?> outcomes
+        return this.multiValued && outcome instanceof Set<?> outcomes
             ? outcomes
             : Collections.singleton(outcome);
     }
@@ -365,8 +366,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     /**
      * Record for a multi-valued operator of which the target image is not known
      * when the item is scheduled. The record yields one image for
-     * every value in the outcome of the operation, with repetitions if
-     * the outcome contains a value more than once.
+     * every value in the outcome of the operation, in the iteration order of that outcome.
      * If the target turns out to have been seeded, the record instead
      * tests for membership of the seeded value in the outcome.
      */

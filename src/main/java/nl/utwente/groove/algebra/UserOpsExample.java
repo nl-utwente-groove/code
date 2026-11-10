@@ -16,10 +16,7 @@
  */
 package nl.utwente.groove.algebra;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -86,14 +83,14 @@ public class UserOpsExample {
         return total.startsWith(prefix);
     }
 
-    /** Multi-valued operation: yields the decimal digits of the absolute value
-     * of a number, as often as they occur in it. */
+    /** Multi-valued operation: yields the distinct decimal digits of the absolute value
+     * of a number, in order of first occurrence. */
     @AIGenerated("Claude Fable 5.2, 2026-11")
     @ToolTipHeader("Decimal digits")
-    @ToolTipBody("Multi-valued: yields each of the decimal digits of %s, with repetitions.")
+    @ToolTipBody("Multi-valued: yields each of the distinct decimal digits of %s.")
     @UserOperation
-    static public Collection<Integer> digits(int num) {
-        List<Integer> result = new ArrayList<>();
+    static public Set<Integer> digits(int num) {
+        Set<Integer> result = new LinkedHashSet<>();
         for (char c : Long.toString(Math.abs((long) num)).toCharArray()) {
             result.add(c - '0');
         }

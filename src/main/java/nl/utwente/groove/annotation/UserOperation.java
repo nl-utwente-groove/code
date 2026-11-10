@@ -27,11 +27,25 @@ import java.lang.annotation.Target;
  * and return type int, double, boolean or String, or a {@link UserType}-annotated
  * record class.
  * <p>
- * The return type may also be a {@link java.util.Collection} (or a subtype, such as
- * {@link java.util.List} or {@link java.util.Set}) of {@link Integer}, {@link Double},
+ * The return type may also be a {@link java.util.Set} (or a subtype, such as
+ * {@link java.util.SortedSet}) of {@link Integer}, {@link Double},
  * {@link Boolean}, {@link String} or a {@link UserType}-annotated record class.
  * The operation is then <i>multi-valued</i>: in a rule, it is matched once for
- * every value in the collection it returns. The order of the values is immaterial.
+ * every value in the set it returns. Other collection types are not allowed:
+ * a match cannot tell repeated values apart, so a value that occurs more than once
+ * would still be matched only once. To match every occurrence in a list, match the
+ * positions instead (for instance through the predefined multi-valued operator
+ * {@code range}) and look up the value at each position.
+ * <p>
+ * The order of the values has no meaning in a rule, but it has to be
+ * <i>deterministic</i>: the returned set must iterate over its values in an order that
+ * depends on those values only, and is therefore the same in every run. This cannot
+ * be checked; violating it may cause successive explorations of the same grammar
+ * to differ. Use a {@link java.util.LinkedHashSet} filled in a fixed order, or a
+ * sorted set. Do not use {@link java.util.Set#of} or {@link java.util.Set#copyOf},
+ * whose iteration order varies from run to run, nor a {@link java.util.HashSet} of
+ * values with an identity-based hash code (which includes records with an enum component).
+ * <p>
  * A multi-valued operation cannot be indeterminate.
  * @author Arend Rensink
  * @version $Revision$

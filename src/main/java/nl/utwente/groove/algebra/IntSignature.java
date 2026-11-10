@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.algebra;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The signature for integer algebras.
@@ -56,7 +56,7 @@ public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL gt(INT arg0, INT arg1);
 
     @Override
-    public abstract Collection<INT> interval(INT arg0, INT arg1);
+    public abstract Set<INT> interval(INT arg0, INT arg1);
 
     @Override
     public abstract INT ite(BOOL arg0, INT arg1, INT arg2);
@@ -89,7 +89,7 @@ public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
     public abstract INT prod(List<INT> arg);
 
     @Override
-    public abstract Collection<INT> range(INT arg);
+    public abstract Set<INT> range(INT arg);
 
     @Override
     public abstract INT sub(INT arg0, INT arg1);

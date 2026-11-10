@@ -7,24 +7,24 @@ afterwards. The API differs from master in places (no `GrammarModel.toGrammar(fa
 
 ## Goal
 
-Operators whose result is a collection of values of one sort, matched once per element:
+Operators whose result is a set of values of one sort, matched once per element:
 the dual of the set operators (`sum`, `bigmax`, ...), which fold the matches of a quantified
 level into a value. The first part of gh #931 (sequence-valued components of user types)
 builds on this and is not started.
 
 ## Decisions (2026-11-10, with Arend)
 
-- **Bag, no order.** The outcome is a bag: repeated values yield repeated matches, the order
-  of the values is not promised and not observable. Order that matters is carried as data:
-  quantify over `range(size(x))` and access by index. Declared type is `Collection<T>`
-  (user operations may declare any subtype, such as `List` or `Set`).
-- **Multiplicity is only half honoured: open decision.** Repeated values give repeated
-  sub-matches, which the fold operators see (`sum` over `digits(1211)` is 5). But equal
-  sub-matches have equal proofs, and the proofs of a match form a set, so a creator under
-  `forall` over `digits(1211)` makes two nodes, not four (rule `digitNodes` in `userOps.gps`
-  pins this). Options: remove repetitions in `MultiValuedOperatorNodeRecord` (set semantics
-  throughout, small change, Claude's recommendation), keep repeated proofs apart (deep
-  change to proofs and composite events), or keep and document the difference.
+- **Set, deterministic order without meaning.** The outcome is a `Set<T>` (user operations
+  may declare a subtype such as `SortedSet`; any other collection type is an error). A match
+  cannot tell repeated values apart: equal sub-matches have equal proofs, and proofs form a
+  set, so a bag was honoured by the fold operators but not by rule effects (`sum` over the
+  digits of 1211 gave 5, a creator under `forall` made two nodes). Requiring a set makes the
+  loss visible to the author of the operation. To quantify over occurrences, quantify over
+  positions: `range(size(x))` plus access by index, which also carries the order as data.
+- **The iteration order must be deterministic** (the same in every run), also for user
+  operations. This cannot be checked; it is documented in the `@UserOperation` javadoc
+  (use `LinkedHashSet` or a sorted set, not `Set.of`) and has to go into the manual.
+  Whether a varying order is in fact observable has not been tested.
 - **Any level.** A multi-valued call needs no level check of its own. On the level of its
   arguments it is an existential choice (one rule match per element); under `forall` it
   quantifies over the elements; in a NAC it tests that no element qualifies. This falls out
@@ -46,8 +46,8 @@ builds on this and is not started.
 
 ## Phase 1 (done on this branch)
 
-- `Operator.isMultiValued()`, detected from a `List<X>` return type of a signature method.
-- `GSignature`/`IntSignature`: `range`, `interval`; `IntInterval` is the lazy list view the
+- `Operator.isMultiValued()`, detected from a `Set<X>` return type of a signature method.
+- `GSignature`/`IntSignature`: `range`, `interval`; `IntInterval` is the lazy set view the
   Java and Big algebras return.
 - `OperatorNodeSearchItem.MultiValuedOperatorNodeRecord` (a `MultipleRecord`), chosen when
   the target is neither constant nor found at activation time; it handles a run-time seed
@@ -60,18 +60,20 @@ builds on this and is not started.
 
 ## Phase 2 (done on this branch): user operations
 
-- `Operator.getElementType(Method)`: a return type assignable to `Collection` with a class as
+- `Operator.getElementType(Method)`: a return type assignable to `Set` with a class as
   type argument makes a user operation multi-valued; `Integer`, `Double`, `Boolean` map to
-  the system sorts. A wildcard or raw collection, and `indeterminate = true`, are errors.
+  the system sorts. A wildcard or raw set, a collection that is not a set, and `indeterminate = true`
+  are errors.
 - `UserSignature.checkMethod` checks the element type against the declared user classes.
-- `UserOpsExample.digits` (repetitions) and `letters` (user-typed values); rules `digitSum`,
+- `UserOpsExample.digits` (distinct digits) and `letters` (user-typed values); rules `digitSum`,
   `digitNodes`, `letters` in `junit/rules/userOps.gps`; `UserSignatureTest.testMultiValued`.
 - `junit/samples/range-cells.gps` (17 states, 33 transitions) as a `DeterminismTest` row.
 - `@UserOperation` javadoc.
 
 ## Phase 3: documentation
 
-- The user manual (website repository, `manual/`) and CHANGES.
+- The user manual (website repository, `manual/`) and CHANGES; include the positional
+  idiom for occurrences and the deterministic-order requirement.
 - gh #930 (fold direction for user operations) is independent; its "sort the values before
   the call" does not extend to user-type elements.
 

@@ -16,8 +16,7 @@
  */
 package nl.utwente.groove.test.algebra;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.AIGenerated;
@@ -29,7 +28,7 @@ import nl.utwente.groove.util.AIGenerated;
 public class UserOpsMultiValuedIndeterminate {
     /** Multi-valued operation that is wrongly declared to be indeterminate. */
     @UserOperation(indeterminate = true)
-    static public Collection<Integer> errIndeterminate(int value) {
-        return List.of(value);
+    static public Set<Integer> errIndeterminate(int value) {
+        return Set.of(value);
     }
 }
