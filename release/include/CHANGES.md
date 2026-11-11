@@ -3,6 +3,16 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.7.0, forthcoming
+-------------------------------
+- Set-valued operations: an operation may yield a set of values, and a rule that calls
+  it is matched once for every value: one of them on an existential level, all of them
+  under a universal quantifier (gh #931)
+- New set-valued integer operation `range(n)`, yielding 0 up to but not including `n`
+- A user-defined operation is set-valued if it returns a `java.util.Set`; the set must
+  have a deterministic iteration order, and the operation cannot be indeterminate
+- Set-valued operations are not supported in the term algebra
+
 Release 7.6.1, 9 November 2026
 -------------------------------
 - Bug fix release

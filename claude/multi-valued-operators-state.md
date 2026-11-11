@@ -72,10 +72,16 @@ builds on this and is not started.
 - `junit/samples/range-cells.gps` (17 states, 33 transitions) as a `DeterminismTest` row.
 - `@UserOperation` javadoc.
 
-## Phase 3: documentation
+## Phase 3 (done, awaiting review): documentation
 
-- The user manual (website repository, `manual/`) and CHANGES; include the positional
-  idiom for occurrences and the deterministic-order requirement.
+- `release/include/CHANGES.md`: new top section "Release 7.7.0, forthcoming". The number is
+  Claude's assumption (a feature release on the 7.6 line); the pom revision is untouched.
+- Web manual: website repository `C:\Groove\nl-utwente-groove.github.io`, branch
+  `set-valued-operators` off `main`, worktree `C:\Groove\worktrees\set-valued-operators`.
+  `manual/data.md` gets a section "Set-valued operations" (levels, membership, algebras)
+  and a subsection "Set-valued user operations" (set only, positional idiom for
+  occurrences, deterministic order), marked "(since release 7.7.0, forthcoming)". No
+  figures; `ref-operators.md` is generated and has to be regenerated at release time.
 - gh #930 (fold direction for user operations) is independent; its "sort the values before
   the call" does not extend to user-type elements.
 
