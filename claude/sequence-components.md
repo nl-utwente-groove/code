@@ -1,6 +1,7 @@
 # Sequence-valued components of user types (gh #931, first part): proposal
 
-Proposal of 2026-11-11, nothing implemented. Branch `sequence-components`, stacked on
+Proposal of 2026-11-11, nothing implemented; decisions 1, 2 and 5 were taken by Arend on
+the same day and are recorded as such. Branch `sequence-components`, stacked on
 `multi-valued-operators` (the second part, awaiting review, see
 [multi-valued-operators-state.md](multi-valued-operators-state.md)): the two parts touch the
 same files (`Operator`, `UserSignature`, `AlgebraFamily`), and the fixtures of this part use
@@ -25,29 +26,42 @@ public record Poly(String name, IntSeq coeffs) {}
 | `coeffs(p, i)` | element at position `i`, counting from 0; error value if out of range |
 | `coeffsSize(p)` | number of elements |
 
-## Decisions proposed
+## Decisions
 
 1. **Carrier: four GROOVE-provided final classes** `IntSeq`, `RealSeq`, `BoolSeq`,
-   `StringSeq`, as the issue prefers. Primitive array storage, no mutators, content-based
+   `StringSeq` (decided). Primitive array storage, no mutators, content-based
    `equals`, cached content-based hash (house pattern of `ANode`), defensive copies in
    `of(...)` and `toArray()`. Operations for user code: `of`, `size`, `get`, `with(i, v)`,
-   `append(v)`, `toArray`. A common sealed interface `Seq` (`size()`, boxed `value(i)`,
-   element `Sort`) serves GROOVE's own generic code. The record check is then
+   `append(v)`, `toArray`. A common sealed interface `Seq` (`size()`, boxed `value(i)`)
+   serves GROOVE's own generic code. The record check is then
    `rc.getType() == IntSeq.class`: no generic reflection, nothing a raw type can subvert.
-   Alternative, **for Arend to decide**: one generic `Seq<T>`. New argument in its favour
-   since the issue was written: part 2 made `Set<Integer>` the type of set-valued
-   operations, so `Seq<Integer>` would read consistently, and values are boxed on GROOVE's
-   side anyway. Against: a raw-typed `Seq` built in a user operation can hold elements of
-   the wrong type or `null`, which only shows at the point of use; four small classes cost
-   some repetition but exclude that by construction. Recommendation: stay with four.
-2. **Package `nl.utwente.groove.algebra`**, next to `IntInterval`. It is exported, and it is
-   where `UserOpsExample` lives. `annotation` (the issue's suggestion) is exported too but
-   would get value classes under a name that promises annotations. Minor; either works.
-3. **At most one sequence component, in last position** (issue). It is what makes the
-   flattened constant and constructor syntax unambiguous without a sequence literal, and so
-   without sequence-typed expressions. A sequence type anywhere else, in particular as a
-   parameter or return type of a `@UserOperation`, stays an error ("cannot be converted to
-   GROOVE sort", already raised by `Operator.toSort`): sequences exist only inside records.
+   Rejected: one generic `Seq<T>`. It would read consistently with the `Set<Integer>` of
+   part 2, but a raw-typed `Seq` built in a user operation can hold elements of the wrong
+   type or `null`, which only shows at the point of use.
+2. **Package `nl.utwente.groove.annotation`** (decided): user classes then import from one
+   package only, and that package may one day be released as a component of its own.
+   Consequence: the carrier classes depend on nothing outside `annotation` and the JDK. In
+   particular `Seq` does not expose a `Sort` (`LayeringTest` puts `annotation` below
+   `algebra` anyway); the mapping from carrier class to element sort lives in `algebra`,
+   next to `Sort.toSort(Type)`. Today the package is not free of such dependencies
+   (`Help` uses `util.HTMLConverter`, `Pair`, `Exceptions`; `OpSymbol` uses
+   `util.parse.OpKind`), so a separate release needs more than this.
+3. **A sequence type is allowed in last parameter position only**: as the last component of
+   a record (issue), and likewise as the last parameter of a `@UserOperation`, which thereby
+   takes a variable number of trailing arguments, `horner(x, 1, 2, 3)` for
+   `static int horner(int x, IntSeq coeffs)`. The first draft excluded operations without a
+   reason: constructors and methods go through the same `Operator(Executable)` and the same
+   `UserOperation.invoke`, so the tail of decision 4 covers both at no extra cost.
+   The position rule is what makes the flattened syntax unambiguous without a sequence
+   literal, and so without sequence-typed expressions. What stays impossible follows from
+   that: a sequence is not a sort, so no node or expression holds one. An operation cannot
+   *return* a sequence (only a record containing one), and a sequence parameter is fed by
+   listing the elements, never by handing over another record's component; an operation
+   that needs the component of `p` as a whole is an instance method of the record, where
+   the Java code sees the `IntSeq`.
+   This is the explicit, ordered, same-level kind of variable argument. gh #930 (a user
+   operation folding the values of a quantified level) is the other kind and has to mark
+   its parameter differently; keeping `IntSeq` for the explicit tail leaves that open.
 4. **The constructor tail is a new operator property, separate from `isVarArgs`.** Call it
    `Operator.hasTail()`: the last parameter sort is the element sort, and
    `allowsArgCount(n)` is `n >= getArity() - 1`. A positional `getParamSort(i)` (clamped to
@@ -85,8 +99,7 @@ public record Poly(String name, IntSeq coeffs) {}
    methods (works with no mechanism, but then a sequence component is unreachable by
    default and every record names them differently).
    The name `cSize` is forced to be derived: user operators are keyed by name, without
-   overloading by arity. **Open: the suffix** (`coeffsSize`; `coeffsLength`, `sizeOfCoeffs`
-   are the alternatives). Cheap to change before 7.7.0, not after.
+   overloading by arity. The suffix `Size` is decided (`coeffsSize`).
 6. **No element enumerator.** The issue's `coeffsElem(p)` would be a set-valued operator,
    and since part 2 decided on sets it would silently drop repeated elements. `range` over
    the positions is the idiom; nothing is added.
@@ -103,9 +116,10 @@ Each is one or a few commits, mergeable on its own.
    receiver unchanged, `get` out of range throws.
 2. **Tail operators, record check, constants.** `Operator.hasTail`/`getParamSort`, the arity
    sites of decision 4, `UserSignature.parseUserClass` (sequence component accepted in last
-   position only), constructor packing, printing. Tests: `UserSignatureTest` (operator
-   shape; load failures for a sequence that is not last, two sequences, a sequence as
-   operation parameter or result), `ExpressionTest`-level parse and print round trips
+   position only, as is a sequence parameter of an operation), packing of the tail on
+   invocation, printing. Tests: `UserSignatureTest` (operator shape; an operation with a
+   sequence parameter; load failures for a sequence that is not last, two sequences, a
+   sequence as operation result), `ExpressionTest`-level parse and print round trips
    including the empty tail (`Poly("p")`) and a sequence-only record (`Bag()`).
 3. **Generated accessors**, with clash detection against the record's other operators and
    the out-of-range error value.
@@ -137,17 +151,23 @@ the GUI tests apply.
 
 ## Found in passing, not part of this work
 
-- `UserAlgebra.toValidSymbol` quotes string components without escaping, so a value holding
-  a `"` or `\` prints as a symbol that does not parse back. `StringSeq` elements go through
-  the same code; fix there as a separate commit, or file it.
-- Name clashes between user operators of *different* classes are not detected:
-  `setUserClass` and `checkUserClass` merge the per-class maps with `putAll`, so the later
-  class silently wins, although the manual states that the names must be distinct. The
-  generated `cSize` names make a clash slightly more likely.
-- `CallExpr.isUserConstant` assigns its result twice, losing the constructor test.
-- `POINT` is admitted with user operations by the grammar-property checker, but no `user`
-  algebra is registered for it; by reading, a `user`-sorted expression would fail there.
-  Not reproduced.
-- More constant arguments than components in a constructor call (`UserTypeIntBool(1,true,3)`)
-  should overrun `ExprTree.userConstArgs` before the count check. Not reproduced; slice 2
-  removes the array.
+The three marked "reproduced" were run on this branch's base on 2026-11-11.
+
+- gh #936, reproduced: `UserAlgebra.toValidSymbol` quotes string components without
+  escaping, so a value holding a `"` prints as a symbol that does not parse back (a lone
+  `\` happens to survive; the `toValidTerm` route escapes correctly). `StringSeq` elements
+  will go through the same code.
+- gh #934 (filed earlier): name clashes between user operators of *different* classes are
+  not detected, the later class silently wins. The generated `cSize` names make a clash
+  slightly more likely.
+- gh #935: `CallExpr.isUserConstant` assigns its result twice, losing the constructor test.
+  No effect at present, as the method has no callers.
+- gh #937, reproduced: `POINT` is admitted with user operations by the grammar-property
+  checker, but no `user` algebra is registered for it; a host graph or rule with a user
+  value fails with a `NullPointerException`.
+- Not filed, reproduced: a constructor call with more arguments than components, all of
+  them constants (`UserTypeIntBool(1,true,3)`), throws `ArrayIndexOutOfBoundsException`
+  from `ExprTree.addArg` instead of a `FormatException`: the array `userConstArgs` is
+  sized by the arity and written before `checkCall` counts the arguments. With a
+  non-constant argument the array is dropped first and the message is the proper one.
+  Slice 2 replaces the array by a list, which removes the overrun.
