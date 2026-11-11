@@ -31,7 +31,7 @@
         </edge>
         <edge from="b" to="b">
             <attr name="label">
-                <string>let:x = int:interval(a.lo, a.hi)</string>
+                <string>let:x = a.lo + int:range(a.hi - a.lo + 1)</string>
             </attr>
         </edge>
     </graph>

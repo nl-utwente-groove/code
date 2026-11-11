@@ -56,9 +56,6 @@ public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
     public abstract BOOL gt(INT arg0, INT arg1);
 
     @Override
-    public abstract Set<INT> interval(INT arg0, INT arg1);
-
-    @Override
     public abstract INT ite(BOOL arg0, INT arg1, INT arg2);
 
     @Override
@@ -129,8 +126,6 @@ public sealed abstract class IntSignature<INT,REAL,BOOL,STRING>
         GE,
         /** Value for {@link IntSignature#gt(Object, Object)}. */
         GT,
-        /** Value for {@link IntSignature#interval(Object, Object)}. */
-        INTERVAL,
         /** Value for {@link IntSignature#ite(Object, Object, Object)}. */
         ITE,
         /** Value for {@link IntSignature#le(Object, Object)}. */

@@ -43,11 +43,11 @@ Existential pick [non-positive]
 == rule span
 signature: ()
 hidden: []
-anchor: [n1:Ω#, x5:int, x6:int, n1--x-->x6]
+anchor: [n1:Ω#, x12:int, x13:int, n1--x-->x13]
 Existential span [non-positive]
   root: nodes [] edges []
-  lhs: nodes [n0:Ω#, n1:Ω#, x2:int, x3:int, p4:int:interval(int,int), x5:int, x6:int] edges [n0--A-->n0, n0--hi-->x3, n0--lo-->x2, n1--B-->n1, n1--x-->x6]
-  rhs: nodes [n0:Ω#, n1:Ω#, x2:int, x3:int, p4:int:interval(int,int), x5:int, x6:int] edges [n0--A-->n0, n0--hi-->x3, n0--lo-->x2, n1--B-->n1, n1--x-->x5]
+  lhs: nodes [n0:Ω#, n1:Ω#, x2:int, x3:int, p4:int:sub(int,int), x5:int, int:1:int, p7:int:add(int,int), x8:int, p9:int:range(int), x10:int, p11:int:add(int,int), x12:int, x13:int] edges [n0--A-->n0, n0--hi-->x3, n0--lo-->x2, n1--B-->n1, n1--x-->x13]
+  rhs: nodes [n0:Ω#, n1:Ω#, x2:int, x3:int, p4:int:sub(int,int), x5:int, int:1:int, p7:int:add(int,int), x8:int, p9:int:range(int), x10:int, p11:int:add(int,int), x12:int, x13:int] edges [n0--A-->n0, n0--hi-->x3, n0--lo-->x2, n1--B-->n1, n1--x-->x12]
 == rule spawn
 signature: ()
 hidden: []

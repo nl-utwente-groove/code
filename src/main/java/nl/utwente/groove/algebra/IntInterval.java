@@ -30,8 +30,7 @@ import nl.utwente.groove.util.AIGenerated;
  * in the representation of some integer algebra.
  * The elements are computed on demand, so the memory footprint
  * does not depend on the size of the interval.
- * This is the outcome of the set-valued integer operators
- * {@link IntSignature#range(Object)} and {@link IntSignature#interval(Object, Object)}.
+ * This is the outcome of the set-valued integer operator {@link IntSignature#range(Object)}.
  * @param <T> the representation type of the integer algebra
  */
 @AIGenerated("Claude Fable 5.2, 2026-11")

@@ -124,12 +124,6 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
         return Op.GT.getOperator().newTerm(arg0, arg1);
     }
 
-    /** A symbolic interval cannot be enumerated. */
-    @Override
-    public Set<Expression> interval(Expression arg0, Expression arg1) {
-        throw Exceptions.unsupportedOp("Set-valued operator 'interval' not supported in the term algebra");
-    }
-
     @Override
     public Expression ite(Expression arg0, Expression arg1, Expression arg2) {
         return Op.ITE.getOperator().newTerm(arg0, arg1, arg2);

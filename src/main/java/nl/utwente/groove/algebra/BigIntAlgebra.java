@@ -82,27 +82,6 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     }
 
     @Override
-    public Set<BigInteger> interval(BigInteger arg0, BigInteger arg1) {
-        // an empty interval may have bounds that do not fit into a long
-        if (arg1.compareTo(arg0) < 0) {
-            return Set.of();
-        }
-        return new IntInterval<>(arg0.longValueExact(), arg1.longValueExact()) {
-            @Override
-            BigInteger toValue(long number) {
-                return BigInteger.valueOf(number);
-            }
-
-            @Override
-            @Nullable Long fromValue(Object value) {
-                return value instanceof BigInteger i && i.bitLength() < Long.SIZE
-                    ? Long.valueOf(i.longValue())
-                    : null;
-            }
-        };
-    }
-
-    @Override
     public BigInteger ite(Boolean arg0, BigInteger arg1, BigInteger arg2) {
         return arg0
             ? arg1
@@ -151,7 +130,23 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
 
     @Override
     public Set<BigInteger> range(BigInteger arg) {
-        return interval(BigInteger.ZERO, arg.subtract(BigInteger.ONE));
+        // an empty range may have a bound that does not fit into a long
+        if (arg.signum() <= 0) {
+            return Set.of();
+        }
+        return new IntInterval<>(0, arg.subtract(BigInteger.ONE).longValueExact()) {
+            @Override
+            BigInteger toValue(long number) {
+                return BigInteger.valueOf(number);
+            }
+
+            @Override
+            @Nullable Long fromValue(Object value) {
+                return value instanceof BigInteger i && i.bitLength() < Long.SIZE
+                    ? Long.valueOf(i.longValue())
+                    : null;
+            }
+        };
     }
 
     @Override

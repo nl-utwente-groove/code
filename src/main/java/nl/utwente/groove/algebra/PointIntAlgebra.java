@@ -119,12 +119,6 @@ public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Str
         return singleBool;
     }
 
-    /** The point algebra cannot count, so the interval collapses to the single point value. */
-    @Override
-    public Set<Integer> interval(Integer arg0, Integer arg1) {
-        return Set.of(singleInt);
-    }
-
     @Override
     public Integer ite(Boolean arg0, Integer arg1, Integer arg2) {
         return singleInt;

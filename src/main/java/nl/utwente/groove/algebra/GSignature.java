@@ -113,16 +113,6 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
             .unsupportedOp("Operation %s not implemented for sort %s", "div", getSort());
     }
 
-    /** Interval of integers between given bounds. */
-    @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
-    @ToolTipHeader("Integer interval")
-    @ToolTipBody({"Set-valued: yields each of the integers from %2$s up to and including %3$s.",
-        "Use on a quantified level to range over those values."})
-    public default Set<MAIN> interval(MAIN arg0, MAIN arg1) {
-        throw Exceptions
-            .unsupportedOp("Operation %s not implemented for sort %s", "interval", getSort());
-    }
-
     /** Modulo of two integers. */
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipHeader("Modulo")

@@ -80,23 +80,6 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
     }
 
     @Override
-    public Set<Integer> interval(Integer arg0, Integer arg1) {
-        return new IntInterval<>(arg0, arg1) {
-            @Override
-            Integer toValue(long number) {
-                return (int) number;
-            }
-
-            @Override
-            @Nullable Long fromValue(Object value) {
-                return value instanceof Integer i
-                    ? Long.valueOf(i)
-                    : null;
-            }
-        };
-    }
-
-    @Override
     public Integer ite(Boolean arg0, Integer arg1, Integer arg2) {
         return arg0
             ? arg1
@@ -145,7 +128,19 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
 
     @Override
     public Set<Integer> range(Integer arg) {
-        return interval(0, arg - 1);
+        return new IntInterval<>(0, arg - 1L) {
+            @Override
+            Integer toValue(long number) {
+                return (int) number;
+            }
+
+            @Override
+            @Nullable Long fromValue(Object value) {
+                return value instanceof Integer i
+                    ? Long.valueOf(i)
+                    : null;
+            }
+        };
     }
 
     @Override

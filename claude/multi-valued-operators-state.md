@@ -40,14 +40,16 @@ builds on this and is not started.
   from the concrete run); **TERM** is rejected in `PatternBuilder.addOperator`.
 - **Indeterminate set-valued user operations are forbidden** (phase 2 check): indeterminate
   operators are not supported on quantified levels anyway (gh #911).
-- Built-ins: `range(n)` = 0..n-1 and `interval(lo, hi)` = lo..hi inclusive. Two names because
-  a signature may not overload an operator name (`Operator.getOperatorMethod`). Both are
-  empty when the bound is too low (`range(n)` for `n <= 0`, `interval(lo, hi)` for `hi < lo`).
+- Built-in: `range(n)` = 0..n-1, empty for `n <= 0`. A two-argument `interval(lo, hi)` was
+  implemented and removed again (2026-11-11): it is `lo + range(hi - lo + 1)`, membership
+  is `lo <= x` and `x <= hi`, and it needed a name of its own because a signature may not
+  overload an operator name (`Operator.getOperatorMethod`). Rule `span` in `setValued.gps`
+  shows the replacement, with the set-valued call nested in an expression.
 
 ## Phase 1 (done on this branch)
 
 - `Operator.isSetValued()`, detected from a `Set<X>` return type of a signature method.
-- `GSignature`/`IntSignature`: `range`, `interval`; `IntInterval` is the lazy set view the
+- `GSignature`/`IntSignature`: `range`; `IntInterval` is the lazy set view the
   Java and Big algebras return.
 - `OperatorNodeSearchItem.SetValuedOperatorNodeRecord` (a `MultipleRecord`), chosen when
   the target is neither constant nor found at activation time; it handles a run-time seed
