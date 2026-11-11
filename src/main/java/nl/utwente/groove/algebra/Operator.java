@@ -64,7 +64,7 @@ public class Operator implements Comparable<Operator> {
         var elementType = executable instanceof Method m
             ? getElementType(m)
             : null;
-        this.multiValued = elementType != null;
+        this.setValued = elementType != null;
         this.returnSort = toReturnSort(elementType == null
             ? returnType
             : elementType);
@@ -76,15 +76,15 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = annotation == null
             ? false
             : annotation.indeterminate();
-        if (this.multiValued && this.indeterminate) {
-            throw Exceptions.illegalArg("Multi-valued operation cannot be indeterminate");
+        if (this.setValued && this.indeterminate) {
+            throw Exceptions.illegalArg("Set-valued operation cannot be indeterminate");
         }
     }
 
     /**
-     * Returns the type of the values of a multi-valued user-defined method,
-     * or {@code null} if the method is not multi-valued.
-     * A method is multi-valued if its return type is a {@link Set}
+     * Returns the type of the values of a set-valued user-defined method,
+     * or {@code null} if the method is not set-valued.
+     * A method is set-valued if its return type is a {@link Set}
      * (or a subtype such as {@link java.util.SortedSet}) with a class as type argument.
      * For the system sorts, the type argument is the wrapper type (for instance {@link Integer});
      * the type returned by this method is then the corresponding primitive type.
@@ -153,15 +153,15 @@ public class Operator implements Comparable<Operator> {
             this.parameterSorts.add(toParSort(type));
         }
         Type returnType = method.getGenericReturnType();
-        this.multiValued = returnType instanceof ParameterizedType;
+        this.setValued = returnType instanceof ParameterizedType;
         if (returnType instanceof ParameterizedType parType) {
             if (parType.getRawType() != Set.class) {
                 throw Exceptions
-                    .illegalArg("Method '%s' does not represent multi-valued operator", this.name);
+                    .illegalArg("Method '%s' does not represent set-valued operator", this.name);
             }
             if (this.varArgs) {
                 throw Exceptions
-                    .illegalArg("Collection operator '%s' cannot be multi-valued", this.name);
+                    .illegalArg("Collection operator '%s' cannot be set-valued", this.name);
             }
             returnType = parType.getActualTypeArguments()[0];
         }
@@ -256,19 +256,19 @@ public class Operator implements Comparable<Operator> {
 
     private final boolean zeroArgs;
 
-    /** Indicates if this is a multi-valued operator, i.e., one that yields
+    /** Indicates if this is a set-valued operator, i.e., one that yields
      * a set of values of the result sort rather than a single one.
-     * A multi-valued operator is matched once for every value in the set.
+     * A set-valued operator is matched once for every value in the set.
      * The order of the values has no meaning, but the set has to iterate over them
      * in an order that is the same in every run, as exploration would otherwise
      * not be deterministic.
      * @see #getResultSort()
      */
-    public boolean isMultiValued() {
-        return this.multiValued;
+    public boolean isSetValued() {
+        return this.setValued;
     }
 
-    private final boolean multiValued;
+    private final boolean setValued;
 
     /** If {@code true}, the outcome of this operation is not fully determined by its parameters.
      * This is true for, e.g., random number generation.
@@ -308,8 +308,8 @@ public class Operator implements Comparable<Operator> {
 
     /**
      * Returns the result type of this operator.
-     * For a multi-valued operator, this is the sort of the individual values.
-     * @see #isMultiValued()
+     * For a set-valued operator, this is the sort of the individual values.
+     * @see #isSetValued()
      */
     public Sort getResultSort() {
         return this.returnSort;

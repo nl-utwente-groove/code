@@ -140,18 +140,18 @@ public class UserSignatureTest {
         }
     }
 
-    /** Tests the recognition of multi-valued user operations. */
+    /** Tests the recognition of set-valued user operations. */
     @Test
     @AIGenerated("Claude Fable 5.2, 2026-11")
-    public void testMultiValued() {
-        loadFail("UserOpsMultiValuedIndeterminate");
-        loadFail("UserOpsMultiValuedRaw");
-        loadFail("UserOpsMultiValuedList");
-        load("UserOpsMultiValued");
+    public void testSetValued() {
+        loadFail("UserOpsSetValuedIndeterminate");
+        loadFail("UserOpsSetValuedRaw");
+        loadFail("UserOpsSetValuedList");
+        load("UserOpsSetValued");
         var ops = UserSignature.getOperators();
         assertEquals(4, ops.size());
         for (var op : ops.values()) {
-            assertTrue(op.getName() + " should be multi-valued", op.isMultiValued());
+            assertTrue(op.getName() + " should be set-valued", op.isSetValued());
             switch (op.getName()) {
             case "around" -> check(op, false, Sort.INT, Sort.INT);
             case "halves" -> check(op, false, Sort.STRING, Sort.STRING);

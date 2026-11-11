@@ -25,8 +25,8 @@ import nl.utwente.groove.util.AIGenerated;
  * Erroneous example class with user operations: set without element type.
  */
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public class UserOpsMultiValuedRaw {
-    /** Multi-valued operation whose return type does not reveal the sort of the values. */
+public class UserOpsSetValuedRaw {
+    /** Set-valued operation whose return type does not reveal the sort of the values. */
     @UserOperation
     static public Set<?> errWildcard(int value) {
         return Set.of(value);

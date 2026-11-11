@@ -185,11 +185,11 @@ public enum AlgebraFamily implements DocumentedEnum {
             for (Expression arg : call.getArgs()) {
                 args.add(computeStrict(arg, valuation));
             }
-            if (call.getOperator().isMultiValued()) {
-                // a multi-valued operator only has a value in the context of a match
+            if (call.getOperator().isSetValued()) {
+                // a set-valued operator only has a value in the context of a match
                 throw getAlgebra(expr.getSort())
                     .errorValue(Exceptions
-                        .unsupportedOp("Multi-valued operator '%s' cannot be evaluated",
+                        .unsupportedOp("Set-valued operator '%s' cannot be evaluated",
                                        call.getOperator().getName()));
             }
             return getOperation(call.getOperator()).apply(args);

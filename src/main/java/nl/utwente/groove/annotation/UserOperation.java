@@ -30,11 +30,11 @@ import java.lang.annotation.Target;
  * The return type may also be a {@link java.util.Set} (or a subtype, such as
  * {@link java.util.SortedSet}) of {@link Integer}, {@link Double},
  * {@link Boolean}, {@link String} or a {@link UserType}-annotated record class.
- * The operation is then <i>multi-valued</i>: in a rule, it is matched once for
+ * The operation is then <i>set-valued</i>: in a rule, it is matched once for
  * every value in the set it returns. Other collection types are not allowed:
  * a match cannot tell repeated values apart, so a value that occurs more than once
  * would still be matched only once. To match every occurrence in a list, match the
- * positions instead (for instance through the predefined multi-valued operator
+ * positions instead (for instance through the predefined set-valued operator
  * {@code range}) and look up the value at each position.
  * <p>
  * The order of the values has no meaning in a rule, but it has to be
@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * whose iteration order varies from run to run, nor a {@link java.util.HashSet} of
  * values with an identity-based hash code (which includes records with an enum component).
  * <p>
- * A multi-valued operation cannot be indeterminate.
+ * A set-valued operation cannot be indeterminate.
  * @author Arend Rensink
  * @version $Revision$
  */

@@ -25,8 +25,8 @@ import nl.utwente.groove.util.AIGenerated;
  * Erroneous example class with user operations: collection that is not a set.
  */
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public class UserOpsMultiValuedList {
-    /** Multi-valued operation whose return type allows repeated values. */
+public class UserOpsSetValuedList {
+    /** Set-valued operation whose return type allows repeated values. */
     @UserOperation
     static public List<Integer> errList(int value) {
         return List.of(value, value);

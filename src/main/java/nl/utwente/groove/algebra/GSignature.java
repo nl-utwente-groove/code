@@ -116,7 +116,7 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     /** Interval of integers between given bounds. */
     @Syntax("[sort:]Q%s.LPAR.expr1.COMMA.expr2.RPAR")
     @ToolTipHeader("Integer interval")
-    @ToolTipBody({"Multi-valued: yields each of the integers from %2$s up to and including %3$s.",
+    @ToolTipBody({"Set-valued: yields each of the integers from %2$s up to and including %3$s.",
         "Use on a quantified level to range over those values."})
     public default Set<MAIN> interval(MAIN arg0, MAIN arg1) {
         throw Exceptions
@@ -173,7 +173,7 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     /** Range of integers below a given bound. */
     @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
     @ToolTipHeader("Integer range")
-    @ToolTipBody({"Multi-valued: yields each of the integers from 0 up to but not including %2$s.",
+    @ToolTipBody({"Set-valued: yields each of the integers from 0 up to but not including %2$s.",
         "Use on a quantified level to range over those values."})
     public default Set<MAIN> range(MAIN arg) {
         throw Exceptions

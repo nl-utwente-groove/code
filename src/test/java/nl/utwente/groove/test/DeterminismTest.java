@@ -64,7 +64,7 @@ public class DeterminismTest {
     public void testPlanEngineDeterminism() {
         test("ferryman", "");
         test("loose-nodes", "");
-        // multi-valued operators: values enumerated under a quantifier, with created
+        // set-valued operators: values enumerated under a quantifier, with created
         // nodes, and tested for membership after reconstruction from a seed (gh #931)
         test("range-cells", "");
     }

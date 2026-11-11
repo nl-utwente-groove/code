@@ -127,7 +127,7 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
     /** A symbolic interval cannot be enumerated. */
     @Override
     public Set<Expression> interval(Expression arg0, Expression arg1) {
-        throw Exceptions.unsupportedOp("Multi-valued operator 'interval' not supported in the term algebra");
+        throw Exceptions.unsupportedOp("Set-valued operator 'interval' not supported in the term algebra");
     }
 
     @Override
@@ -178,7 +178,7 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
     /** A symbolic range cannot be enumerated. */
     @Override
     public Set<Expression> range(Expression arg) {
-        throw Exceptions.unsupportedOp("Multi-valued operator 'range' not supported in the term algebra");
+        throw Exceptions.unsupportedOp("Set-valued operator 'range' not supported in the term algebra");
     }
 
     @Override

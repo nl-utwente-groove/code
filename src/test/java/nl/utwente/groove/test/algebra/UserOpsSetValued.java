@@ -26,24 +26,24 @@ import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Example class with multi-valued user operations.
+ * Example class with set-valued user operations.
  */
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public class UserOpsMultiValued {
-    /** Multi-valued operation declared as a set. */
+public class UserOpsSetValued {
+    /** Set-valued operation declared as a set. */
     @UserOperation
     static public Set<Integer> around(int value) {
         return new LinkedHashSet<>(List.of(value - 1, value + 1));
     }
 
-    /** Multi-valued operation declared as a set, with string values. */
+    /** Set-valued operation declared as a set, with string values. */
     @UserOperation
     static public Set<String> halves(String text) {
         int mid = text.length() / 2;
         return new LinkedHashSet<>(List.of(text.substring(0, mid), "-" + text.substring(mid)));
     }
 
-    /** Multi-valued operation declared as a subtype of set. */
+    /** Set-valued operation declared as a subtype of set. */
     @UserOperation
     static public SortedSet<Double> upTo(double bound) {
         SortedSet<Double> result = new TreeSet<>();
@@ -53,7 +53,7 @@ public class UserOpsMultiValued {
         return result;
     }
 
-    /** Multi-valued operation with boolean values. */
+    /** Set-valued operation with boolean values. */
     @UserOperation
     static public Set<Boolean> both() {
         return new LinkedHashSet<>(List.of(true, false));

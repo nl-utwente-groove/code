@@ -22,11 +22,11 @@ import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Erroneous example class with user operations: multi-valued and indeterminate.
+ * Erroneous example class with user operations: set-valued and indeterminate.
  */
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public class UserOpsMultiValuedIndeterminate {
-    /** Multi-valued operation that is wrongly declared to be indeterminate. */
+public class UserOpsSetValuedIndeterminate {
+    /** Set-valued operation that is wrongly declared to be indeterminate. */
     @UserOperation(indeterminate = true)
     static public Set<Integer> errIndeterminate(int value) {
         return Set.of(value);

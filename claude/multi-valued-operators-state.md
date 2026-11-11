@@ -1,4 +1,4 @@
-# Multi-valued operators (gh #931, second part): handoff state
+# Set-valued operators (gh #931, second part): handoff state
 
 Branch `multi-valued-operators`, off tag `release-7_6_1` (ecab903cd), the yFiles-free line:
 until Arend gives the go-ahead on yFiles, extensions are built there and merged into master
@@ -25,7 +25,7 @@ builds on this and is not started.
   operations. This cannot be checked; it is documented in the `@UserOperation` javadoc
   (use `LinkedHashSet` or a sorted set, not `Set.of`) and has to go into the manual.
   Whether a varying order is in fact observable has not been tested.
-- **Any level.** A multi-valued call needs no level check of its own. On the level of its
+- **Any level.** A set-valued call needs no level check of its own. On the level of its
   arguments it is an existential choice (one rule match per element); under `forall` it
   quantifies over the elements; in a NAC it tests that no element qualifies. This falls out
   of the existing level handling in `NormalAspectGraph.addCall` and `PatternBuilder`.
@@ -38,7 +38,7 @@ builds on this and is not started.
   error value as the single element, so that the error stays visible.
 - **POINT** collapses the outcome to the single point value (so sub-match counts differ
   from the concrete run); **TERM** is rejected in `PatternBuilder.addOperator`.
-- **Indeterminate multi-valued user operations are forbidden** (phase 2 check): indeterminate
+- **Indeterminate set-valued user operations are forbidden** (phase 2 check): indeterminate
   operators are not supported on quantified levels anyway (gh #911).
 - Built-ins: `range(n)` = 0..n-1 and `interval(lo, hi)` = lo..hi inclusive. Two names because
   a signature may not overload an operator name (`Operator.getOperatorMethod`). Both are
@@ -46,27 +46,27 @@ builds on this and is not started.
 
 ## Phase 1 (done on this branch)
 
-- `Operator.isMultiValued()`, detected from a `Set<X>` return type of a signature method.
+- `Operator.isSetValued()`, detected from a `Set<X>` return type of a signature method.
 - `GSignature`/`IntSignature`: `range`, `interval`; `IntInterval` is the lazy set view the
   Java and Big algebras return.
-- `OperatorNodeSearchItem.MultiValuedOperatorNodeRecord` (a `MultipleRecord`), chosen when
+- `OperatorNodeSearchItem.SetValuedOperatorNodeRecord` (a `MultipleRecord`), chosen when
   the target is neither constant nor found at activation time; it handles a run-time seed
   by membership.
-- `AlgebraFamily.compute` refuses a multi-valued call (control arguments, host graphs);
+- `AlgebraFamily.compute` refuses a set-valued call (control arguments, host graphs);
   `NormalAspectGraph.addCall` rejects it outside rules.
-- Fixture `junit/rules/multiValued.gps` (rules `pick`, `span`, `spawn`, `clones`, `total`,
+- Fixture `junit/rules/setValued.gps` (rules `pick`, `span`, `spawn`, `clones`, `total`,
   `member`, `absent`) in `RuleApplicationTest`, with POINT and TERM tests; golden in
-  `junit/rulecompilation/rules/multiValued.txt`.
+  `junit/rulecompilation/rules/setValued.txt`.
 
 ## Phase 2 (done on this branch): user operations
 
 - `Operator.getElementType(Method)`: a return type assignable to `Set` with a class as
-  type argument makes a user operation multi-valued; `Integer`, `Double`, `Boolean` map to
+  type argument makes a user operation set-valued; `Integer`, `Double`, `Boolean` map to
   the system sorts. A wildcard or raw set, a collection that is not a set, and `indeterminate = true`
   are errors.
 - `UserSignature.checkMethod` checks the element type against the declared user classes.
 - `UserOpsExample.digits` (distinct digits) and `letters` (user-typed values); rules `digitSum`,
-  `digitNodes`, `letters` in `junit/rules/userOps.gps`; `UserSignatureTest.testMultiValued`.
+  `digitNodes`, `letters` in `junit/rules/userOps.gps`; `UserSignatureTest.testSetValued`.
 - `junit/samples/range-cells.gps` (17 states, 33 transitions) as a `DeterminismTest` row.
 - `@UserOperation` javadoc.
 

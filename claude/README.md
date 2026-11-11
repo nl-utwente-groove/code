@@ -29,7 +29,7 @@ Status lines below are as of 2026-09-11.
 | [priority-symmetric-choice.md](priority-symmetric-choice.md) | gh #880, priority-aware symmetric choice in control. Design points only, not started; interim gh #756 guard is on master. |
 | [critical-pair-review.md](critical-pair-review.md) | gh #886, revival of the critical-pair package. Review and plan only, nothing implemented. |
 | [fixable-builder-survey.md](fixable-builder-survey.md) | Which `Fixable` implementors should become builders. Step 1 (`AspectLabel`) done 2026-09-06; the rest open, no `Buildable` type. |
-| [multi-valued-operators-state.md](multi-valued-operators-state.md) | gh #931, second part: operators that yield a bag of values, matched once per element (`range`, `interval`). Handoff state for branch `multi-valued-operators`: phases 1 (built-ins and matching) and 2 (user operations) done, phase 3 (documentation) and the decision on multiplicity open. Transient: delete when merged. |
+| [multi-valued-operators-state.md](multi-valued-operators-state.md) | gh #931, second part: set-valued operators, matched once per value (`range`, `interval`). Handoff state for branch `multi-valued-operators`: phases 1 (built-ins and matching) and 2 (user operations) done, phase 3 (documentation) open. Transient: delete when merged. |
 
 ## Archive
 
