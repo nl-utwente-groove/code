@@ -74,8 +74,9 @@ builds on this and is not started.
 
 ## Phase 3 (done, awaiting review): documentation
 
-- `release/include/CHANGES.md`: new top section "Release 7.7.0, forthcoming". The number is
-  Claude's assumption (a feature release on the 7.6 line); the pom revision is untouched.
+- `release/include/CHANGES.md`: new top section "Release 7.7.0, forthcoming". Arend confirmed
+  7.7.0 (2026-11-11) and holds the release until the first part of gh #931 is done as well;
+  the pom revision is untouched.
 - Web manual: website repository `C:\Groove\nl-utwente-groove.github.io`, branch
   `set-valued-operators` off `main`, worktree `C:\Groove\worktrees\set-valued-operators`.
   `manual/data.md` gets a section "Set-valued operations" (levels, membership, algebras)
