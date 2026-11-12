@@ -8,8 +8,8 @@ two parts touch the same files (`Operator`, `UserSignature`, `AlgebraFamily`), a
 fixtures of this part use `range`.
 
 **State (2026-11-12):** slice 1 done and reviewed, with `Seq` made generic in its element
-type on Arend's remark; slice 2 done (2026-11-12); slices 3 to 5 open. The sequence parameter of a `@UserOperation`
-(decision 3) was confirmed by Arend.
+type on Arend's remark; slices 2 and 3 done (2026-11-12); slices 4 and 5 open. The
+sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
 
 **Sequences as sorts are a later extension (gh #942), decided 2026-11-12.** Making the
 sequence types real sorts (`intseq` and so on) was weighed against the design below, in
@@ -176,7 +176,28 @@ Each is one or a few commits, mergeable on its own.
    Not covered yet: tail operators in rules. The route from aspect graphs to operator
    nodes was not run with a tail operator; slice 4's fixtures are the first to do so.
 3. **Generated accessors**, with clash detection against the record's other operators and
-   the out-of-range error value.
+   the out-of-range error value. *Done* (tests: `UserSignatureTest.testSequenceAccessors`/
+   `testSequenceAccessorClashes`, `SequenceTailTest.testAccessors`/`testAccessorErrors`;
+   fixtures `UserTypeTags`, `UserTypeSeqClash`, `UserOpsSeqName`). As implemented:
+   - `Operator.SeqAccessor` (`AT`, `SIZE`) names the two accessors and derives their
+     operator names; `Operator.getSeqAccessor()` is non-null for a generated operator, and
+     `AlgebraFamily.UserOperation.accessSeq` evaluates it on the result of the field's
+     accessor method. `Operator.getSeqElementType(Class)` now is the one place that maps
+     a system-sort sequence class to its element type; `getTailType` builds on it;
+   - a position out of range, a value of another user type and a field without a value
+     (`null`, possible from user code) all give an error value;
+   - a clash with a generated name is reported by the existing duplicate check, which
+     names the field in its message; it works in both orders (another field first, an
+     annotated method last) and across classes;
+   - the reserved field name is checked after all classes are parsed
+     (`UserSignature.parseUserClasses`), since the operation that takes the name may be
+     in a class listed before the record. It also catches a plain field of that name in
+     another user type;
+   - two user types with a sequence field of the same name clash on the generated
+     names, as two plain fields of the same name do (gh #934);
+   - the generated accessors have no entry in the operator help, like the accessors of
+     plain fields (`Algebras.createUserHelp` only documents constructors and annotated
+     methods). Open for slice 5: whether to document them, their names being derived.
 4. **Fixtures.** An example record in `algebra/` next to `UserTypeIntBool`, with
    user-written `append`; rules in `junit/rules/userOps.gps` for constant, constructor,
    element, size, out of range, `forall` over `range(coeffsSize(p))`, and `sum` over the

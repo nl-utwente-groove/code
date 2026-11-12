@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.RecordComponent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -38,6 +39,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.Operator.SeqAccessor;
 import nl.utwente.groove.annotation.Seq;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserSeq;
@@ -99,9 +101,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         operators.reset();
         var classes = toClasses(classNames);
         var result = new FallibleObject<>(new LinkedHashMap<Operator,Executable>());
-        for (var claz : classes.get()) {
-            parseUserClass(result, claz, classes.get());
-        }
+        parseUserClasses(result, classes.get());
         methods.putAll(result.get());
         resetUsers();
     }
@@ -118,11 +118,35 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         var classes = toClasses(classNames);
         result.addErrors(classes.getErrors());
         if (!classes.getErrors().hasErrors()) {
-            for (var claz : classes.get()) {
-                parseUserClass(result, claz, classes.get());
-            }
+            parseUserClasses(result, classes.get());
         }
         return result;
+    }
+
+    /** Adds the operations of a given set of user classes to a given result,
+     * together with the errors found, in the individual classes
+     * (see {@link #parseUserClass}) and between them: an operation may not have the name
+     * of a sequence-valued field of a user type, in whatever class it is declared.
+     * That name is reserved for an operator that yields the sequence as a whole,
+     * which only exists once sequences are values (gh #942).
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private static void parseUserClasses(FallibleObject<? extends Map<Operator,Executable>> result,
+                                         Set<Class<?>> classes) {
+        var seqFields = new LinkedHashMap<String,@Nullable RecordComponent>();
+        for (var claz : classes) {
+            parseUserClass(result, claz, classes, seqFields);
+        }
+        for (var e : result.get().entrySet()) {
+            var name = e.getKey().getName();
+            var seqField = seqFields.get(name);
+            if (seqField != null) {
+                result
+                    .addError("User operation '%s' in '%s' has the name of sequence-valued field '%s.%s', which is reserved",
+                              name, e.getValue().getDeclaringClass().getCanonicalName(),
+                              seqField.getDeclaringRecord().getCanonicalName(), name);
+            }
+        }
     }
 
     /** Returns the loadable classes among a list of class names.
@@ -179,9 +203,13 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * together with the errors found.
      * The result is shared among the user classes, since the operations of all of them
      * live in the single sort {@link Sort#USER} and so have to differ in name (gh #934).
+     * A sequence-valued field has no operation of its own name, but two generated ones
+     * (see {@link SeqAccessor}), both based on the accessor method of the field;
+     * the field is added to a given map, from its name.
      */
     private static void parseUserClass(FallibleObject<? extends Map<Operator,Executable>> result,
-                                       Class<?> claz, Set<Class<?>> others) {
+                                       Class<?> claz, Set<Class<?>> others,
+                                       Map<String,@Nullable RecordComponent> seqFields) {
         String className = claz.getCanonicalName();
         // check that the class is public
         if (!Modifier.isPublic(claz.getModifiers())) {
@@ -221,6 +249,11 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                                 .addError("Type of field '%s.%s' is not a sequence of a system sort",
                                           className, name);
                             clazOk = false;
+                        } else {
+                            seqFields.putIfAbsent(name, rc);
+                            for (var accessor : SeqAccessor.values()) {
+                                addOperator(result, new Operator(rc, accessor), rc.getAccessor());
+                            }
                         }
                     } else if (sort == null || !sort.isSystem()) {
                         result
@@ -266,14 +299,39 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      */
     static private void addExecutable(FallibleObject<? extends Map<Operator,Executable>> result,
                                       Executable exec) {
-        var op = new Operator(exec);
+        addOperator(result, new Operator(exec), exec);
+    }
+
+    /** Adds a given operation, with the executable it is based on, to a result, or reports
+     * an error if the result already has an operation of that name. In that case the existing
+     * operation is kept, so that an operator is never paired with the executable of another.
+     * This also finds the clashes of the generated accessors of a sequence-valued field
+     * with other operations, in both orders.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private void addOperator(FallibleObject<? extends Map<Operator,Executable>> result,
+                                    Operator op, Executable exec) {
         var oldExec = result.get().putIfAbsent(op, exec);
         if (oldExec != null) {
+            // the operator in the result equals the new one, but may be of another kind
+            var oldOp = result.get().keySet().stream().filter(op::equals).findAny().orElse(op);
             result
-                .addError("Duplicate user operation '%s' in '%s' and '%s'", op.getName(),
-                          oldExec.getDeclaringClass().getCanonicalName(),
-                          exec.getDeclaringClass().getCanonicalName());
+                .addError("Duplicate user operation '%s' in %s and %s", op.getName(),
+                          describeSource(oldOp, oldExec), describeSource(op, exec));
         }
+    }
+
+    /** Returns a description of where a given operation stems from, for error messages:
+     * the class of the executable on which it is based, and for a generated accessor
+     * the sequence-valued field as well.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private String describeSource(Operator op, Executable exec) {
+        var result = "'" + exec.getDeclaringClass().getCanonicalName() + "'";
+        if (op.getSeqAccessor() != null) {
+            result += " (generated for sequence-valued field '" + exec.getName() + "')";
+        }
+        return result;
     }
 
     /** Checks a given method for suitability as the basis for a user-defined operation.

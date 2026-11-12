@@ -269,12 +269,20 @@ public class UserSignatureTest {
                 check(op, false, Sort.STRING, Sort.USER);
                 tail = false;
             }
-            // the sequence-valued fields have no accessor
+            // the accessors generated for the sequence-valued fields
+            case "coeffsAt", "elemsAt" -> {
+                check(op, false, Sort.INT, Sort.USER, Sort.INT);
+                tail = false;
+            }
+            case "coeffsSize", "elemsSize" -> {
+                check(op, false, Sort.INT, Sort.USER);
+                tail = false;
+            }
             default -> fail("Unexpected operation " + op.getName());
             }
             assertEquals(tail, op.hasTail(), op.getName());
         }
-        assertEquals(10, ops.size());
+        assertEquals(14, ops.size());
 
         var poly = ops.get("UserTypePoly");
         assertNotNull(poly);
@@ -323,6 +331,78 @@ public class UserSignatureTest {
                     "notLast': Sequence type IntSeq is only allowed for the last parameter",
                     "result': Return type IntSeq is a sequence type",
                     "untyped': Sequence type UserSeq does not specify the type of its elements");
+    }
+
+    /** Tests the accessors that are generated for a sequence-valued field of a user type:
+     * one for the elements and one for the length, and none of the name of the field.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testSequenceAccessors() {
+        load("UserTypePoly", "UserTypeTags");
+        var ops = UserSignature.getOperators();
+        var coeffsAt = ops.get("coeffsAt");
+        assertNotNull(coeffsAt);
+        check(coeffsAt, false, Sort.INT, Sort.USER, Sort.INT);
+        assertEquals(Operator.SeqAccessor.AT, coeffsAt.getSeqAccessor());
+        assertEquals("user:coeffsAt(user,int)", coeffsAt.toString());
+        var coeffsSize = ops.get("coeffsSize");
+        assertNotNull(coeffsSize);
+        check(coeffsSize, false, Sort.INT, Sort.USER);
+        assertEquals(Operator.SeqAccessor.SIZE, coeffsSize.getSeqAccessor());
+        // the element accessor has the sort of the elements
+        var tagsAt = ops.get("tagsAt");
+        assertNotNull(tagsAt);
+        check(tagsAt, false, Sort.STRING, Sort.USER, Sort.INT);
+        // the name of the field is not that of an operator
+        assertNull(ops.get("coeffs"));
+        assertNull(ops.get("tags"));
+        // other operators are not accessors
+        for (var name : List.of("UserTypePoly", "name", "degree", "sumAt")) {
+            var op = ops.get(name);
+            assertNotNull(op);
+            assertNull(name, op.getSeqAccessor());
+        }
+        // both accessors are based on the accessor method of the field
+        var method = UserSignature.getMethods().get(coeffsAt);
+        assertNotNull(method);
+        assertEquals("coeffs", method.getName());
+        assertSame(method, UserSignature.getMethods().get(coeffsSize));
+        // like the accessors of other fields, they are not documented
+        var docMap = Algebras.getOpDocMap();
+        assertFalse(docMap.keySet().stream().anyMatch(k -> k.contains("coeffsAt</")));
+    }
+
+    /** Tests that the names of the accessors generated for a sequence-valued field may
+     * not be taken by other operations, and neither may the name of the field itself,
+     * in the class of the field or in another one.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testSequenceAccessorClashes() {
+        var clash = PACKAGE_NAME.extend("UserTypeSeqClash");
+        var generated = "'%s' (generated for sequence-valued field 'items')".formatted(clash);
+        checkErrors("UserTypeSeqClash",
+                    // the other field comes first, the operation comes last
+                    "Duplicate user operation 'itemsSize' in '%s' and %s"
+                        .formatted(clash, generated),
+                    "Duplicate user operation 'itemsAt' in %s and '%s'".formatted(generated, clash),
+                    "User operation 'items' in '%s' has the name of sequence-valued field '%s.items', which is reserved"
+                        .formatted(clash, clash));
+        // each of the following classes is correct on its own
+        load("UserOpsSeqName");
+        load("UserTypeBag");
+        var ops = PACKAGE_NAME.extend("UserOpsSeqName");
+        var bag = PACKAGE_NAME.extend("UserTypeBag");
+        var expected
+            = "User operation 'elems' in '%s' has the name of sequence-valued field '%s.elems', which is reserved"
+                .formatted(ops, bag);
+        // the order of the classes does not matter
+        for (var names : List.of(List.of(ops, bag), List.of(bag, ops))) {
+            var errors = UserSignature.checkUserClass(names).getErrors().get();
+            assertEquals(1, errors.size(), errors.toString());
+            assertEquals(expected, errors.iterator().next().toString());
+        }
     }
 
     /** Tests that a given user class has precisely as many errors as there are

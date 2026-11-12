@@ -7,6 +7,7 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -92,6 +93,53 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = annotation == null
             ? false
             : annotation.indeterminate();
+        this.seqAccessor = null;
+    }
+
+    /**
+     * Constructs the operator for a generated accessor of a sequence-valued field
+     * of a user type. The operator takes a value of the user type as its first argument;
+     * its name is derived from the name of the field (see {@link SeqAccessor#getName(String)}).
+     * @param field the sequence-valued field
+     * @param accessor the kind of accessor
+     * @throws IllegalArgumentException if the type of the field is not a sequence type
+     * of a system sort
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    Operator(RecordComponent field, SeqAccessor accessor) throws IllegalArgumentException {
+        var elementType = getSeqElementType(field.getType());
+        if (elementType == null) {
+            throw Exceptions
+                .illegalArg("Type %s of field '%s' is not a sequence type of a system sort",
+                            field.getType().getSimpleName(), field.getName());
+        }
+        this.declaringSort = Sort.USER;
+        this.inverse = false;
+        this.varArgs = false;
+        this.zeroArgs = false;
+        this.constructor = false;
+        this.tail = false;
+        this.setValued = false;
+        this.indeterminate = false;
+        this.name = accessor.getName(field.getName());
+        this.parameterSorts = new ArrayList<>();
+        this.parameterSorts.add(Sort.USER);
+        switch (accessor) {
+        case AT -> {
+            this.parameterSorts.add(Sort.INT);
+            this.returnSort = toReturnSort(elementType);
+            this.description = "Element of sequence-valued field '" + field.getName() + "'";
+        }
+        case SIZE -> {
+            this.returnSort = Sort.INT;
+            this.description = "Length of sequence-valued field '" + field.getName() + "'";
+        }
+        default -> throw Exceptions.unreachable();
+        }
+        this.arity = this.parameterSorts.size();
+        this.symbol = null;
+        this.kind = OpKind.CALL;
+        this.seqAccessor = accessor;
     }
 
     /**
@@ -122,14 +170,9 @@ public class Operator implements Comparable<Operator> {
             return null;
         }
         Class<?> lastType = parTypes[last];
-        if (lastType == IntSeq.class) {
-            return int.class;
-        } else if (lastType == RealSeq.class) {
-            return double.class;
-        } else if (lastType == BoolSeq.class) {
-            return boolean.class;
-        } else if (lastType == StringSeq.class) {
-            return String.class;
+        var elementType = getSeqElementType(lastType);
+        if (elementType != null) {
+            return elementType;
         } else if (lastType == UserSeq.class) {
             // the generic types can only fall short of the parameters for constructors
             // of inner classes, which do not occur here
@@ -146,6 +189,27 @@ public class Operator implements Comparable<Operator> {
             throw Exceptions
                 .illegalArg("Sequence type %s has no known element type",
                             lastType.getSimpleName());
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the Java type of the elements of a sequence type of a system sort
+     * (for instance {@code int} for {@link IntSeq}), or {@code null} if a given type
+     * is not such a sequence type.
+     * This is the one place that knows the element types of those sequence types.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static @Nullable Class<?> getSeqElementType(Class<?> type) {
+        if (type == IntSeq.class) {
+            return int.class;
+        } else if (type == RealSeq.class) {
+            return double.class;
+        } else if (type == BoolSeq.class) {
+            return boolean.class;
+        } else if (type == StringSeq.class) {
+            return String.class;
         } else {
             return null;
         }
@@ -215,6 +279,7 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = false;
         this.constructor = false;
         this.tail = false;
+        this.seqAccessor = null;
     }
 
     /** Converts a reflected parameter type into a GROOVE sort. */
@@ -447,6 +512,45 @@ public class Operator implements Comparable<Operator> {
 
     /** Flag indicating if this operator is the constructor of a user type. */
     private final boolean constructor;
+
+    /**
+     * Returns the kind of accessor that this operator is for a sequence-valued field
+     * of a user type, or {@code null} if it is not such an accessor.
+     * An accessor is generated, rather than declared by a user operation;
+     * it is evaluated by applying the accessor to the value of the field.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public @Nullable SeqAccessor getSeqAccessor() {
+        return this.seqAccessor;
+    }
+
+    /** The kind of accessor that this operator is for a sequence-valued field, if any. */
+    private final @Nullable SeqAccessor seqAccessor;
+
+    /**
+     * The accessors that are generated for a sequence-valued field of a user type.
+     * The name of the field itself is not among the names of the accessors, and is
+     * reserved: it is the name that an operator yielding the sequence as a whole would have.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public enum SeqAccessor {
+        /** Yields the element at a given position, counting from 0. */
+        AT("At"),
+        /** Yields the number of elements. */
+        SIZE("Size");
+
+        private SeqAccessor(String suffix) {
+            this.suffix = suffix;
+        }
+
+        /** Returns the name of the operator for this accessor of a field with a given name. */
+        public String getName(String fieldName) {
+            return fieldName + this.suffix;
+        }
+
+        /** The suffix that turns the name of a field into the name of the operator. */
+        private final String suffix;
+    }
 
     /**
      * Indicates if there are more operators with the same name

@@ -42,7 +42,8 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Tests the parsing, printing and evaluation of user operators with a variable
  * argument tail: constructors of user types whose last field is a sequence,
- * and user operations whose last parameter is one.
+ * and user operations whose last parameter is one; and the evaluation of the
+ * accessors generated for such a field.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -54,7 +55,7 @@ public class SequenceTailTest {
     public void setUp() {
         UserSignature
             .setUserClass(Stream
-                .of("UserTypePoly", "UserTypeBag", "UserOpsSeq", "UserTypeIntString")
+                .of("UserTypePoly", "UserTypeBag", "UserTypeTags", "UserOpsSeq", "UserTypeIntString")
                 .map(PACKAGE_NAME::extend)
                 .toList());
     }
@@ -125,6 +126,39 @@ public class SequenceTailTest {
         // the polynomial 1 + x at the points 0, 1 and 2
         assertEquals(6, eval("sumAt(UserTypePoly(\"p\",1,1),0,1,2)"));
         assertEquals(0, eval("sumAt(UserTypePoly(\"p\",1,1))"));
+    }
+
+    /** The elements and the length of a sequence-valued field are read by generated accessors. */
+    @Test
+    public void testAccessors() throws FormatException {
+        assertEquals(3, eval("coeffsSize(UserTypePoly(\"p\",1,2,3))"));
+        assertEquals(0, eval("coeffsSize(UserTypePoly(\"p\"))"));
+        assertEquals(1, eval("coeffsAt(UserTypePoly(\"p\",1,2,3),0)"));
+        assertEquals(3, eval("coeffsAt(UserTypePoly(\"p\",1,2,3),2)"));
+        assertEquals(4, eval("elemsAt(UserTypeBag(4,5),0)"));
+        // the position may be an expression, such as the last position
+        assertEquals(3,
+                     eval("coeffsAt(UserTypePoly(\"p\",1,2,3),coeffsSize(UserTypePoly(\"p\",1,2,3))-1)"));
+        // the elements have the sort of the sequence
+        assertEquals("b", eval("tagsAt(UserTypeTags(\"a\",\"b\"),1)"));
+        assertEquals("ab", eval("concat(tagsAt(UserTypeTags(\"a\",\"b\"),0),\"b\")"));
+    }
+
+    /** A position outside the sequence yields an error value, as does a value of another user type. */
+    @Test
+    public void testAccessorErrors() throws FormatException {
+        assertInstanceOf(ErrorValue.class, eval("coeffsAt(UserTypePoly(\"p\",1,2,3),3)"));
+        assertInstanceOf(ErrorValue.class, eval("coeffsAt(UserTypePoly(\"p\",1,2,3),-1)"));
+        assertInstanceOf(ErrorValue.class, eval("coeffsAt(UserTypePoly(\"p\"),0)"));
+        // all user types have the same sort
+        assertInstanceOf(ErrorValue.class, eval("coeffsSize(UserTypeBag(1))"));
+        assertInstanceOf(ErrorValue.class, eval("coeffsAt(UserTypeBag(1),0)"));
+        // the accessors are operators like any other, with their own arguments
+        assertThrows(FormatException.class, () -> eval("coeffsAt(UserTypePoly(\"p\",1))"));
+        assertThrows(FormatException.class, () -> eval("coeffsAt(UserTypePoly(\"p\",1),true)"));
+        assertThrows(FormatException.class, () -> eval("coeffsSize(UserTypePoly(\"p\",1),0)"));
+        // the field itself is not an operator
+        assertThrows(FormatException.class, () -> eval("coeffs(UserTypePoly(\"p\",1))"));
     }
 
     /** Arguments of the wrong sort are found when the expression is parsed. */

@@ -33,6 +33,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.Operator.SeqAccessor;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
@@ -397,6 +398,10 @@ public enum AlgebraFamily implements DocumentedEnum {
         /** Invokes the executable in this operation with the given list of argument. */
         @Override
         protected Object invoke(List<Object> args) throws ReflectiveOperationException {
+            var accessor = getOperator().getSeqAccessor();
+            if (accessor != null) {
+                return accessSeq(accessor, args);
+            }
             var argsArray = getOperator().hasTail()
                 ? packTail(args)
                 : args.toArray();
@@ -411,6 +416,40 @@ public enum AlgebraFamily implements DocumentedEnum {
                 }
             case Constructor<?> c:
                 return c.newInstance(argsArray);
+            }
+        }
+
+        /**
+         * Applies a generated accessor of a sequence-valued field: the executable is
+         * the accessor method of the field, whose result is the sequence to inspect.
+         * @throws IllegalArgumentException if the first argument is not a value of
+         * the user type that has the field, or the position is out of range; either
+         * makes the outcome of the operation an error value
+         * @see Operator#getSeqAccessor()
+         */
+        @AIGenerated("Claude Fable 5.2, 2026-11")
+        private Object accessSeq(SeqAccessor accessor,
+                                 List<Object> args) throws ReflectiveOperationException {
+            var field = (Method) this.executable;
+            if (!(field.invoke(args.get(0)) instanceof Seq<?> seq)) {
+                // user code can construct a record without a value for the field
+                throw Exceptions.illegalArg("Field '%s' has no value", field.getName());
+            }
+            switch (accessor) {
+            case AT:
+                if (!(args.get(1) instanceof Integer index)) {
+                    throw Exceptions.illegalArg("Position %s is not an integer", args.get(1));
+                }
+                if (index < 0 || index >= seq.size()) {
+                    throw Exceptions
+                        .illegalArg("Position %s is out of range for field '%s' of length %s",
+                                    index, field.getName(), seq.size());
+                }
+                return seq.value(index);
+            case SIZE:
+                return seq.size();
+            default:
+                throw Exceptions.unreachable();
             }
         }
 
