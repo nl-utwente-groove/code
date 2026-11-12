@@ -221,11 +221,18 @@ Each is one or a few commits, mergeable on its own.
      sum 16;
    - tail operators needed no code change on the route from aspect graphs to operator
      nodes, in the `let` form or as a product node;
-   - `coeffSum` is written with explicit product nodes because the `let` form does not
-     exist: `let:sum = sum(coeffsAt(p, range(coeffsSize(p))))` is rejected ("Set operator
-     argument ... should be one level deeper"), since an expression without a node on a
-     universal level has no way to place its argument there. The manual of slice 5 has
-     to show the product-node form. A shorter form is a matter for gh #942;
+   - `coeffSum` is written with explicit nodes. `sum` and the other collection operators
+     fold the values of a universal level, so their argument has to live one level below
+     the node that receives the result. `coeffSum` is that construction: under `forall:`,
+     `i` is an element of `range(coeffsSize(p))` and `e` is `coeffsAt(p, i)`; the `sum`
+     product node takes `e` and delivers its result outside the quantifier.
+     `let:sum = sum(coeffsAt(p, range(coeffsSize(p))))` is rejected, and rightly so ("Set
+     operator argument ... should be one level deeper"): it has no quantifier, and an
+     enumerator in argument position does not supply one. What is missing is only a
+     label syntax for a variable on the universal level that is bound by an enumerator:
+     `sum(a.x)` needs a graph node `a` on that level with a field `x`, and a position of
+     a sequence has no such node. Until there is one, the manual of slice 5 shows the
+     node form;
    - the sample is `junit/samples/poly-growth.gps`: `step` appends one coefficient,
      `leap` two, `spread` creates a node per position. 20 states and 28 transitions,
      asserted by `ExplorationTest.testPolyGrowth`; without content equality of the
