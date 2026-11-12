@@ -407,25 +407,10 @@ public class NormalAspectGraph extends AspectGraph {
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
     private void checkEnumerators(AspectElement holder, Expression expr) throws FormatException {
-        if (countEnumerators(expr) > 1) {
+        if (expr.getEnumeratorCount() > 1) {
             throw new FormatException("Expression '%s' has more than one enumerator",
                 expr.toParseString(), holder);
         }
-    }
-
-    /** Returns the number of enumerator calls in an expression. */
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    private static int countEnumerators(Expression expr) {
-        int result = 0;
-        if (expr instanceof CallExpr call) {
-            if (call.getOperator().isEnumerator()) {
-                result++;
-            }
-            for (var arg : call.getArgs()) {
-                result += countEnumerators(arg);
-            }
-        }
-        return result;
     }
 
     /**
