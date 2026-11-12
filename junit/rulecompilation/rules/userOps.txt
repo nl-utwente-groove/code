@@ -58,6 +58,20 @@ Existential coeffSum [non-positive]
     Existential coeffSum[0,0]
       root: nodes [] edges []
       lhs: nodes [] edges []
+== rule coeffSumVar
+signature: ()
+hidden: []
+anchor: [n2:Ω#, x11:int]
+Existential coeffSumVar [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n2:Ω#, x3:user, p10:int:sum(int), x11:int] edges [n2--p-->x3]
+  rhs: nodes [n2:Ω#, x3:user, p10:int:sum(int), x11:int] edges [n2--p-->x3, n2--sum-->x11]
+  Universal coeffSumVar[0] [non-positive] outputs=[x9:int]
+    root: nodes [x3:user] edges []
+    lhs: nodes [x3:user, p4:user:coeffsSize(user), x5:int, p6:int:range(int), x7:int, p8:user:coeffsAt(user,int), x9:int] edges []
+    Existential coeffSumVar[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
 == rule coeffsAt
 signature: ()
 hidden: []

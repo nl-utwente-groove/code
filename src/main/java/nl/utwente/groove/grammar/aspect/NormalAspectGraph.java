@@ -677,6 +677,13 @@ public class NormalAspectGraph extends AspectGraph {
                 result = target.getLevelNode();
             }
             break;
+        case VAR:
+            // a variable stands for the node of that identifier
+            AspectNode varNode = getNodeForId(((Variable) expr).getName());
+            if (varNode != null) {
+                result = varNode.getLevelNode();
+            }
+            break;
         default:
             throw Exceptions.unreachable();
         }
