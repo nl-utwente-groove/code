@@ -17,6 +17,7 @@
 package nl.utwente.groove.test.grammar.aspect;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -40,15 +41,12 @@ import nl.utwente.groove.util.AIGenerated;
 /**
  * Tests what an enumeration means where a rule reads a value rather than
  * sets it (gh #931): it stands for some element, so an attribute whose value
- * is an enumeration is a membership test, and a test that calls an enumerator
- * holds if it holds for some element.
+ * is an enumeration is a membership test. A test may not call an enumerator;
+ * it can test a node that has the enumeration as its value instead.
  * <p>
  * Every rule has a node {@code a} with a field {@code n} and a node {@code b}
  * with a field {@code x}, and is matched against the hosts of {@link #HOSTS};
  * the enumeration is {@code range(a.n)} throughout.
- * <p>
- * Not tested, as their meaning is under discussion: an embargo edge to an
- * enumeration node that is not itself an embargo, and a {@code not:test}-edge.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -78,23 +76,46 @@ public class EnumeratorMembershipTest {
                       edge("e", "not:", "e"), edge("b", "x", "e"));
     }
 
-    /** A test that equates a field to an enumeration tests membership. */
+    /**
+     * An embargo edge to an enumeration node that is read is an error: it
+     * would hold if some element is not the value.
+     */
     @Test
-    public void testEquality() throws Exception {
-        assertMatches(counts(1, 0, 0, 1, 0), edge("b", "test:x == int:range(a.n)", "b"));
+    public void testEmbargoEdge() {
+        assertRejected("Embargo edge to enumeration", edge("e", "int:range(a.n)", "e"),
+                       edge("b", "not:x", "e"));
     }
 
     /**
-     * A test that calls an enumerator holds if it holds for some element; it
-     * is found once, however many elements satisfy it.
+     * A test may not call an enumerator, in whatever form: it would hold if it
+     * holds for some element, which its text does not convey.
      */
     @Test
-    public void testSomeElement() throws Exception {
+    public void testEnumeratorInTest() {
+        var error = "Enumerator not allowed in test";
+        assertRejected(error, edge("b", "test:x == int:range(a.n)", "b"));
+        assertRejected(error, edge("b", "test:int:range(a.n) > x", "b"));
+        assertRejected(error, edge("b", "test:!(x == int:range(a.n))", "b"));
+        assertRejected(error, edge("b", "not:test:x == int:range(a.n)", "b"));
+        assertRejected(error, edge("q", "forall:", "q"), edge("b", "at", "q"),
+                       edge("b", "test:x == int:range(a.n)", "b"));
+    }
+
+    /**
+     * A test of a named node that has the enumeration as its value holds if
+     * it holds for some element; it is found once, however many elements
+     * satisfy it.
+     */
+    @Test
+    public void testElementNode() throws Exception {
+        var element = edge("e", "int:range(a.n)", "e");
+        var name = edge("e", "id:i", "e");
+        // x is an element
+        assertMatches(counts(1, 0, 0, 1, 0), element, name, edge("b", "test:x == i", "b"));
         // some element is greater than x
-        assertMatches(counts(1, 0, 0, 0, 0), edge("b", "test:int:range(a.n) > x", "b"));
+        assertMatches(counts(1, 0, 0, 0, 0), element, name, edge("b", "test:i > x", "b"));
         // some element differs from x, which is not the same as x being no element
-        assertMatches(counts(1, 1, 0, 0, 1), edge("b", "test:x != int:range(a.n)", "b"));
-        assertMatches(counts(1, 1, 0, 0, 1), edge("b", "test:!(x == int:range(a.n))", "b"));
+        assertMatches(counts(1, 1, 0, 0, 1), element, name, edge("b", "test:i != x", "b"));
     }
 
     /**
@@ -107,12 +128,25 @@ public class EnumeratorMembershipTest {
     public void testUnderQuantifier() throws Exception {
         var quantifier = edge("q", "forallx:", "q");
         var level = edge("b", "at", "q");
-        assertMatches(counts(1, 0, 0, 1, 0), quantifier, level,
-                      edge("b", "test:x == int:range(a.n)", "b"));
-        assertMatches(counts(1, 0, 0, 1, 0), quantifier, level, edge("e", "int:range(a.n)", "e"),
-                      edge("e", "at", "q"), edge("b", "x", "e"));
-        assertMatches(counts(1, 0, 0, 0, 0), quantifier, level,
-                      edge("b", "test:int:range(a.n) > x", "b"));
+        var element = edge("e", "int:range(a.n)", "e");
+        var elementLevel = edge("e", "at", "q");
+        assertMatches(counts(1, 0, 0, 1, 0), quantifier, level, element, elementLevel,
+                      edge("b", "x", "e"));
+        assertMatches(counts(1, 0, 0, 0, 0), quantifier, level, element, elementLevel,
+                      edge("e", "id:i", "e"), edge("b", "test:i > x", "b"));
+    }
+
+    /**
+     * An edge to an enumeration node is displayed on its source node with the
+     * element-of sign, an edge to any other expression with an arrow.
+     */
+    @Test
+    public void testDisplay() {
+        assertDisplay("x ∈ range(a.n)", "x", edge("e", "int:range(a.n)", "e"),
+                      edge("b", "x", "e"));
+        assertDisplay("! x ∈ range(a.n)", "x", edge("e", "int:range(a.n)", "e"),
+                      edge("e", "not:", "e"), edge("b", "x", "e"));
+        assertDisplay("x → a.n + 1", "x", edge("e", "int:a.n + 1", "e"), edge("b", "x", "e"));
     }
 
     /** An assignment, in contrast, is found once for every element. */
@@ -138,6 +172,40 @@ public class EnumeratorMembershipTest {
             assertEquals(expected[i], rule.getProver().getAllMatches(host).size(),
                          () -> String.format("Matches of %s for n = %d and x = %d", describe(edges), n, x));
         }
+    }
+
+    /**
+     * Asserts that a rule is rejected with a given error, and no other.
+     * @param error a part of the expected error message
+     * @param edges the edges of the rule, on top of the nodes {@code a} and {@code b}
+     */
+    private void assertRejected(String error, String[]... edges) {
+        var graph = ruleGraph(edges).normalise();
+        assertTrue(graph.hasErrors(), () -> "No error for " + describe(edges));
+        for (var found : graph.getErrors()) {
+            assertTrue(found.toString().contains(error), found::toString);
+        }
+    }
+
+    /**
+     * Asserts the display text of an edge of a rule on its source node.
+     * @param expected the expected text, with a single space wherever the
+     * display puts white space
+     * @param label the label of the edge to be displayed
+     * @param edges the edges of the rule, on top of the nodes {@code a} and {@code b}
+     */
+    private void assertDisplay(String expected, String label, String[]... edges) {
+        var edge = ruleGraph(edges)
+            .edgeSet()
+            .stream()
+            .filter(e -> e.getInnerText().equals(label))
+            .findAny()
+            .orElseThrow();
+        var text = edge
+            .toLine(true, edge.source().getAspects())
+            .toFlatString()
+            .replaceAll("[\\s  ]+", " ");
+        assertEquals(expected, text, () -> "Display of " + describe(edges));
     }
 
     /** Returns the expected numbers of matches, in the order of {@link #HOSTS}. */

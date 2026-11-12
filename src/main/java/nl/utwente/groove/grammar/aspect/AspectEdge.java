@@ -631,10 +631,14 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case HOST:
                 case RULE:
                     // this is an attribute edge displayed as a node label
-                    result = result.append(Unicode.THIN_SPACE + POINTS_TO_SYMBOL + Unicode.THIN_SPACE);
                     var targetValue = hasGraphRole(HOST)
                         ? target().getValue()
                         : target().getExpression();
+                    // an edge to an enumeration tests that the value is an element
+                    var symbol = targetValue != null && targetValue.isEnumeration()
+                        ? ELEMENT_OF_SYMBOL
+                        : POINTS_TO_SYMBOL;
+                    result = result.append(Unicode.THIN_SPACE + symbol + Unicode.THIN_SPACE);
                     var targetLine = targetValue == null
                         ? Line.atom(type.getName()).style(Style.BOLD)
                         : targetValue.toLine();
@@ -979,11 +983,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             // make a test for a self-field look like an edge, like for let:
             if (getTest() instanceof CallExpr c && c.getOperator().isEquality()
                 && c.getArgs().get(0) instanceof FieldExpr f && f.isSelf()) {
-                var value = c.getArgs().get(1);
-                return new Assignment(f.getField(), value)
-                    .toLine(value.isEnumeration()
-                        ? ELEMENT_OF_SYMBOL
-                        : POINTS_TO_SYMBOL);
+                return new Assignment(f.getField(), c.getArgs().get(1)).toLine(POINTS_TO_SYMBOL);
             } else {
                 return getTest().toLine();
             }

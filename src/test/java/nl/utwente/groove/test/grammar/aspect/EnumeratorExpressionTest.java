@@ -45,14 +45,12 @@ public class EnumeratorExpressionTest {
         assertAccepted("new:let:x = int:range(n)");
         assertAccepted("new:let:x = lo + int:range(n)");
         assertAccepted("new:let:x = int:max(lo, int:range(n - lo))");
-        assertAccepted("test:int:range(n) > lo");
     }
 
     /** Two edges of one node may each call an enumerator. */
     @Test
     public void testEnumeratorPerEdge() {
         assertAccepted("new:let:x = int:range(n)", "new:let:y = int:range(n)");
-        assertAccepted("new:let:x = int:range(n)", "test:int:range(n) > lo");
     }
 
     /** More than one enumerator in an expression is an error. */
@@ -65,7 +63,6 @@ public class EnumeratorExpressionTest {
         assertRejected("new:let:x = int:range(int:range(n))");
         // at any depth, and with other operators in between
         assertRejected("new:let:x = int:max(lo + int:range(n), int:range(n) - 1)");
-        assertRejected("test:int:range(n) > int:range(lo)");
     }
 
     /**
@@ -79,9 +76,6 @@ public class EnumeratorExpressionTest {
         assertDisplay("x ∈ lo + range(n)", "new:let:x = lo + int:range(n)");
         // a test of a field of the node itself is displayed like an assignment
         assertDisplay("lo → n + 1", "test:lo == n + 1");
-        assertDisplay("lo ∈ range(n)", "test:lo == int:range(n)");
-        // any other test is displayed as it is written
-        assertDisplay("range(n) > lo", "test:int:range(n) > lo");
     }
 
     /**
