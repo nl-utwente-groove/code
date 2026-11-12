@@ -170,4 +170,5 @@ The three marked "reproduced" were run on this branch's base on 2026-11-11.
   from `ExprTree.addArg` instead of a `FormatException`: the array `userConstArgs` is
   sized by the arity and written before `checkCall` counts the arguments. With a
   non-constant argument the array is dropped first and the message is the proper one.
-  Slice 2 replaces the array by a list, which removes the overrun.
+  Left to slice 2 by decision (2026-11-12): it replaces the array by a list, which removes
+  the overrun, and adds the all-constant case to its parse tests as the regression test.
