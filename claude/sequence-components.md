@@ -17,9 +17,9 @@ sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
   one-enumerator restriction, the fix of the collection operator over a node identifier
   and the element-of rendering. On top of it, `enumeration-membership` (tests of the
   item "Enumerations that are read" below) and on that `enumeration-restrictions`
-  (the restrictions of that item); the worktree
+  (the restrictions of that item, and a merge of `not-test-double-negation`, the fix
+  of gh #943 off `release-7_6_1`); the worktree
   `.claude/worktrees/sequence-components` is detached at the tip of the latter.
-  Apart from these, off `release-7_6_1`: `not-test-double-negation` (gh #943).
 - *Element-of rendering: done* (2026-11-12), on branch `element-of-rendering`, stacked
   on `single-enumerator-per-expression`, two commits. The syntax is unchanged; where a
   right-hand side is an enumeration, the display has the element-of sign (U+2208,
@@ -42,8 +42,8 @@ sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
   - a `test`-edge that compares a field of its own node with an enumeration
     (`test:x == range(n)`) is displayed like an assignment and gets the sign too: it is
     a membership test. A test in any other form (`a.x == range(n)`, `range(n) > lo`)
-    keeps its operator; not asked. Superseded: a test may no longer call an
-    enumerator, see below;
+    keeps its operator; not asked. Since then a test in any other form may not call
+    an enumerator, see below;
   - test of the edge forms: `EnumeratorExpressionTest.testDisplay`. The node form has
     no test that runs without a display; it was checked in Imager output of `totalVar`,
     `pick` and `span`;
@@ -58,30 +58,29 @@ sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
   qualifies:
   - a reader edge to an enumeration node is a membership test, displayed on its source
     as `x ∈ range(a.n)` (`AspectEdge.toLine`);
-  - **a `test`-edge may not call an enumerator** (error in the `test`-edge case of
-    `NormalAspectGraph.doNormalise`), negated or not, the equality with a field
-    included. Such a test held if it held for some element, which its text does not
-    convey (`test:x != range(n)` meant "some element differs from `x`"). The
-    replacement is a named node with the enumeration as its value (`id:i`,
-    `int:range(a.n)`) and an ordinary test of `i`; it has the same matches
-    (`testElementNode`). The element-of display of `test:x == range(n)` is gone again.
-    Arend's reason: the display with a quantifier (`∃ i ∈ range(a.n) : i > x`) gets
-    complicated for arbitrary boolean expressions. It is well defined, since there is
-    one enumerator and its scope is the whole test, but it needs a bound name
-    substituted into the displayed expression;
+  - **a `test`-edge may call an enumerator in one form only** (error otherwise, in the
+    `test`-edge case of `NormalAspectGraph.doNormalise`): the equality with a field of
+    its own node on the left (`test:x == range(a.n)`, `AspectEdge.getFieldTest`). That
+    is the form displayed like an attribute, here as `x ∈ range(a.n)`, and it is the
+    same membership test as the edge to an enumeration node; with `not:` it tests that
+    the value is no element, displayed as `! x ∈ range(a.n)` (`testFieldTest`). Arend
+    asked for this exception so that membership can be written with node labels only,
+    as `test:x == expr` can for any other expression. In any other form a test held if
+    it held for some element, which its text does not convey (`test:x != range(n)`
+    meant "some element differs from `x`"). The replacement is a named node with the
+    enumeration as its value (`id:i`, `int:range(a.n)`) and an ordinary test of `i`;
+    it has the same matches (`testElementNode`). A display with a quantifier
+    (`∃ i ∈ range(a.n) : i > x`) was rejected by Arend as too involved for arbitrary
+    boolean expressions;
   - **an embargo edge to an enumeration node that is read is an error**
     (`checkEnumerationEdges`): it meant "some element is not the value";
-  - `not:let` does not exist ("Conflicting aspects").
-  Open, for Arend to decide: **an enumeration node that is itself an embargo** is
-  accepted, means "the value is no element" (`testEmbargoNode`) and is displayed as
-  `! x ∈ range(a.n)`. Arend wants enumerations out of embargoes altogether, on the
-  assumption that `not:` on a value node is forbidden. It is not: `AspectNode` accepts
-  a data node that is a reader or an embargo, `not:` with `int:1` means "the field is
-  not 1", and a `not:int:x` field edge makes such a node. So this is the one form of
-  negation that works, and it is left in place. Forbidding it too is a one-line change
-  in `checkEnumerationEdges`; non-membership of `range` is then written arithmetically
-  (`test:x < 0 | x >= a.n`). The product-node form (`absent` in `enumerators.gps`) is
-  not restricted either way.
+  - **an enumeration node that is itself an embargo** is accepted (Arend, 2026-11-12,
+    after first wanting it out), means "the value is no element" (`testEmbargoNode`)
+    and is displayed as `! x ∈ range(a.n)`. The product-node form (`absent` in
+    `enumerators.gps`) is not restricted;
+  - `not:let` does not exist ("Conflicting aspects");
+  - not run: that the two negated forms also agree where the field has no value (both
+    should hold; measured only for `not:test` without an enumerator).
 - *`not:test` negated twice*, also without an enumerator and also in release 7.6.1:
   gh #943. `not:test:x == 1` was found exactly where `x` is 1, since `addNestedNode`
   makes the test structure an embargo (since 176495578, 2024-02) and the outcome was
@@ -90,10 +89,11 @@ sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
   issue and does not name it): the outcome is always true and the embargo carries the
   negation, so `not:test:P` holds if the tested fields have no values for which `P`
   holds, which includes having no value. A negated test of a quantifier count, a
-  format error before, reads the count outside the embargo. `CHANGES.md` has no entry:
-  the release line has no forthcoming section. Branch `negated-enumeration-test`
-  pinned the enumerator case on a merge of the fix; with enumerators ruled out of
-  tests it is superseded and can be deleted.
+  format error before, reads the count outside the embargo. The branch is merged into
+  `enumeration-restrictions` (Arend's go-ahead), since the negated field test depends
+  on it; the `CHANGES.md` entry for it is on that branch only, as the release line has
+  no forthcoming section. If the fix changes in review, merge it again. Branch
+  `negated-enumeration-test` is superseded and can be deleted.
 - *Next: slice 5* (documentation), now also covering the one-call restriction, the
   named-variable form of the sum (`coeffSumVar`, which replaces the product-node form
   as the one to show) and the element-of rendering. The website branch
