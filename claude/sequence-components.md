@@ -21,30 +21,39 @@ sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
   on a collection operator over a node identifier (`NormalAspectGraph.getLevel`, fixtures
   `intSumVar`, `totalVar`, `coeffSumVar`); and corrections to this note. Gates on its
   tip: full suite without GUI tests (885 run, 2 skipped in `GrammarsTest`) and
-  null-check pass. The worktree `.claude/worktrees/sequence-components` is detached at
-  that tip.
-- *Next 1: element-of rendering* (decided by Arend, not started). The syntax stays as
-  it is: a quantified variable bound by an enumerator is a value node with the separate
-  labels `id:x` and `int:<expression>`. Only the rendering changes: where the
-  right-hand side is an enumeration, the display uses the element-of sign instead of
-  `=`. Found so far:
-  - `gui/look/LabelValue.getDataLine` renders such a node as `x : int = <expression>`,
-    with the constant `EQUALS_TO`;
-  - a `let`-edge is rendered by `AspectEdge.getAssignLine`, which calls
-    `Assignment.toLine(symbol)`; its one caller (the `LET` case of the display-label
-    switch in `AspectEdge`) passes `POINTS_TO_SYMBOL`, an arrow, so a `let`-edge does
-    not show `=` at present. Whether it should show the element-of sign as well was not
-    asked; Arend's wording was about the node form;
-  - "calls an enumerator" is only available as the private
-    `NormalAspectGraph.countEnumerators`; the rendering needs it on `Expression`
-    (override in `CallExpr`), and `NormalAspectGraph` can then use that;
-  - `util.Unicode` has no element-of constant (U+2208);
-  - to confirm with Arend: "is an enumeration" taken as "contains an enumerator call"
-    (so also `lo + range(n)`, which with one call per expression reads as a set), or
-    only an enumerator call at the top;
-  - the change is in `gui/`, so the GUI tests are a gate, and a branch of its own
-    stacked on `single-enumerator-per-expression` is the place for it.
-- *Next 2: slice 5* (documentation), now also covering the one-call restriction, the
+  null-check pass. The worktree `.claude/worktrees/sequence-components` is on
+  `element-of-rendering`, see the next item.
+- *Element-of rendering: done* (2026-11-12), on branch `element-of-rendering`, stacked
+  on `single-enumerator-per-expression`, two commits. The syntax is unchanged; where a
+  right-hand side is an enumeration, the display has the element-of sign (U+2208,
+  `Unicode.ELEMENT_OF`):
+  - "is an enumeration" means "contains an enumerator call" (Arend, 2026-11-12), so
+    `lo + range(n)` is one. It is `Expression.isEnumeration`, on top of
+    `Expression.getEnumeratorCount`, which replaces the private count of
+    `NormalAspectGraph` (test: `ExpressionTest.testEnumerations`);
+  - node form (`gui/look/LabelValue.getDataLine`): `x : int = range(a.n)` became
+    `x : int ∈ range(a.n)`. A value node without an identifier shows the bare
+    expression, as before;
+  - `let`-edge form (`AspectEdge.getAssignLine`): `x → range(a.n)` became
+    `x ∈ range(a.n)`, with the role prefix and colour unchanged. Arend asked what such
+    an edge means and whether it should be forbidden. It is the main use of
+    enumerators, in fixtures since phase 1 of the second part: on an existential level
+    a choice, one transition per element (`pick`, `span` in `enumerators.gps`); under
+    `forall:` on a creator node, one new node per element (`spawn`, and `fill` in
+    `range-cells.gps`). So no restriction was added. That the arrow is replaced, and
+    not kept in front of the sign, is a proposal: Arend has not seen it;
+  - a `test`-edge that compares a field of its own node with an enumeration
+    (`test:x == range(n)`) is displayed like an assignment and gets the sign too: it is
+    a membership test. A test in any other form (`a.x == range(n)`, `range(n) > lo`)
+    keeps its operator; not asked;
+  - test of the edge forms: `EnumeratorExpressionTest.testDisplay`. The node form has
+    no test that runs without a display; it was checked in Imager output of `totalVar`,
+    `pick` and `span`;
+  - gates on the tip: full suite without GUI tests (890 run, 2 skipped in
+    `GrammarsTest`; three more than the two added tests account for, not looked
+    into), GUI tests (15 run in 4 classes, none skipped), null-check pass. The
+    yFiles backend was not built against it: this line has no backend.
+- *Next: slice 5* (documentation), now also covering the one-call restriction, the
   named-variable form of the sum (`coeffSumVar`, which replaces the product-node form
   as the one to show) and the element-of rendering. The website branch
   `set-valued-operators` has none of these yet.
