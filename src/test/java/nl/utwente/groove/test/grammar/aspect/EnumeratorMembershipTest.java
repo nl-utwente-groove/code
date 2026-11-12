@@ -136,6 +136,41 @@ public class EnumeratorMembershipTest {
     }
 
     /**
+     * Two named nodes that each have an enumeration as their value can be
+     * combined in one expression, which a single expression with two
+     * enumerators cannot be: it ranges over the pairs of elements.
+     */
+    @Test
+    public void testTwoElementNodes() throws Exception {
+        var first = edge("e", "int:range(a.n)", "e");
+        var firstName = edge("e", "id:i", "e");
+        var second = edge("f", "int:range(a.n)", "f");
+        var secondName = edge("f", "id:j", "f");
+        // x is the sum of two elements
+        assertMatches(counts(1, 0, 0, 1, 0), first, firstName, second, secondName,
+                      edge("b", "test:x == i + j", "b"));
+        // x is one more than such a sum; for x = 5 only the pair of greatest elements will do
+        assertMatches(counts(1, 1, 0, 0, 0), first, firstName, second, secondName,
+                      edge("b", "test:x == i + j + 1", "b"));
+        // an assignment is found once for every pair
+        assertMatches(counts(9, 9, 0, 1, 1), first, firstName, second, secondName,
+                      edge("b", "let:x = i + j", "b"));
+    }
+
+    /**
+     * Where the field has no value, the membership test does not hold in
+     * either form, and its negation holds in either form.
+     */
+    @Test
+    public void testNoValue() throws Exception {
+        var element = edge("e", "int:range(a.n)", "e");
+        assertMatchesWithoutValue(0, element, edge("b", "x", "e"));
+        assertMatchesWithoutValue(0, edge("b", "test:x == int:range(a.n)", "b"));
+        assertMatchesWithoutValue(1, element, edge("e", "not:", "e"), edge("b", "x", "e"));
+        assertMatchesWithoutValue(1, edge("b", "not:test:x == int:range(a.n)", "b"));
+    }
+
+    /**
      * Under a universal quantifier the meaning is the same: the quantifier
      * ranges over the nodes for which some element qualifies, and does not
      * require that all elements do. The quantifier is one that needs a match,
@@ -189,6 +224,22 @@ public class EnumeratorMembershipTest {
             assertEquals(expected[i], rule.getProver().getAllMatches(host).size(),
                          () -> String.format("Matches of %s for n = %d and x = %d", describe(edges), n, x));
         }
+    }
+
+    /**
+     * Asserts the number of matches of a rule in a host in which {@code a.n}
+     * is 3 and {@code b} has no field {@code x}.
+     * @param expected the expected number of matches
+     * @param edges the edges of the rule, on top of the nodes {@code a} and {@code b}
+     */
+    private void assertMatchesWithoutValue(int expected, String[]... edges) throws Exception {
+        var grammar = getGrammar();
+        var rule = new RuleModel(grammar, ruleGraph(edges)).toResource();
+        var host = new HostModel(grammar, hostGraph(3, null))
+            .toResource()
+            .clone(AlgebraFamily.DEFAULT);
+        assertEquals(expected, rule.getProver().getAllMatches(host).size(),
+                     () -> String.format("Matches of %s for n = 3 and no x", describe(edges)));
     }
 
     /**
@@ -271,9 +322,10 @@ public class EnumeratorMembershipTest {
 
     /**
      * Builds a host graph with a node of type {@code A} with field {@code n}
-     * and a node of type {@code B} with field {@code x}, with given values.
+     * and a node of type {@code B} with field {@code x}, with given values;
+     * without a value for {@code x}, the node of type {@code B} has no field.
      */
-    private AspectGraph hostGraph(int n, int x) {
+    private AspectGraph hostGraph(int n, @Nullable Integer x) {
         var plain = new PlainGraph("host", GraphRole.HOST, true);
         addObject(plain, "A", "n", n);
         addObject(plain, "B", "x", x);
@@ -281,13 +333,18 @@ public class EnumeratorMembershipTest {
         return AspectGraph.newInstance(plain);
     }
 
-    /** Adds a node of a given type with one integer field to a host graph. */
-    private void addObject(PlainGraph plain, String type, String field, int value) {
+    /**
+     * Adds a node of a given type to a host graph, with one integer field if
+     * a value for it is given.
+     */
+    private void addObject(PlainGraph plain, String type, String field, @Nullable Integer value) {
         var object = plain.addNode();
         plain.addEdge(object, "type:" + type, object);
-        var valueNode = plain.addNode();
-        plain.addEdge(valueNode, "int:" + value, valueNode);
-        plain.addEdge(object, field, valueNode);
+        if (value != null) {
+            var valueNode = plain.addNode();
+            plain.addEdge(valueNode, "int:" + value, valueNode);
+            plain.addEdge(object, field, valueNode);
+        }
     }
 
     /** Returns the grammar in whose context the rules and hosts are built. */

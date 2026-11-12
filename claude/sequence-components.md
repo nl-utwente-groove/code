@@ -23,8 +23,9 @@ review. The sequence parameter of a `@UserOperation` (decision 3) was confirmed 
   `set-valued-operators`, in worktree `C:\Groove\worktrees\set-valued-operators`, detached
   there as well). Nothing is pushed, and neither part of gh #931 is on `master`.
 - *Issues.* gh #934 and gh #943 were closed on 2026-11-12 with a comment that names the
-  fix and says it is not on `master` yet. gh #931 stays open until slice 5 is reviewed
-  and the two parts are merged. gh #935, #936 and #937 are unchanged in the code and
+  fix and says it is not on `master` yet, and so was gh #931 itself, on Arend's remark
+  that it was closeable: what is left of it is the review of slice 5, the merge and the
+  release. gh #935, #936 and #937 are unchanged in the code and
   stay open; gh #930 and gh #942 are later work.
 - *Gates on the tip of slice 5* (javadoc and notes only): null-check on the two
   annotation files, no errors or warnings; full suite with the slow tests and without
@@ -88,8 +89,8 @@ review. The sequence parameter of a `@UserOperation` (decision 3) was confirmed 
     and is displayed as `! x ∈ range(a.n)`. The product-node form (`absent` in
     `enumerators.gps`) is not restricted;
   - `not:let` does not exist ("Conflicting aspects");
-  - not run: that the two negated forms also agree where the field has no value (both
-    should hold; measured only for `not:test` without an enumerator).
+  - where the field has no value, the two negated forms agree as well: both hold, and
+    both plain forms fail (`testNoValue`).
 - *`not:test` negated twice*, also without an enumerator and also in release 7.6.1:
   gh #943. `not:test:x == 1` was found exactly where `x` is 1, since `addNestedNode`
   makes the test structure an embargo (since 176495578, 2024-02) and the outcome was
@@ -359,9 +360,11 @@ Each is one or a few commits, mergeable on its own.
      enumerator section brought in line with the restrictions. That section still said
      that `test:x < range(a.n)` holds if it holds for one value, which is an error now.
      No figures, as in the rest of the enumerator section;
-   - left out of the manual, as not run: that the negated membership test also holds
-     where the field has no value (see "Enumerations that are read"); that two named
-     enumeration nodes can be combined in one expression;
+   - two claims were first left out as not run, then checked on Arend's request and
+     added: where the field has no value the membership test fails and its negation
+     holds, in both forms (`EnumeratorMembershipTest.testNoValue`); two named
+     enumeration nodes can be combined in one expression, which ranges over the pairs
+     (`testTwoElementNodes`: a test is found once, an assignment once for every pair);
    - the generated accessors stay out of the operator help, like the accessors of plain
      fields; the manual gives the rule by which their names are derived. Not asked.
 
