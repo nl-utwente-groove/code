@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="coeffCells">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="t">
+            <attr name="layout">
+                <string>80 80 60 30</string>
+            </attr>
+        </node>
+        <node id="f">
+            <attr name="layout">
+                <string>310 80 60 30</string>
+            </attr>
+        </node>
+        <node id="c">
+            <attr name="layout">
+                <string>310 190 60 30</string>
+            </attr>
+        </node>
+        <edge from="t" to="t">
+            <attr name="label">
+                <string>id:t</string>
+            </attr>
+        </edge>
+        <edge from="f" to="f">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="c" to="c">
+            <attr name="label">
+                <string>new:</string>
+            </attr>
+        </edge>
+        <edge from="c" to="c">
+            <attr name="label">
+                <string>let:val = coeffsAt(t.p, range(coeffsSize(t.p)))</string>
+            </attr>
+        </edge>
+        <edge from="c" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

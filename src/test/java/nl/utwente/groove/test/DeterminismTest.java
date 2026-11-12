@@ -67,6 +67,9 @@ public class DeterminismTest {
         // enumerators: values enumerated under a quantifier, with created
         // nodes, and tested for membership after reconstruction from a seed (gh #931)
         test("range-cells", "");
+        // sequence-valued fields of user types: values that are built anew
+        // along every route, and so have to be equal and hash by content (gh #931)
+        test("poly-growth", "");
     }
 
     /**

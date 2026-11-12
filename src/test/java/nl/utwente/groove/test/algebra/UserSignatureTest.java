@@ -265,6 +265,10 @@ public class UserSignatureTest {
                 check(op, false, Sort.INT, Sort.USER);
                 tail = false;
             }
+            case "append" -> {
+                check(op, false, Sort.USER, Sort.USER, Sort.INT);
+                tail = false;
+            }
             case "name" -> {
                 check(op, false, Sort.STRING, Sort.USER);
                 tail = false;
@@ -282,7 +286,7 @@ public class UserSignatureTest {
             }
             assertEquals(tail, op.hasTail(), op.getName());
         }
-        assertEquals(14, ops.size());
+        assertEquals(15, ops.size());
 
         var poly = ops.get("UserTypePoly");
         assertNotNull(poly);

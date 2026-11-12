@@ -39,6 +39,12 @@ public record UserTypePoly(String name, IntSeq coeffs) {
         return coeffs().size() - 1;
     }
 
+    /** Returns this polynomial extended by a coefficient for the next higher degree. */
+    @UserOperation
+    public UserTypePoly append(int coeff) {
+        return new UserTypePoly(name(), coeffs().append(coeff));
+    }
+
     /** Returns the sum of the values of this polynomial at any number of points. */
     @UserOperation
     public int sumAt(IntSeq points) {

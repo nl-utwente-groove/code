@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="leap">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="t">
+            <attr name="layout">
+                <string>80 80 60 30</string>
+            </attr>
+        </node>
+        <edge from="t" to="t">
+            <attr name="label">
+                <string>test:coeffsSize(p) &lt; 3</string>
+            </attr>
+        </edge>
+        <edge from="t" to="t">
+            <attr name="label">
+                <string>let:p = append(append(p, coeffsSize(p)), coeffsSize(p) + 1)</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
