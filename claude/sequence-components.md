@@ -12,17 +12,12 @@ type on Arend's remark; slices 2, 3 and 4 done (2026-11-12); slice 5 open. The
 sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
 
 **Handoff (2026-11-12, end of session).** Start here in a fresh session.
-- *Branches.* `sequence-components` is at cb65555ff: slices 1 to 4 and the merged move of
-  all user-class fixtures to `test.algebra.user`. Stacked on it, awaiting review, is
-  `single-enumerator-per-expression`, with three changes that belong to the second part
-  (enumerators) but are built here because the code was renamed on this line: at most
-  one enumerator call per expression (`NormalAspectGraph.checkEnumerators`,
-  `EnumeratorExpressionTest`; see multi-valued-operators-state.md); the fix of the crash
-  on a collection operator over a node identifier (`NormalAspectGraph.getLevel`, fixtures
-  `intSumVar`, `totalVar`, `coeffSumVar`); and corrections to this note. Gates on its
-  tip: full suite without GUI tests (885 run, 2 skipped in `GrammarsTest`) and
-  null-check pass. The worktree `.claude/worktrees/sequence-components` is on
-  `element-of-rendering`, see the next item.
+- *Branches.* `sequence-components` is at 8a8d8675a: slices 1 to 4, the move of the
+  user-class fixtures to `test.algebra.user`, and (merged by Arend on 2026-11-12) the
+  one-enumerator restriction, the fix of the collection operator over a node identifier
+  and the element-of rendering. On top of it, `enumeration-membership`, with the tests
+  and open questions of the item "Enumerations that are read" below; the worktree
+  `.claude/worktrees/sequence-components` is detached at its tip.
 - *Element-of rendering: done* (2026-11-12), on branch `element-of-rendering`, stacked
   on `single-enumerator-per-expression`, two commits. The syntax is unchanged; where a
   right-hand side is an enumeration, the display has the element-of sign (U+2208,
@@ -53,6 +48,34 @@ sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
     `GrammarsTest`; three more than the two added tests account for, not looked
     into), GUI tests (15 run in 4 classes, none skipped), null-check pass. The
     yFiles backend was not built against it: this line has no backend.
+- *Enumerations that are read* (asked by Arend, 2026-11-12; checked by match counts,
+  `EnumeratorMembershipTest`). An enumeration that is read stands for some element,
+  also under a universal quantifier, which ranges over the nodes for which some element
+  qualifies:
+  - a reader edge to an enumeration node is a membership test, and such a node as an
+    embargo tests that the value is no element. Both are still displayed with an arrow
+    (`x → range(a.n)`, in `AspectEdge.toLine`), not with the element-of sign;
+  - `test:x == range(n)` is membership. A test with another operator holds if it holds
+    for some element (`range(n) > x`), so `test:x != range(n)` means "some element
+    differs from `x`", not "`x` is no element";
+  - `not:let` does not exist ("Conflicting aspects").
+  Open, for Arend to decide; nothing of it is built:
+  - an embargo edge to an enumeration node that is a reader means "some element is not
+    the value", as for any embargo edge between readers, and is displayed like the
+    embargo node. Proposed: an error that asks to make the node an embargo too; the
+    alternative is to pull such a node into the embargo silently;
+  - **`not:test` negates twice, also without an enumerator and also in release 7.6.1**:
+    `not:test:x == 1` is found exactly where `x` is 1. `addNestedNode` makes the test
+    structure an embargo (since 176495578, 2024-02) and the `test`-edge case of
+    `doNormalise` requires the outcome `!nac`, so false. With an enumerator the result
+    is "holds for all elements", and the display `! x ∈ range(n)` is wrong for it.
+    Proposed fix, as a bug of its own off the release line: outcome `true` inside the
+    embargo, which for an enumeration gives "holds for no element". Not filed;
+  - display of a test that calls an enumerator. Proposed: name the element,
+    `∃ i ∈ range(a.n) : i > x`, with `∄` for the negated test once that is
+    fixed; `x ∈ range(a.n)` stays for the equality with a field. Alternative: allow
+    an enumerator in a `test`-edge only in that equality, and have the rule name the
+    element as a node for anything else.
 - *Next: slice 5* (documentation), now also covering the one-call restriction, the
   named-variable form of the sum (`coeffSumVar`, which replaces the product-node form
   as the one to show) and the element-of rendering. The website branch
