@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +31,7 @@ import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.annotation.RealSeq;
 import nl.utwente.groove.annotation.Seq;
 import nl.utwente.groove.annotation.StringSeq;
+import nl.utwente.groove.annotation.UserSeq;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
@@ -202,6 +205,61 @@ public class SeqTest {
         assertThrows(NullPointerException.class, () -> StringSeq.of("a", none[0]));
         assertThrows(NullPointerException.class, () -> StringSeq.of("a").with(0, none[0]));
         assertThrows(NullPointerException.class, () -> StringSeq.of("a").append(none[0]));
+    }
+
+    /** A sequence of user values behaves like the others, and knows the type of its elements. */
+    @Test
+    public void testUserSeq() {
+        var points = UserSeq.of(Point.class, new Point(1, 2), new Point(3, 4));
+        assertEquals(Point.class, points.type());
+        assertEquals(2, points.size());
+        assertEquals(new Point(3, 4), points.get(1));
+        assertEquals(new Point(1, 2), boxed(points, 0));
+        assertEquals("[Point[x=1, y=2], Point[x=3, y=4]]", points.toString());
+        assertThrows(IndexOutOfBoundsException.class, () -> points.get(2));
+        assertThrows(IndexOutOfBoundsException.class, () -> points.with(2, new Point(0, 0)));
+
+        assertEqual(points, UserSeq.of(Point.class, new Point(1, 2), new Point(3, 4)));
+        assertEqual(points, UserSeq.copyOf(Point.class, List.of(new Point(1, 2), new Point(3, 4))));
+        assertNotEquals(points, UserSeq.of(Point.class, new Point(3, 4), new Point(1, 2)));
+        // sequences of different types differ, even if they have no elements to tell them apart
+        assertNotEquals(UserSeq.of(Point.class), UserSeq.of(Other.class));
+        assertNotEquals(UserSeq.of(Point.class), IntSeq.of());
+
+        assertEqual(UserSeq.of(Point.class, new Point(1, 2), new Point(0, 0)),
+                    points.with(1, new Point(0, 0)));
+        assertEqual(UserSeq.of(Point.class, new Point(5, 6)),
+                    UserSeq.of(Point.class).append(new Point(5, 6)));
+        assertEquals(2, points.size());
+
+        Point[] array = {new Point(1, 2)};
+        var copied = UserSeq.of(Point.class, array);
+        array[0] = new Point(9, 9);
+        copied.toArray()[0] = new Point(9, 9);
+        assertArrayEquals(new Point[] {new Point(1, 2)}, copied.toArray());
+    }
+
+    /** A sequence of user values rejects {@code null} and values of another type. */
+    @Test
+    public void testUserSeqElementCheck() {
+        Point[] none = new Point[1];
+        assertThrows(NullPointerException.class, () -> UserSeq.of(Point.class, none[0]));
+        assertThrows(NullPointerException.class,
+                     () -> UserSeq.of(Point.class, new Point(1, 2)).append(none[0]));
+        assertThrows(IllegalArgumentException.class,
+                     () -> UserSeq.copyOf(Point.class, List.of(new Point(1, 2), new Other(3))));
+        assertThrows(IllegalArgumentException.class,
+                     () -> UserSeq.copyOf(Point.class, List.of("text")));
+    }
+
+    /** Element type for the tests of {@link UserSeq}. */
+    private record Point(int x, int y) {
+        // no members
+    }
+
+    /** Second element type for the tests of {@link UserSeq}. */
+    private record Other(int x) {
+        // no members
     }
 
     /** Returns an element of a sequence through the common interface. */
