@@ -225,6 +225,7 @@ public class NormalAspectGraph extends AspectGraph {
             } else {
                 try {
                     assert nodeExpr != null;
+                    checkEnumerators(node, nodeExpr);
                     AspectNode outcome = addExpression(level, node, nodeExpr);
                     exprNodeMap.put(node, outcome);
                 } catch (FormatException exc) {
@@ -263,6 +264,7 @@ public class NormalAspectGraph extends AspectGraph {
                 AspectNode level = resolveLevel(edge, sourceIsNesting
                     ? source.getParentNode()
                     : source.getLevelNode());
+                checkEnumerators(edge, predicate);
                 AspectNode outcome = addExpression(level, edge, predicate);
                 // specify whether the outcome should be true or false
                 outcome.set(Aspect.newAspect(Constant.instance(!nac), getRole()));
@@ -342,6 +344,7 @@ public class NormalAspectGraph extends AspectGraph {
     private AspectEdge addAssignment(@Nullable AspectNode level, AspectElement holder,
                                      Assignment assign,
                                      @Nullable AspectKind roleKind) throws FormatException {
+        checkEnumerators(holder, assign.getRhs());
         // add the expression structure
         AspectNode target = addExpression(level, holder, assign.getRhs());
         target.setParsed();
@@ -390,6 +393,38 @@ public class NormalAspectGraph extends AspectGraph {
             addNormalisedEdge(holder, source, assignLabel, oldTarget).setParsed();
         }
         result.setParsed();
+        return result;
+    }
+
+    /**
+     * Tests that an expression on an element of this graph calls at most one
+     * enumerator. Every enumerator call is enumerated on its own: several of
+     * them in one expression would range over all combinations of their values,
+     * and two textually equal calls would not stand for the same value.
+     * @param holder the original element on which the expression occurs
+     * @param expr the parsed expression, taken as a whole
+     * @throws FormatException if the expression calls more than one enumerator
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private void checkEnumerators(AspectElement holder, Expression expr) throws FormatException {
+        if (countEnumerators(expr) > 1) {
+            throw new FormatException("Expression '%s' has more than one enumerator",
+                expr.toParseString(), holder);
+        }
+    }
+
+    /** Returns the number of enumerator calls in an expression. */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private static int countEnumerators(Expression expr) {
+        int result = 0;
+        if (expr instanceof CallExpr call) {
+            if (call.getOperator().isEnumerator()) {
+                result++;
+            }
+            for (var arg : call.getArgs()) {
+                result += countEnumerators(arg);
+            }
+        }
         return result;
     }
 

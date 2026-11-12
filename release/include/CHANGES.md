@@ -9,6 +9,7 @@ Release 7.7.0, forthcoming
   calls it is matched once for every value: one of them on an existential level, all of
   them under a universal quantifier (gh #931)
 - New integer enumerator `range(n)`, yielding 0 up to but not including `n`
+- An expression may call at most one enumerator
 - Enumerators are not supported in the term algebra
 - The example classes `UserOpsExample`, `UserTypeIntBool` and `UserTypeString` of package
   `nl.utwente.groove.algebra` are no longer part of the distribution; a grammar whose

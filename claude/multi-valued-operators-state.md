@@ -63,6 +63,22 @@ builds on this and is not started.
   is `lo <= x` and `x <= hi`, and it needed a name of its own because a signature may not
   overload an operator name (`Operator.getOperatorMethod`). Rule `span` in `enumerators.gps`
   shows the replacement, with the enumerator call nested in an expression.
+- **At most one enumerator call per expression** (decided by Arend, 2026-11-12). A call
+  nested in an expression stays allowed (`lo + range(n)`): every call becomes a variable
+  node of its own that the matcher enumerates, so the nested call reads as "some `i` in
+  `range(n)`, then `lo + i`". Several calls in one expression used to be accepted as
+  well, as all combinations of their values, with two traps. Probed with `n = 2`:
+  `range(n) + range(n)` under `forall:` created four nodes (0, 1, 1, 2), so two calls
+  that read the same are not the same value; on an existential level it gave three
+  transitions, since the enumerated variables are not in the anchor and combinations
+  with the same outcome are one event, so the two kinds of level count differently.
+  `NormalAspectGraph.checkEnumerators` now rejects such an expression ("Expression '...'
+  has more than one enumerator"). The unit is the whole expression of a `let`- or
+  `test`-edge or of an expression node, so `range(range(n))` is rejected too, and two
+  edges of one node may each call an enumerator. Product nodes written out by hand are
+  not restricted: there every enumerated variable is a visible node. Test:
+  `EnumeratorExpressionTest`. In `CHANGES.md`; not yet in the manual (website branch
+  `set-valued-operators`).
 
 ## Decision of 2026-11-12: set results of user operations withdrawn
 
