@@ -193,7 +193,7 @@ public enum AlgebraFamily implements DocumentedEnum {
             for (Expression arg : call.getArgs()) {
                 args.add(computeStrict(arg, valuation));
             }
-            if (call.getOperator().isMultiValued()) {
+            if (call.getOperator().isEnumerator()) {
                 // an enumerator only has a value in the context of a match
                 throw getAlgebra(expr.getSort())
                     .errorValue(Exceptions

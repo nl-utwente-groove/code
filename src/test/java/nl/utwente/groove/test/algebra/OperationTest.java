@@ -60,7 +60,7 @@ public class OperationTest {
                 assertEquals(op, operation.getOperator());
                 Object result = operation.applyStrict(sampleArgs(family, op));
                 Algebra<?> resultAlgebra = family.getAlgebra(op.getResultSort());
-                if (op.isMultiValued() && !resultAlgebra.isErrorValue(result)) {
+                if (op.isEnumerator() && !resultAlgebra.isErrorValue(result)) {
                     // an enumeration yields a set of values of the result sort
                     assertTrue(result instanceof Set, op + " should yield a set");
                     for (Object value : (Set<?>) result) {

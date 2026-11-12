@@ -528,7 +528,7 @@ public class NormalAspectGraph extends AspectGraph {
         var levelErrors = new FormatErrorSet();
         AspectNode argLevel;
         Operator operator = call.getOperator();
-        if (operator.isMultiValued() && getRole() != RULE) {
+        if (operator.isEnumerator() && getRole() != RULE) {
             throw new FormatException("Enumerator '%s' only allowed in rules", operator.getName(),
                 holder);
         }

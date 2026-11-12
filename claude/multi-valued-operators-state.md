@@ -1,21 +1,27 @@
-# Multi-valued operators (gh #931, second part): handoff state
+# Enumerators (gh #931, second part): handoff state
 
 Branch `multi-valued-operators`, off tag `release-7_6_1` (ecab903cd), the yFiles-free line:
 until Arend gives the go-ahead on yFiles, extensions are built there and merged into master
 afterwards. The API differs from master in places (no `GrammarModel.toGrammar(family)`, no
 `DebugFlag`). Transient: delete when the last phase is merged.
 
-**Term (2026-11-12): multi-valued.** Until that date this note, the code and the manual
-said "set-valued", chosen while user operations could return a `Set`. With those withdrawn
-the class is closed: `range` now, and an element enumerator on sequences with gh #942,
-which keeps repeated values, so "set-valued" no longer covers it (section "Multi-valued
-operators" of that issue). The rename is on branch `rename-multi-valued`, off
-`sequence-components` (001128960): `Operator.isMultiValued`,
-`OperatorNodeSearchItem.MultiValuedOperatorNodeRecord`, fixture `junit/rules/multiValued.gps`
-with its golden, `CHANGES.md`, and the manual on the website branch (5903cff). The names
-of that website branch and of the removed test `testSetValued` keep the old term. The
-outcome of `range` is still a set; "set operator" remains the name of the collection
-operators (`sum` and so on) and has nothing to do with this.
+**Term (Arend, 2026-11-12): enumerator.** An operator that is matched once per value of
+its outcome is an *enumerator*, in the code (`Operator.isEnumerator`,
+`OperatorNodeSearchItem.EnumeratorNodeRecord`), in messages, in the fixture
+`junit/rules/enumerators.gps` with its golden, in `CHANGES.md` and in the manual (section
+"Enumerators"). How the term got there, all on the same day:
+- "set-valued" was the first term, chosen while user operations could return a `Set`;
+- with those withdrawn the class is closed (`range` now, an element enumerator on sequences
+  with gh #942, which keeps repeated values), so it became "multi-valued";
+- that says what the outcome is but not what the operator is for, and the class was being
+  called enumerators in the discussion anyway, so Arend settled on that word.
+
+The renames are on branch `rename-multi-valued`, off `sequence-components` (001128960),
+and on the website branch (d3234b0). The names of both branches, of this note's file and
+of things removed under an older term (`testSetValued`, the manual subsection "Set-valued
+user operations") keep the old words; text below that describes the withdrawn user
+operations still says "set-valued". The outcome of `range` is still a set. "Set operator"
+remains the name of the collection operators (`sum` and so on) and is unrelated.
 
 ## Goal
 
@@ -37,7 +43,7 @@ builds on this and is not started.
   operations. This cannot be checked; it is documented in the `@UserOperation` javadoc
   (use `LinkedHashSet` or a sorted set, not `Set.of`) and has to go into the manual.
   Whether a varying order is in fact observable has not been tested.
-- **Any level.** A multi-valued call needs no level check of its own. On the level of its
+- **Any level.** An enumerator call needs no level check of its own. On the level of its
   arguments it is an existential choice (one rule match per element); under `forall` it
   quantifies over the elements; in a NAC it tests that no element qualifies. This falls out
   of the existing level handling in `NormalAspectGraph.addCall` and `PatternBuilder`.
@@ -50,17 +56,17 @@ builds on this and is not started.
   error value as the single element, so that the error stays visible.
 - **POINT** collapses the outcome to the single point value (so sub-match counts differ
   from the concrete run); **TERM** is rejected in `PatternBuilder.addOperator`.
-- **Indeterminate multi-valued user operations are forbidden** (phase 2 check): indeterminate
+- **Indeterminate set-valued user operations are forbidden** (phase 2 check): indeterminate
   operators are not supported on quantified levels anyway (gh #911).
 - Built-in: `range(n)` = 0..n-1, empty for `n <= 0`. A two-argument `interval(lo, hi)` was
   implemented and removed again (2026-11-11): it is `lo + range(hi - lo + 1)`, membership
   is `lo <= x` and `x <= hi`, and it needed a name of its own because a signature may not
-  overload an operator name (`Operator.getOperatorMethod`). Rule `span` in `multiValued.gps`
-  shows the replacement, with the multi-valued call nested in an expression.
+  overload an operator name (`Operator.getOperatorMethod`). Rule `span` in `enumerators.gps`
+  shows the replacement, with the enumerator call nested in an expression.
 
 ## Decision of 2026-11-12: set results of user operations withdrawn
 
-Arend questioned whether multi-valued operators and sequences are one mechanism too many.
+Arend questioned whether set-valued operators and sequences are one mechanism too many.
 Outcome:
 
 - **Withdrawn: user operations that return `Set`** (phase 2). With sequences as sorts
@@ -68,9 +74,9 @@ Outcome:
   makes the `Set` result a second way of doing the same. Nothing of it is released, so
   withdrawing is free; removing it after 7.7.0 would be a break. No use case needs it in
   7.7.0 (Arend): several results of a user type can wait for gh #942.
-- **Kept: `range` and the multi-valued matching mechanism** (phase 1). The first part
+- **Kept: `range` and the enumerator matching mechanism** (phase 1). The first part
   quantifies over elements with `range(coeffsSize(p))`, so the mechanism is needed in any
-  case. `Operator.isMultiValued` then holds for system operators only.
+  case. `Operator.isEnumerator` then holds for system operators only.
 - **Not added: an operation result that is a sequence and is ranged over.** It needs no
   sort, but it pre-empts gh #942: there `IntSeq digits(int)` yields a value, and
   `horner(x, digits(n))` or `digits(n) == digits(m)` type-check under both readings, so
@@ -89,16 +95,16 @@ The decisions above on sets, order, levels, membership and anchors stay in force
 - the element-type check in `UserSignature.checkMethod`;
 - `UserOpsExample.digits` and `letters`; rules `digitSum`, `digitNodes`, `letters` in
   `junit/rules/userOps.gps` and their goldens; `UserSignatureTest.testSetValued`;
-- the multi-valued paragraph of the `@UserOperation` javadoc.
+- the set-valued paragraph of the `@UserOperation` javadoc.
 
 A user operation with any `Collection` return type is a load error, raised in the
 `Operator(Executable)` constructor, which keeps the form reserved
-(`UserSignatureTest.testCollectionResult`). `junit/rules/multiValued.gps` and
+(`UserSignatureTest.testCollectionResult`). `junit/rules/enumerators.gps` and
 `junit/samples/range-cells.gps` use `range` only and stay.
 
 Documentation: in `CHANGES.md` the 7.7.0 entry names `range` only. On the website branch
 `set-valued-operators`, the subsection "Set-valued user operations" of `manual/data.md`
-is removed (aab2d03); the section "Multi-valued operations" stays, for `range`.
+is removed (aab2d03); the section "Enumerators" stays, for `range`.
 
 Checked: null analysis of the touched files clean; fast suite 843 tests, no failures;
 `UserSignatureTest`, `RuleApplicationTest`, `RuleCompilationTest`, `DeterminismTest` and
@@ -106,22 +112,22 @@ Checked: null analysis of the touched files clean; fast suite 843 tests, no fail
 
 ## Phase 1 (done on this branch)
 
-- `Operator.isMultiValued()`, detected from a `Set<X>` return type of a signature method.
+- `Operator.isEnumerator()`, detected from a `Set<X>` return type of a signature method.
 - `GSignature`/`IntSignature`: `range`; `IntInterval` is the lazy set view the
   Java and Big algebras return.
-- `OperatorNodeSearchItem.MultiValuedOperatorNodeRecord` (a `MultipleRecord`), chosen when
+- `OperatorNodeSearchItem.EnumeratorNodeRecord` (a `MultipleRecord`), chosen when
   the target is neither constant nor found at activation time; it handles a run-time seed
   by membership.
-- `AlgebraFamily.compute` refuses a multi-valued call (control arguments, host graphs);
+- `AlgebraFamily.compute` refuses an enumerator call (control arguments, host graphs);
   `NormalAspectGraph.addCall` rejects it outside rules.
-- Fixture `junit/rules/multiValued.gps` (rules `pick`, `span`, `spawn`, `clones`, `total`,
+- Fixture `junit/rules/enumerators.gps` (rules `pick`, `span`, `spawn`, `clones`, `total`,
   `member`, `absent`) in `RuleApplicationTest`, with POINT and TERM tests; golden in
-  `junit/rulecompilation/rules/multiValued.txt`.
+  `junit/rulecompilation/rules/enumerators.txt`.
 
 ## Phase 2 (withdrawn and removed 2026-11-12, kept as a record): user operations
 
 - `Operator.getElementType(Method)`: a return type assignable to `Set` with a class as
-  type argument makes a user operation multi-valued; `Integer`, `Double`, `Boolean` map to
+  type argument makes a user operation set-valued; `Integer`, `Double`, `Boolean` map to
   the system sorts. A wildcard or raw set, a collection that is not a set, and `indeterminate = true`
   are errors.
 - `UserSignature.checkMethod` checks the element type against the declared user classes.
@@ -137,7 +143,7 @@ Checked: null analysis of the touched files clean; fast suite 843 tests, no fail
   the pom revision is untouched.
 - Web manual: website repository `C:\Groove\nl-utwente-groove.github.io`, branch
   `set-valued-operators` off `main`, worktree `C:\Groove\worktrees\set-valued-operators`.
-  `manual/data.md` gets a section "Multi-valued operations" (levels, membership, algebras)
+  `manual/data.md` gets a section "Enumerators" (levels, membership, algebras)
   and a subsection "Set-valued user operations" (set only, positional idiom for
   occurrences, deterministic order), marked "(since release 7.7.0, forthcoming)". No
   figures; `ref-operators.md` is generated and has to be regenerated at release time.

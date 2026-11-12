@@ -127,10 +127,10 @@ public record Poly(String name, IntSeq coeffs) {}
    take it, so that a later sequence sort can make `c(p)` yield the sequence (gh #942).
    A derived name is forced for the size anyway: user operators are keyed by name, without
    overloading by arity. The suffix `Size` is decided (`coeffsSize`).
-6. **No element enumerator.** The issue's `coeffsElem(p)` would be a multi-valued operator
-   that yields a set, like `range`, and so would drop repeated elements. `range` over the positions is the idiom; nothing
-   is added. An enumerator that keeps repeated elements needs the position in the match
-   and is part of gh #942 (decided 2026-11-12).
+6. **No element enumerator.** The issue's `coeffsElem(p)` would be an enumerator that
+   yields a set, like `range`, and so would drop repeated elements. `range` over the
+   positions is the idiom; nothing is added. An enumerator that keeps repeated elements
+   needs the position in the match and is part of gh #942 (decided 2026-11-12).
 7. **Algebra families: nothing new.** The generated operators are user operations and
    inherit their status: DEFAULT works, TERM and BIG are rejected by
    `GrammarKey.UserOperationsChecker`.

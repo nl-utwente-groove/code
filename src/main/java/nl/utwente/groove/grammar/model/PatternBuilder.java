@@ -341,7 +341,7 @@ class PatternBuilder {
                 //                        + "(do a feature request if you want this constraint dropped!)",
                 //                    operator.getName(), operatorEdge);
             }
-            if (operator.isMultiValued()
+            if (operator.isEnumerator()
                 && getGrammarProperties().getAlgebraFamily() == AlgebraFamily.TERM) {
                 throw new FormatException("Enumerator '%s' not supported in the term algebra",
                     operator.getName(), operatorEdge);

@@ -54,7 +54,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     public OperatorNodeSearchItem(OperatorNode node, AlgebraFamily family) {
         this.node = node;
         this.setOperator = node.getOperator().isVarArgs();
-        this.multiValued = node.getOperator().isMultiValued();
+        this.enumerator = node.getOperator().isEnumerator();
         this.operation = family.getOperation(node.getOperator());
         assert this.operation != null;
         this.arguments = node.getArguments();
@@ -75,8 +75,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     public Record createRecord(nl.utwente.groove.match.plan.PlanSearchStrategy.Search matcher) {
         if (this.setOperator) {
             return new SetOperatorNodeRecord(matcher);
-        } else if (this.multiValued && this.value == null && !this.targetFound) {
-            return new MultiValuedOperatorNodeRecord(matcher);
+        } else if (this.enumerator && this.value == null && !this.targetFound) {
+            return new EnumeratorNodeRecord(matcher);
         } else {
             // this includes the case of an enumerator with a known target,
             // which comes down to a membership test
@@ -172,8 +172,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
     final OperatorNode node;
     /** Flag signalling that the operator is a set operator. */
     final boolean setOperator;
-    /** Flag signalling that the operator is multi-valued. */
-    final boolean multiValued;
+    /** Flag signalling that the operator is an enumerator. */
+    final boolean enumerator;
     /** The operation determined by the product edge. */
     final Operation operation;
     /** The factory needed to create value nodes for the calculated outcomes. */
@@ -279,7 +279,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                 }
                 result = isOutcome(outcome, ((ValueNode) targetFind).getValue());
             } else {
-                assert !OperatorNodeSearchItem.this.multiValued;
+                assert !OperatorNodeSearchItem.this.enumerator;
                 ValueNode targetImage = this.factory
                     .createNode(OperatorNodeSearchItem.this.operation.getResultAlgebra(), outcome);
                 this.image = targetImage;
@@ -290,7 +290,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
         /**
          * Tests if a given value is the outcome of the operation,
-         * or one of the outcomes if the operator is multi-valued.
+         * or one of the outcomes if the operator is an enumerator.
          */
         private boolean isOutcome(Object outcome, Object value) {
             return toOutcomes(outcome).contains(value);
@@ -354,28 +354,28 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
 
     /**
      * Converts the outcome of the operation of this item into a set of values:
-     * the outcome itself if the operator is multi-valued and the outcome is not
+     * the outcome itself if the operator is an enumerator and the outcome is not
      * an error, and the singleton collection consisting of the outcome otherwise.
      */
     Collection<?> toOutcomes(Object outcome) {
-        return this.multiValued && outcome instanceof Set<?> outcomes
+        return this.enumerator && outcome instanceof Set<?> outcomes
             ? outcomes
             : Collections.singleton(outcome);
     }
 
     /**
-     * Record for a multi-valued operator of which the target image is not known
+     * Record for an enumerator of which the target image is not known
      * when the item is scheduled. The record yields one image for
      * every value in the outcome of the operation, in the iteration order of that outcome.
      * If the target turns out to have been seeded, the record instead
      * tests for membership of the seeded value in the outcome.
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
-    private class MultiValuedOperatorNodeRecord extends MultipleRecord<HostNode> {
+    private class EnumeratorNodeRecord extends MultipleRecord<HostNode> {
         /**
          * Creates a record based on a given underlying matcher.
          */
-        MultiValuedOperatorNodeRecord(Search search) {
+        EnumeratorNodeRecord(Search search) {
             super(search);
         }
 

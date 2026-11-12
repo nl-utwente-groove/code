@@ -204,15 +204,15 @@ public class RuleApplicationTest extends TestCase {
     /** Tests the working of enumerators:
      * as existential choice, under a universal quantifier, and as membership test. */
     @Test
-    public void testMultiValued() {
-        test("multiValued");
+    public void testEnumerators() {
+        test("enumerators");
     }
 
     /** Tests that the point algebra collapses an enumerator to a single value. */
     @Test
-    public void testMultiValuedPoint() {
+    public void testEnumeratorsPoint() {
         try {
-            var grammar = Groove.loadGrammar(INPUT_DIR + "/multiValued");
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/enumerators");
             grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
             var pointGrammar = toGrammar(grammar, AlgebraFamily.POINT);
             var rule = pointGrammar.getRule(QualName.parse("pick"));
@@ -226,16 +226,16 @@ public class RuleApplicationTest extends TestCase {
 
     /** Tests that enumerators are rejected in the term algebra. */
     @Test
-    public void testMultiValuedTerm() {
+    public void testEnumeratorsTerm() {
         try {
-            var grammar = Groove.loadGrammar(INPUT_DIR + "/multiValued");
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/enumerators");
             grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
             try {
                 toGrammar(grammar, AlgebraFamily.TERM);
                 Assert.fail("Enumerators should be rejected in the term algebra");
             } catch (FormatException e) {
                 var message = String.valueOf(e.getMessage());
-                Assert.assertTrue(message, message.contains("Multi-valued"));
+                Assert.assertTrue(message, message.contains("Enumerator"));
             }
         } catch (IOException e) {
             Assert.fail(e.getMessage());

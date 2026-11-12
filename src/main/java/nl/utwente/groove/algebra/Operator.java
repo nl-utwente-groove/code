@@ -83,7 +83,7 @@ public class Operator implements Comparable<Operator> {
                 .illegalArg("Return type %s is a collection: a user operation yields a single value",
                             returnType.getSimpleName());
         }
-        this.multiValued = false;
+        this.enumerator = false;
         this.returnSort = toReturnSort(returnType);
         this.symbol = null;
         this.kind = OpKind.CALL;
@@ -119,7 +119,7 @@ public class Operator implements Comparable<Operator> {
         this.zeroArgs = false;
         this.constructor = false;
         this.tail = false;
-        this.multiValued = false;
+        this.enumerator = false;
         this.indeterminate = false;
         this.name = accessor.getName(field.getName());
         this.parameterSorts = new ArrayList<>();
@@ -246,14 +246,14 @@ public class Operator implements Comparable<Operator> {
             this.parameterSorts.add(toParSort(type));
         }
         Type returnType = method.getGenericReturnType();
-        this.multiValued = returnType instanceof ParameterizedType;
+        this.enumerator = returnType instanceof ParameterizedType;
         if (returnType instanceof ParameterizedType parType) {
             if (parType.getRawType() != Set.class) {
                 throw Exceptions.illegalArg("Method '%s' is not an enumerator", this.name);
             }
             if (this.varArgs) {
                 throw Exceptions
-                    .illegalArg("Collection operator '%s' cannot be multi-valued", this.name);
+                    .illegalArg("Collection operator '%s' cannot be an enumerator", this.name);
             }
             returnType = parType.getActualTypeArguments()[0];
         }
@@ -367,19 +367,19 @@ public class Operator implements Comparable<Operator> {
 
     private final boolean tail;
 
-    /** Indicates if this is a multi-valued operator, i.e., one that yields
+    /** Indicates if this is an enumerator, i.e., an operator that yields
      * a set of values of the result sort rather than a single one.
-     * A multi-valued operator is matched once for every value in the set.
+     * An enumerator is matched once for every value in the set.
      * The order of the values has no meaning, but the set has to iterate over them
      * in an order that is the same in every run, as exploration would otherwise
      * not be deterministic.
      * @see #getResultSort()
      */
-    public boolean isMultiValued() {
-        return this.multiValued;
+    public boolean isEnumerator() {
+        return this.enumerator;
     }
 
-    private final boolean multiValued;
+    private final boolean enumerator;
 
     /** If {@code true}, the outcome of this operation is not fully determined by its parameters.
      * This is true for, e.g., random number generation.
@@ -459,8 +459,8 @@ public class Operator implements Comparable<Operator> {
 
     /**
      * Returns the result type of this operator.
-     * For a multi-valued operator, this is the sort of the individual values.
-     * @see #isMultiValued()
+     * For an enumerator, this is the sort of the individual values.
+     * @see #isEnumerator()
      */
     public Sort getResultSort() {
         return this.returnSort;
