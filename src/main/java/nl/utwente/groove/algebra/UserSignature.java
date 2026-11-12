@@ -43,9 +43,9 @@ import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Callback;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.UserClassPath;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FallibleObject;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -62,7 +62,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * loaded through the class path of a given grammar directory
      * on top of GROOVE's own class path (see {@link #newLoader(File, List)}).
      * All methods with an {@link UserOperation}-annotation are taken as operators.
-     * Silently ignores any annotation errors in the classes; to check for those,
+     * Silently ignores any errors in the classes; to check for those,
      * call {@link #checkUserClass} afterwards.
      * @param classNames the names of the classes to load
      * @param grammarDir the grammar directory holding the grammar-local class path;
@@ -89,16 +89,18 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * loaded through the currently installed class loader
      * (see {@link #setUserClass(List, File, List)}).
      * All methods with an {@link UserOperation}-annotation are taken as operators.
-     * Silently ignores any annotation errors in the classes; to check for those,
+     * Silently ignores any errors in the classes; to check for those,
      * call {@link #checkUserClass} instead.
      */
     public static void setUserClass(List<QualName> classNames) {
         methods.clear();
         operators.reset();
         var classes = toClasses(classNames);
+        var result = new FallibleObject<>(new LinkedHashMap<Operator,Executable>());
         for (var claz : classes.get()) {
-            methods.putAll(parseUserClass(claz, classes.get()).get());
+            parseUserClass(result, claz, classes.get());
         }
+        methods.putAll(result.get());
         resetUsers();
     }
 
@@ -106,7 +108,8 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * installed class loader (see {@link #setUserClass(List, File, List)}) and have suitable
      * user-defined operations, and returns the operations as executables, together with
      * the errors found: a class that cannot be loaded or has annotation errors is an
-     * error, a class that exists in more than one place on the class path is a warning.
+     * error, as are two operations of the same name, whether in one class or in two;
+     * a class that exists in more than one place on the class path is a warning.
      */
     public static FallibleObject<Map<Operator,Executable>> checkUserClass(List<QualName> classNames) {
         var result = new FallibleObject<Map<Operator,Executable>>(new LinkedHashMap<>());
@@ -114,9 +117,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         result.addErrors(classes.getErrors());
         if (!classes.getErrors().hasErrors()) {
             for (var claz : classes.get()) {
-                var m = parseUserClass(claz, classes.get());
-                result.get().putAll(m.get());
-                result.addErrors(m.getErrors());
+                parseUserClass(result, claz, classes.get());
             }
         }
         return result;
@@ -141,8 +142,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 }
             } catch (ClassNotFoundException exc) {
                 result
-                    .addError("Class '%s' cannot be loaded from %s", className,
-                              sourceDescription);
+                    .addError("Class '%s' cannot be loaded from %s", className, sourceDescription);
             }
         }
         return result;
@@ -173,11 +173,13 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     }
 
     /** Checks whether a given class has suitable user-defined operations,
-     * and returns the methods on which those operations are based.
+     * and adds the methods on which those operations are based to a given result,
+     * together with the errors found.
+     * The result is shared among the user classes, since the operations of all of them
+     * live in the single sort {@link Sort#USER} and so have to differ in name (gh #934).
      */
-    private static FallibleObject<? extends Map<Operator,Executable>> parseUserClass(Class<?> claz,
-                                                                                     Set<Class<?>> others) {
-        var result = new FallibleObject<>(new LinkedHashMap<Operator,Executable>());
+    private static void parseUserClass(FallibleObject<? extends Map<Operator,Executable>> result,
+                                       Class<?> claz, Set<Class<?>> others) {
         String className = claz.getCanonicalName();
         // check that the class is public
         if (!Modifier.isPublic(claz.getModifiers())) {
@@ -235,13 +237,16 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 }
             }
         }
-        return result;
     }
 
+    /** Adds the operation based on a given executable to a result, or reports an error
+     * if the result already has an operation of that name. In that case the existing
+     * operation is kept, so that an operator is never paired with the executable of another.
+     */
     static private void addExecutable(FallibleObject<? extends Map<Operator,Executable>> result,
                                       Executable exec) {
         var op = new Operator(exec);
-        var oldExec = result.get().put(op, exec);
+        var oldExec = result.get().putIfAbsent(op, exec);
         if (oldExec != null) {
             result
                 .addError("Duplicate user operation '%s' in '%s' and '%s'", op.getName(),
@@ -418,9 +423,9 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * case-insensitively, with the exact name as tie-break; the same on all platforms,
      * unlike the natural order of {@link File}, which ignores case only on Windows.
      */
-    static private final Comparator<File> JAR_ORDER
-        = Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER)
-            .thenComparing(File::getName);
+    static private final Comparator<File> JAR_ORDER = Comparator
+        .comparing(File::getName, String.CASE_INSENSITIVE_ORDER)
+        .thenComparing(File::getName);
 
     /** Description of GROOVE's own class path, as a source of user classes. */
     static private final String GROOVE_CLASS_PATH = "GROOVE's own class path";

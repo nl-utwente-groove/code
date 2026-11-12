@@ -223,6 +223,37 @@ public class UserSignatureTest {
         checkParDocs(docMap, "whole", "the share, in %");
     }
 
+    /** Tests that operations of the same name in two user classes are reported as
+     * duplicates, for the accessor of a record component as well as for an annotated
+     * method; and that loading the classes regardless keeps the operation of the
+     * first class as a whole, rather than replacing its method by that of the second (gh #934).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testDuplicateAcrossClasses() {
+        // each of the classes is correct on its own
+        load("UserTypeIntString");
+        load("UserTypeDuplicateOps");
+        var first = PACKAGE_NAME.extend("UserTypeIntString");
+        var second = PACKAGE_NAME.extend("UserTypeDuplicateOps");
+        var names = List.of(first, second);
+        var errors = UserSignature.checkUserClass(names).getErrors().get();
+        assertEquals(2, errors.size(), errors.toString());
+        for (var opName : List.of("intField", "charAt")) {
+            var expected = "Duplicate user operation '%s' in '%s' and '%s'"
+                .formatted(opName, first, second);
+            assertTrue(errors.toString(),
+                       errors.stream().anyMatch(e -> e.toString().equals(expected)));
+        }
+        UserSignature.setUserClass(names);
+        var intField = UserSignature.getOperators().get("intField");
+        assertNotNull(intField);
+        assertEquals(Sort.INT, intField.getResultSort());
+        var method = UserSignature.getMethods().get(intField);
+        assertNotNull(method);
+        assertSame(UserTypeIntString.class, method.getDeclaringClass());
+    }
+
     /** Tests that the parameter documentation of a given user operation consists
      * of rows that contain the given fragments, in that order.
      */
