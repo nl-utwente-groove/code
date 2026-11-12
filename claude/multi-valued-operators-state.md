@@ -46,6 +46,47 @@ builds on this and is not started.
   overload an operator name (`Operator.getOperatorMethod`). Rule `span` in `setValued.gps`
   shows the replacement, with the set-valued call nested in an expression.
 
+## Decision of 2026-11-12: set results of user operations withdrawn
+
+Arend questioned whether set-valued operators and sequences are one mechanism too many.
+Outcome:
+
+- **Withdrawn: user operations that return `Set`** (phase 2). With sequences as sorts
+  (gh #942) an operation returns a sequence value and a rule ranges over that, which
+  makes the `Set` result a second way of doing the same. Nothing of it is released, so
+  withdrawing is free; removing it after 7.7.0 would be a break. No use case needs it in
+  7.7.0 (Arend): several results of a user type can wait for gh #942.
+- **Kept: `range` and the set-valued matching mechanism** (phase 1). The first part
+  quantifies over elements with `range(coeffsSize(p))`, so the mechanism is needed in any
+  case. `Operator.isSetValued` then holds for system operators only.
+- **Not added: an operation result that is a sequence and is ranged over.** It needs no
+  sort, but it pre-empts gh #942: there `IntSeq digits(int)` yields a value, and
+  `horner(x, digits(n))` or `digits(n) == digits(m)` type-check under both readings, so
+  7.7.0 grammars would change meaning without an error. Ranging over the elements of a
+  sequence becomes a built-in element enumerator of gh #942 (section "Ranging over the
+  elements" of that issue).
+- **Until gh #942**, an operation with several results returns a record with a sequence
+  component, and the rule ranges over `range(cSize(d))` with `cAt(d, i)`.
+
+The decisions above on sets, order, levels, membership and anchors stay in force for
+`range`. The removal is not done yet. It goes on branch `withdraw-set-results`, cut from
+`sequence-components` after slice 2 of the first part (1576fa09f), as one commit:
+
+- `Operator.getElementType` and its use in the user-operation constructor, including the
+  check on `indeterminate`;
+- the element-type check in `UserSignature.checkMethod`;
+- `UserOpsExample.digits` and `letters`; rules `digitSum`, `digitNodes`, `letters` in
+  `junit/rules/userOps.gps` and their goldens; `UserSignatureTest.testSetValued`;
+- the set-valued paragraph of the `@UserOperation` javadoc.
+
+A user operation with any `Collection` return type becomes a load error, which keeps
+the form reserved. `junit/rules/setValued.gps` and `junit/samples/range-cells.gps` use
+`range` only and stay.
+
+Documentation: in `CHANGES.md` the 7.7.0 entry names `range` only. On the website branch
+`set-valued-operators`, the subsection "Set-valued user operations" of `manual/data.md`
+goes; the section "Set-valued operations" stays, for `range`.
+
 ## Phase 1 (done on this branch)
 
 - `Operator.isSetValued()`, detected from a `Set<X>` return type of a signature method.
@@ -60,7 +101,7 @@ builds on this and is not started.
   `member`, `absent`) in `RuleApplicationTest`, with POINT and TERM tests; golden in
   `junit/rulecompilation/rules/setValued.txt`.
 
-## Phase 2 (done on this branch): user operations
+## Phase 2 (done on this branch, withdrawn 2026-11-12, removal pending): user operations
 
 - `Operator.getElementType(Method)`: a return type assignable to `Set` with a class as
   type argument makes a user operation set-valued; `Integer`, `Double`, `Boolean` map to

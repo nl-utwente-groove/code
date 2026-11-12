@@ -26,6 +26,11 @@ rules out user-typed components of user types altogether. Arend also named it as
 type, but a result needs a sort to live in, so that waits for gh #942 like any other
 sequence result.
 
+**User operations with several results, decided 2026-11-12:** the `Set` results of the
+second part are withdrawn (see multi-valued-operators-state.md) and no sequence result
+takes their place before gh #942. `range` stays, so the slices below are unchanged. An
+operation that needs several results returns a record with a sequence component.
+
 ## Goal
 
 A `@UserType` record may end in one component that holds a variable number of values of one
@@ -122,9 +127,10 @@ public record Poly(String name, IntSeq coeffs) {}
    take it, so that a later sequence sort can make `c(p)` yield the sequence (gh #942).
    A derived name is forced for the size anyway: user operators are keyed by name, without
    overloading by arity. The suffix `Size` is decided (`coeffsSize`).
-6. **No element enumerator.** The issue's `coeffsElem(p)` would be a set-valued operator,
-   and since part 2 decided on sets it would silently drop repeated elements. `range` over
-   the positions is the idiom; nothing is added.
+6. **No element enumerator.** The issue's `coeffsElem(p)` would be a set-valued operator
+   and so would drop repeated elements. `range` over the positions is the idiom; nothing
+   is added. An enumerator that keeps repeated elements needs the position in the match
+   and is part of gh #942 (decided 2026-11-12).
 7. **Algebra families: nothing new.** The generated operators are user operations and
    inherit their status: DEFAULT works, TERM and BIG are rejected by
    `GrammarKey.UserOperationsChecker`.
