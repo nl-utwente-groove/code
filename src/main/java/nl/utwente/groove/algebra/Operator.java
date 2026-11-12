@@ -83,7 +83,7 @@ public class Operator implements Comparable<Operator> {
                 .illegalArg("Return type %s is a collection: a user operation yields a single value",
                             returnType.getSimpleName());
         }
-        this.setValued = false;
+        this.multiValued = false;
         this.returnSort = toReturnSort(returnType);
         this.symbol = null;
         this.kind = OpKind.CALL;
@@ -119,7 +119,7 @@ public class Operator implements Comparable<Operator> {
         this.zeroArgs = false;
         this.constructor = false;
         this.tail = false;
-        this.setValued = false;
+        this.multiValued = false;
         this.indeterminate = false;
         this.name = accessor.getName(field.getName());
         this.parameterSorts = new ArrayList<>();
@@ -247,15 +247,15 @@ public class Operator implements Comparable<Operator> {
             this.parameterSorts.add(toParSort(type));
         }
         Type returnType = method.getGenericReturnType();
-        this.setValued = returnType instanceof ParameterizedType;
+        this.multiValued = returnType instanceof ParameterizedType;
         if (returnType instanceof ParameterizedType parType) {
             if (parType.getRawType() != Set.class) {
                 throw Exceptions
-                    .illegalArg("Method '%s' does not represent set-valued operator", this.name);
+                    .illegalArg("Method '%s' does not represent multi-valued operator", this.name);
             }
             if (this.varArgs) {
                 throw Exceptions
-                    .illegalArg("Collection operator '%s' cannot be set-valued", this.name);
+                    .illegalArg("Collection operator '%s' cannot be multi-valued", this.name);
             }
             returnType = parType.getActualTypeArguments()[0];
         }
@@ -369,19 +369,19 @@ public class Operator implements Comparable<Operator> {
 
     private final boolean tail;
 
-    /** Indicates if this is a set-valued operator, i.e., one that yields
+    /** Indicates if this is a multi-valued operator, i.e., one that yields
      * a set of values of the result sort rather than a single one.
-     * A set-valued operator is matched once for every value in the set.
+     * A multi-valued operator is matched once for every value in the set.
      * The order of the values has no meaning, but the set has to iterate over them
      * in an order that is the same in every run, as exploration would otherwise
      * not be deterministic.
      * @see #getResultSort()
      */
-    public boolean isSetValued() {
-        return this.setValued;
+    public boolean isMultiValued() {
+        return this.multiValued;
     }
 
-    private final boolean setValued;
+    private final boolean multiValued;
 
     /** If {@code true}, the outcome of this operation is not fully determined by its parameters.
      * This is true for, e.g., random number generation.
@@ -461,8 +461,8 @@ public class Operator implements Comparable<Operator> {
 
     /**
      * Returns the result type of this operator.
-     * For a set-valued operator, this is the sort of the individual values.
-     * @see #isSetValued()
+     * For a multi-valued operator, this is the sort of the individual values.
+     * @see #isMultiValued()
      */
     public Sort getResultSort() {
         return this.returnSort;

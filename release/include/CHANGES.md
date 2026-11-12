@@ -5,11 +5,11 @@ This document describes the major changes in the GROOVE tool set
 
 Release 7.7.0, forthcoming
 -------------------------------
-- Set-valued operations: a built-in operation may yield a set of values, and a rule that
+- Multi-valued operations: a built-in operation may yield a set of values, and a rule that
   calls it is matched once for every value: one of them on an existential level, all of
   them under a universal quantifier (gh #931)
-- New set-valued integer operation `range(n)`, yielding 0 up to but not including `n`
-- Set-valued operations are not supported in the term algebra
+- New multi-valued integer operation `range(n)`, yielding 0 up to but not including `n`
+- Multi-valued operations are not supported in the term algebra
 
 Release 7.6.1, 9 November 2026
 -------------------------------

@@ -341,10 +341,10 @@ class PatternBuilder {
                 //                        + "(do a feature request if you want this constraint dropped!)",
                 //                    operator.getName(), operatorEdge);
             }
-            if (operator.isSetValued()
+            if (operator.isMultiValued()
                 && getGrammarProperties().getAlgebraFamily() == AlgebraFamily.TERM) {
                 throw new FormatException(
-                    "Set-valued operator '%s' not supported in the term algebra",
+                    "Multi-valued operator '%s' not supported in the term algebra",
                     operator.getName(), operatorEdge);
             }
             boolean embargo = productNode.has(ROLE, AspectKind::inNAC);

@@ -201,18 +201,18 @@ public class RuleApplicationTest extends TestCase {
         test("sums");
     }
 
-    /** Tests the working of set-valued operators:
+    /** Tests the working of multi-valued operators:
      * as existential choice, under a universal quantifier, and as membership test. */
     @Test
-    public void testSetValued() {
-        test("setValued");
+    public void testMultiValued() {
+        test("multiValued");
     }
 
-    /** Tests that the point algebra collapses a set-valued operator to a single value. */
+    /** Tests that the point algebra collapses a multi-valued operator to a single value. */
     @Test
-    public void testSetValuedPoint() {
+    public void testMultiValuedPoint() {
         try {
-            var grammar = Groove.loadGrammar(INPUT_DIR + "/setValued");
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/multiValued");
             grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
             var pointGrammar = toGrammar(grammar, AlgebraFamily.POINT);
             var rule = pointGrammar.getRule(QualName.parse("pick"));
@@ -224,18 +224,18 @@ public class RuleApplicationTest extends TestCase {
         }
     }
 
-    /** Tests that set-valued operators are rejected in the term algebra. */
+    /** Tests that multi-valued operators are rejected in the term algebra. */
     @Test
-    public void testSetValuedTerm() {
+    public void testMultiValuedTerm() {
         try {
-            var grammar = Groove.loadGrammar(INPUT_DIR + "/setValued");
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/multiValued");
             grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
             try {
                 toGrammar(grammar, AlgebraFamily.TERM);
-                Assert.fail("Set-valued operators should be rejected in the term algebra");
+                Assert.fail("Multi-valued operators should be rejected in the term algebra");
             } catch (FormatException e) {
                 var message = String.valueOf(e.getMessage());
-                Assert.assertTrue(message, message.contains("Set-valued"));
+                Assert.assertTrue(message, message.contains("Multi-valued"));
             }
         } catch (IOException e) {
             Assert.fail(e.getMessage());
