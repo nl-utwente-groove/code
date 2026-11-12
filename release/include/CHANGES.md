@@ -12,8 +12,12 @@ Release 7.7.0, forthcoming
 - An expression may call at most one enumerator
 - An attribute whose value is an enumeration tests that the attribute value is one
   of the enumerated values, and is displayed with an element-of sign
-- A `test`-edge may not call an enumerator, and an embargo edge may not point to an
-  enumeration node unless that node is itself an embargo
+- A `test`-edge may call an enumerator only as the value a field of its node is
+  compared to (`test:x == range(n)`), which is the same membership test; an embargo
+  edge may not point to an enumeration node unless that node is itself an embargo
+- Resolved gh #943: a negated test (`not:test:`) was negated twice and so held where
+  the plain test did; it now holds if the tested fields have no values for which the
+  test holds
 - Enumerators are not supported in the term algebra
 - The example classes `UserOpsExample`, `UserTypeIntBool` and `UserTypeString` of package
   `nl.utwente.groove.algebra` are no longer part of the distribution; a grammar whose

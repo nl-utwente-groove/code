@@ -76,6 +76,8 @@ public class EnumeratorExpressionTest {
         assertDisplay("x ∈ lo + range(n)", "new:let:x = lo + int:range(n)");
         // a test of a field of the node itself is displayed like an assignment
         assertDisplay("lo → n + 1", "test:lo == n + 1");
+        assertDisplay("lo ∈ range(n)", "test:lo == int:range(n)");
+        assertDisplay("! lo ∈ range(n)", "not:test:lo == int:range(n)");
     }
 
     /**

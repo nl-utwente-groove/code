@@ -69,6 +69,7 @@ import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
@@ -981,16 +982,39 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         assert isParsed();
         try {
             // make a test for a self-field look like an edge, like for let:
-            if (getTest() instanceof CallExpr c && c.getOperator().isEquality()
-                && c.getArgs().get(0) instanceof FieldExpr f && f.isSelf()) {
-                return new Assignment(f.getField(), c.getArgs().get(1)).toLine(POINTS_TO_SYMBOL);
-            } else {
+            var fieldTest = getFieldTest();
+            if (fieldTest == null) {
                 return getTest().toLine();
+            } else {
+                return fieldTest
+                    .toLine(fieldTest.getRhs().isEnumeration()
+                        ? ELEMENT_OF_SYMBOL
+                        : POINTS_TO_SYMBOL);
             }
         } catch (FormatException exc) {
             var testTree = getTestTree();
             assert testTree != null;
             return testTree.toLine();
+        }
+    }
+
+    /**
+     * Returns the test wrapped by this edge as a field with its value, if the
+     * test has that form: an equality with a field of the source node on the
+     * left hand side. This is the form in which a test is displayed like an
+     * attribute edge, and the only one in which it may call an enumerator: the
+     * test is then that the field value is an element of the enumeration.
+     * Should only be called if {@link #isTest()} holds.
+     * @return the field and the expression it is compared to, or {@code null}
+     * if the test has another form
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public @Nullable Assignment getFieldTest() throws FormatException {
+        if (getTest() instanceof CallExpr c && c.getOperator().isEquality()
+            && c.getArgs().get(0) instanceof FieldExpr f && f.isSelf()) {
+            return new Assignment(f.getField(), c.getArgs().get(1));
+        } else {
+            return null;
         }
     }
 

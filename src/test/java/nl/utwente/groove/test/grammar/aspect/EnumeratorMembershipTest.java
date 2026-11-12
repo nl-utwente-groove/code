@@ -41,8 +41,9 @@ import nl.utwente.groove.util.AIGenerated;
 /**
  * Tests what an enumeration means where a rule reads a value rather than
  * sets it (gh #931): it stands for some element, so an attribute whose value
- * is an enumeration is a membership test. A test may not call an enumerator;
- * it can test a node that has the enumeration as its value instead.
+ * is an enumeration is a membership test, and so is a test that equates a
+ * field to an enumeration. A test may not call an enumerator in any other
+ * form; it can test a node that has the enumeration as its value instead.
  * <p>
  * Every rule has a node {@code a} with a field {@code n} and a node {@code b}
  * with a field {@code x}, and is matched against the hosts of {@link #HOSTS};
@@ -87,18 +88,34 @@ public class EnumeratorMembershipTest {
     }
 
     /**
-     * A test may not call an enumerator, in whatever form: it would hold if it
+     * A test that equates a field of its node to an enumeration tests
+     * membership, like an edge to an enumeration node; as an embargo, it tests
+     * that the value is no element, like an edge to such a node that is an
+     * embargo.
+     */
+    @Test
+    public void testFieldTest() throws Exception {
+        assertMatches(counts(1, 0, 0, 1, 0), edge("b", "test:x == int:range(a.n)", "b"));
+        assertMatches(counts(0, 1, 1, 0, 1), edge("b", "not:test:x == int:range(a.n)", "b"));
+        // also under a quantifier
+        assertMatches(counts(1, 0, 0, 1, 0), edge("q", "forallx:", "q"), edge("b", "at", "q"),
+                      edge("b", "test:x == int:range(a.n)", "b"));
+    }
+
+    /**
+     * A test may not call an enumerator in any other form: it would hold if it
      * holds for some element, which its text does not convey.
      */
     @Test
     public void testEnumeratorInTest() {
         var error = "Enumerator not allowed in test";
-        assertRejected(error, edge("b", "test:x == int:range(a.n)", "b"));
         assertRejected(error, edge("b", "test:int:range(a.n) > x", "b"));
+        assertRejected(error, edge("b", "test:x != int:range(a.n)", "b"));
         assertRejected(error, edge("b", "test:!(x == int:range(a.n))", "b"));
-        assertRejected(error, edge("b", "not:test:x == int:range(a.n)", "b"));
-        assertRejected(error, edge("q", "forall:", "q"), edge("b", "at", "q"),
-                       edge("b", "test:x == int:range(a.n)", "b"));
+        assertRejected(error, edge("b", "not:test:int:range(a.n) > x", "b"));
+        // the field should be on the left hand side, and of the node itself
+        assertRejected(error, edge("b", "test:int:range(a.n) == x", "b"));
+        assertRejected(error, edge("b", "test:a.n == int:range(x)", "b"));
     }
 
     /**

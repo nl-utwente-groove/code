@@ -263,11 +263,13 @@ public class NormalAspectGraph extends AspectGraph {
                 AspectNode level = resolveLevel(edge, sourceIsNesting
                     ? source.getParentNode()
                     : source.getLevelNode());
-                if (predicate.isEnumeration()) {
+                if (predicate.isEnumeration() && edge.getFieldTest() == null) {
                     // the test would hold if it holds for some element, which
-                    // its text does not convey; a node for the element does
+                    // its text does not convey. A node for the element does;
+                    // so does the equality with a field, which tests that the
+                    // field value is an element and is displayed like that
                     throw new FormatException(
-                        "Enumerator not allowed in test '%s' (test a node that has the enumeration as its value)",
+                        "Enumerator not allowed in test '%s', other than as the value of a field (test a node that has the enumeration as its value)",
                         predicate.toParseString(), edge);
                 }
                 AspectNode outcome = addExpression(level, edge, predicate);
