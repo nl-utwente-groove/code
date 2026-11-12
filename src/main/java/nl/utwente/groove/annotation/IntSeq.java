@@ -31,7 +31,7 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public final class IntSeq implements Seq {
+public final class IntSeq implements Seq<Integer> {
     /** Wraps a given array, without copying it. */
     private IntSeq(int[] elems) {
         this.elems = elems;

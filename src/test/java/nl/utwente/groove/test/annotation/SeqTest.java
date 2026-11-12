@@ -62,7 +62,7 @@ public class SeqTest {
     public void testEmpty() {
         assertEqual(IntSeq.of(), IntSeq.of(new int[0]));
         assertEquals(0, StringSeq.of().size());
-        Seq[] empties = {IntSeq.of(), RealSeq.of(), BoolSeq.of(), StringSeq.of()};
+        Seq<?>[] empties = {IntSeq.of(), RealSeq.of(), BoolSeq.of(), StringSeq.of()};
         for (int i = 0; i < empties.length; i++) {
             for (int j = 0; j < empties.length; j++) {
                 assertEquals(i == j, empties[i].equals(empties[j]));
@@ -205,12 +205,12 @@ public class SeqTest {
     }
 
     /** Returns an element of a sequence through the common interface. */
-    private Object boxed(Seq seq, int index) {
+    private Object boxed(Seq<?> seq, int index) {
         return seq.value(index);
     }
 
     /** Asserts that two sequences are equal in both directions and agree on the hash code. */
-    private void assertEqual(Seq expected, Seq actual) {
+    private void assertEqual(Seq<?> expected, Seq<?> actual) {
         assertEquals(expected, actual);
         assertEquals(actual, expected);
         assertEquals(expected.hashCode(), actual.hashCode());

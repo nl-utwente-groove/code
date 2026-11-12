@@ -31,7 +31,7 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public final class BoolSeq implements Seq {
+public final class BoolSeq implements Seq<Boolean> {
     /** Wraps a given array, without copying it. */
     private BoolSeq(boolean[] elems) {
         this.elems = elems;

@@ -34,7 +34,7 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public final class RealSeq implements Seq {
+public final class RealSeq implements Seq<Double> {
     /** Wraps a given array, without copying it. */
     private RealSeq(double[] elems) {
         this.elems = elems;

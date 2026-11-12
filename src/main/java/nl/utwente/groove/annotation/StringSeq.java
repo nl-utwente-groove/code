@@ -34,7 +34,7 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public final class StringSeq implements Seq {
+public final class StringSeq implements Seq<String> {
     /** Wraps a given array of non-{@code null} strings, without copying it. */
     private StringSeq(String[] elems) {
         this.elems = elems;
