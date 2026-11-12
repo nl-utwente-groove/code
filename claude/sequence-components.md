@@ -11,14 +11,20 @@ fixtures of this part use `range`.
 type on Arend's remark; slices 2 to 5 open. The sequence parameter of a `@UserOperation`
 (decision 3) was confirmed by Arend.
 
-**Open, and blocking slice 2:** Arend asked (2026-11-12) to weigh making the sequence types
-real sorts (`intseq` and so on, with their own signatures and built-in operators) against
-the design below, in which a sequence is not a sort. The two give different rule-side
-syntax (`get(coeffs(p), i)` and `Poly("p", [1, 2, 3])` against `coeffs(p, i)` and
-`Poly("p", 1, 2, 3)`), so the second cannot be shipped first and the first added later
-without breaking grammars. Decisions 3 to 6 and slices 2 and 3 stand only if the answer is
-"not a sort"; the carrier classes of slice 1 are needed either way. Nothing of slice 2 is
-written.
+**Sequences as sorts are a later extension (gh #942), decided 2026-11-12.** Making the
+sequence types real sorts (`intseq` and so on) was weighed against the design below, in
+which a sequence is not a sort. The outcome: this design goes ahead, shaped so that sorts
+can be added without breaking grammars. Rules to keep while implementing:
+- the tail is defined as "the last parameter is a sequence type, the call lists its
+  elements"; with sorts, the same operator would also accept one sequence-sorted argument;
+- nothing user-visible may assume that a sequence is not a sort; the one name that sorts
+  would want, the bare component name, stays free (decision 5).
+
+**`UserSeq<T>`, decided 2026-11-12:** a fifth carrier, for sequences of user-type values,
+allowed as the last parameter of a `@UserOperation` only. Not as a record component: Arend
+rules out user-typed components of user types altogether. Arend also named it as a result
+type, but a result needs a sort to live in, so that waits for gh #942 like any other
+sequence result.
 
 ## Goal
 
@@ -36,7 +42,7 @@ public record Poly(String name, IntSeq coeffs) {}
 |---|---|
 | `user:Poly("p", 1, 2, 3)` | constant, sequence written as a flattened tail |
 | `Poly(n, a, b)` | constructor call: fixed prefix, any number of tail arguments |
-| `coeffs(p, i)` | element at position `i`, counting from 0; error value if out of range |
+| `coeffsAt(p, i)` | element at position `i`, counting from 0; error value if out of range |
 | `coeffsSize(p)` | number of elements |
 
 ## Decisions
@@ -100,7 +106,7 @@ public record Poly(String name, IntSeq coeffs) {}
    - `Operator.toString` (`user:Poly(string,int...)`, visible in the rule-compilation
      goldens) and `Algebras.createUserHelp`/`computeOpDocMap`.
 5. **Generated accessors, backed by the record's own accessor method.** For a sequence
-   component `c` two operators are registered: `c : (user, int) -> elem` and
+   component `c` two operators are registered: `cAt : (user, int) -> elem` and
    `cSize : (user) -> int`. Both map to `rc.getAccessor()` in
    `UserSignature.getMethods()`, so the `Map<Operator,Executable>` shape and its consumers
    (`checkUserClass`, the grammar-property checker, the help) are unchanged; the operator
@@ -111,7 +117,10 @@ public record Poly(String name, IntSeq coeffs) {}
    (wider ripple for two operators); leaving the accessors to the user as `@UserOperation`
    methods (works with no mechanism, but then a sequence component is unreachable by
    default and every record names them differently).
-   The name `cSize` is forced to be derived: user operators are keyed by name, without
+   Both names are derived (decided 2026-11-12: `coeffsAt`, `coeffsSize`), and the bare name
+   `c` is reserved: no operator of that name is generated and a user operation may not
+   take it, so that a later sequence sort can make `c(p)` yield the sequence (gh #942).
+   A derived name is forced for the size anyway: user operators are keyed by name, without
    overloading by arity. The suffix `Size` is decided (`coeffsSize`).
 6. **No element enumerator.** The issue's `coeffsElem(p)` would be a set-valued operator,
    and since part 2 decided on sets it would silently drop repeated elements. `range` over
