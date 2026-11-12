@@ -11,6 +11,46 @@ fixtures of this part use `range`.
 type on Arend's remark; slices 2, 3 and 4 done (2026-11-12); slice 5 open. The
 sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
 
+**Handoff (2026-11-12, end of session).** Start here in a fresh session.
+- *Branches.* `sequence-components` is at cb65555ff: slices 1 to 4 and the merged move of
+  all user-class fixtures to `test.algebra.user`. Stacked on it, awaiting review, is
+  `single-enumerator-per-expression`, with three changes that belong to the second part
+  (enumerators) but are built here because the code was renamed on this line: at most
+  one enumerator call per expression (`NormalAspectGraph.checkEnumerators`,
+  `EnumeratorExpressionTest`; see multi-valued-operators-state.md); the fix of the crash
+  on a collection operator over a node identifier (`NormalAspectGraph.getLevel`, fixtures
+  `intSumVar`, `totalVar`, `coeffSumVar`); and corrections to this note. Gates on its
+  tip: full suite without GUI tests (885 run, 2 skipped in `GrammarsTest`) and
+  null-check pass. The worktree `.claude/worktrees/sequence-components` is detached at
+  that tip.
+- *Next 1: element-of rendering* (decided by Arend, not started). The syntax stays as
+  it is: a quantified variable bound by an enumerator is a value node with the separate
+  labels `id:x` and `int:<expression>`. Only the rendering changes: where the
+  right-hand side is an enumeration, the display uses the element-of sign instead of
+  `=`. Found so far:
+  - `gui/look/LabelValue.getDataLine` renders such a node as `x : int = <expression>`,
+    with the constant `EQUALS_TO`;
+  - a `let`-edge is rendered by `AspectEdge.getAssignLine`, which calls
+    `Assignment.toLine(symbol)`; its one caller (the `LET` case of the display-label
+    switch in `AspectEdge`) passes `POINTS_TO_SYMBOL`, an arrow, so a `let`-edge does
+    not show `=` at present. Whether it should show the element-of sign as well was not
+    asked; Arend's wording was about the node form;
+  - "calls an enumerator" is only available as the private
+    `NormalAspectGraph.countEnumerators`; the rendering needs it on `Expression`
+    (override in `CallExpr`), and `NormalAspectGraph` can then use that;
+  - `util.Unicode` has no element-of constant (U+2208);
+  - to confirm with Arend: "is an enumeration" taken as "contains an enumerator call"
+    (so also `lo + range(n)`, which with one call per expression reads as a set), or
+    only an enumerator call at the top;
+  - the change is in `gui/`, so the GUI tests are a gate, and a branch of its own
+    stacked on `single-enumerator-per-expression` is the place for it.
+- *Next 2: slice 5* (documentation), now also covering the one-call restriction, the
+  named-variable form of the sum (`coeffSumVar`, which replaces the product-node form
+  as the one to show) and the element-of rendering. The website branch
+  `set-valued-operators` has none of these yet.
+- *Open, not filed:* nothing restricts several enumerators that are written as product
+  nodes by hand; Arend was told and has not asked for it.
+
 **Sequences as sorts are a later extension (gh #942), decided 2026-11-12.** Making the
 sequence types real sorts (`intseq` and so on) was weighed against the design below, in
 which a sequence is not a sort. The outcome: this design goes ahead, shaped so that sorts
@@ -228,11 +268,17 @@ Each is one or a few commits, mergeable on its own.
      product node takes `e` and delivers its result outside the quantifier.
      `let:sum = sum(coeffsAt(p, range(coeffsSize(p))))` is rejected, and rightly so ("Set
      operator argument ... should be one level deeper"): it has no quantifier, and an
-     enumerator in argument position does not supply one. What is missing is only a
-     label syntax for a variable on the universal level that is bound by an enumerator:
-     `sum(a.x)` needs a graph node `a` on that level with a field `x`, and a position of
-     a sequence has no such node. Until there is one, the manual of slice 5 shows the
-     node form;
+     enumerator in argument position does not supply one. The form without product nodes
+     names the element (rule `coeffSumVar`): a value node under `forall:` with the labels
+     `id:e` and `int:coeffsAt(t.p, range(coeffsSize(t.p)))`, and `sum(e)` outside the
+     quantifier. It needed a fix on branch `single-enumerator-per-expression`:
+     `NormalAspectGraph.getLevel` had no case for a variable, so a collection operator
+     over a node identifier threw "Unreachable location", with or without an enumerator
+     (regression fixtures `intSumVar` in `sums.gps`, `totalVar` in `enumerators.gps`).
+     The manual of slice 5 can show this form. Arend weighed a new label
+     `int:x in range(n)` and decided against it (2026-11-12): the two separate labels
+     suffice, and only the display changes, to an element-of sign in place of `=` where
+     the right-hand side is an enumeration (see the handoff at the top);
    - the sample is `junit/samples/poly-growth.gps`: `step` appends one coefficient,
      `leap` two, `spread` creates a node per position. 20 states and 28 transitions,
      asserted by `ExplorationTest.testPolyGrowth`; without content equality of the
