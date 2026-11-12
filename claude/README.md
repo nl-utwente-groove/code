@@ -30,7 +30,7 @@ Status lines below are as of 2026-09-11.
 | [critical-pair-review.md](critical-pair-review.md) | gh #886, revival of the critical-pair package. Review and plan only, nothing implemented. |
 | [fixable-builder-survey.md](fixable-builder-survey.md) | Which `Fixable` implementors should become builders. Step 1 (`AspectLabel`) done 2026-09-06; the rest open, no `Buildable` type. |
 | [multi-valued-operators-state.md](multi-valued-operators-state.md) | gh #931, second part: enumerators, operators matched once per value (`range`). Handoff state for branch `multi-valued-operators`: phases 1 (built-ins and matching) and 2 (user operations) done, phase 3 (documentation) open. Phase 2 withdrawn on 2026-11-12 and removed on branch `withdraw-set-results`. Transient: delete when merged. |
-| [sequence-components.md](sequence-components.md) | gh #931, first part: sequence-valued components of user types. Proposal of 2026-11-11 with its decisions, and the state of the implementation on branch `sequence-components` (off `multi-valued-operators`): slices 1 to 4 of 5 done, slice 5 (documentation) open; stacked on it, `single-enumerator-per-expression` and `element-of-rendering`. Handoff block at the top of the note. |
+| [sequence-components.md](sequence-components.md) | gh #931, first part: sequence-valued components of user types. Proposal of 2026-11-11 with its decisions, and the state of the implementation on branch `sequence-components` (off `multi-valued-operators`): slices 1 to 4 of 5 done, slice 5 (documentation) open; stacked on it, `enumeration-membership` and `enumeration-restrictions`. Handoff block at the top of the note. |
 
 ## Archive
 
