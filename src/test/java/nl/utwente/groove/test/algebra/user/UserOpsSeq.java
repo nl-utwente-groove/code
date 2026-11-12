@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 

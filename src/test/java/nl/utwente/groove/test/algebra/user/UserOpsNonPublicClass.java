@@ -14,22 +14,13 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
-
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
-import nl.utwente.groove.annotation.UserSeq;
-import nl.utwente.groove.annotation.UserType;
-import nl.utwente.groove.util.AIGenerated;
+package nl.utwente.groove.test.algebra.user;
 
 /**
- * User type with a field that is a sequence of user values, which is not allowed.
+ * Erroneous example class with user operations: not a public class
  * @author Arend Rensink
  * @version $Revision$
  */
-@UserType
-@NonNullByDefault
-@AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeUserSeq(int size, UserSeq<UserTypePoly> polys) {
-    // no operations
+class UserOpsNonPublicClass {
+    // empty
 }

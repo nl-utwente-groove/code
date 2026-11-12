@@ -14,19 +14,19 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Erroneous example class with user operations: unknown parameter type
+ * Erroneous example class with user operations: non-accessible method
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOpsUnknownParType {
-    /** User operation with erroneous parameter type. */
+public class UserOpsNonAccessibleMethod {
+    /** Inaccessible user operation. */
     @UserOperation
-    static public int errObjectPar(Object par) {
+    static int errNotPublic() {
         return 0;
     }
 }

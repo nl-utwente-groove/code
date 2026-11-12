@@ -14,19 +14,19 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Erroneous example class with user operations: non-static method
+ * Erroneous example class with user operations: unknown return type
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOpsNonStaticMethod {
-    /** Non-static user operation. */
+public class UserOpsUnknownReturnType {
+    /** User operation with erroneous return type. */
     @UserOperation
-    public int errNotStatic() {
-        return 0;
+    static public Object errObjectReturn() {
+        return null;
     }
 }

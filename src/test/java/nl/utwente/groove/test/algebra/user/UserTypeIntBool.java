@@ -14,16 +14,27 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
+import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
 
 /**
- * Erroneous user type class: not a record
+ * Example user type record class.
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
-public class UserTypeNonRecord {
-    // empty
+public record UserTypeIntBool(int intField, boolean boolField) {
+    /** Retrieves the int field of an instance of this type. */
+    @UserOperation
+    static public int getInt(UserTypeIntBool self) {
+        return self.intField();
+    }
+
+    /** Tests whether the int field of an instance of this type has a negative value. */
+    @UserOperation
+    static public boolean isNeg(UserTypeIntBool self) {
+        return self.intField() < 0;
+    }
 }

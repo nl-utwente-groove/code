@@ -14,19 +14,16 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
-import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.annotation.UserType;
 
 /**
- * Erroneous example class method coinciding with constructor
+ * Erroneous user type class: non-sort field
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOpsDuplicateMethod {
-    /** User operation with erroneous void type. */
-    @UserOperation
-    static public void UserTypeIntBool() {
-        // empty
-    }
+@UserType
+public record UserTypeNonSort(Object field) {
+    // empty
 }

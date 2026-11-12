@@ -14,19 +14,25 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Erroneous example class with user operations: non-accessible method
+ * User operation that is correct by itself, but has the name of the
+ * sequence-valued field of {@link UserTypeBag}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOpsNonAccessibleMethod {
-    /** Inaccessible user operation. */
+@NonNullByDefault
+@AIGenerated("Claude Fable 5.2, 2026-11")
+public class UserOpsSeqName {
+    /** Has the name of a sequence-valued field of another class. */
     @UserOperation
-    static int errNotPublic() {
-        return 0;
+    public static int elems(int count) {
+        return count;
     }
 }

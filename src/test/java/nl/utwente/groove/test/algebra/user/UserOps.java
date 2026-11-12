@@ -14,19 +14,37 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Erroneous example class with user operations: unknown return type
+ * Example class with user operations.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOpsUnknownReturnType {
-    /** User operation with erroneous return type. */
+public class UserOps {
+    /** Returns a random integer number between 0 and 9 (inclusive). */
+    @UserOperation(indeterminate = true)
+    static public int randomInt(int bound) {
+        return (int) (bound * Math.random());
+    }
+
+    /** Returns the square root of its parameter. */
     @UserOperation
-    static public Object errObjectReturn() {
-        return null;
+    static public double sqrt(double num) {
+        return Math.sqrt(num);
+    }
+
+    /** Returns the number one. */
+    @UserOperation
+    static public int one() {
+        return 1;
+    }
+
+    /** Constructs a value of a user type. */
+    @UserOperation
+    static public UserTypeIntString get(int nr, String line) {
+        return new UserTypeIntString(nr, line);
     }
 }

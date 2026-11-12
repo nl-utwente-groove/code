@@ -14,27 +14,22 @@
  *
  * $Id$
  */
-package nl.utwente.groove.algebra;
+package nl.utwente.groove.test.algebra.user;
 
-import nl.utwente.groove.annotation.UserOperation;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.annotation.UserType;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Example user type record class.
+ * User type that consists of a sequence-valued field only.
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
-public record UserTypeIntBool(int intField, boolean boolField) {
-    /** Retrieves the int field of an instance of this type. */
-    @UserOperation
-    static public int getInt(UserTypeIntBool self) {
-        return self.intField();
-    }
-
-    /** Tests whether the int field of an instance of this type has a negative value. */
-    @UserOperation
-    static public boolean isNeg(UserTypeIntBool self) {
-        return self.intField() < 0;
-    }
+@NonNullByDefault
+@AIGenerated("Claude Fable 5.2, 2026-11")
+public record UserTypeBag(IntSeq elems) {
+    // no operations
 }

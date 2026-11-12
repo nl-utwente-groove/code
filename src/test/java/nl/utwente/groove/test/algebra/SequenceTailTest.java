@@ -35,6 +35,8 @@ import nl.utwente.groove.algebra.UserAlgebra;
 import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.IntSeq;
+import nl.utwente.groove.test.algebra.user.UserTypeBag;
+import nl.utwente.groove.test.algebra.user.UserTypePoly;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -186,5 +188,5 @@ public class SequenceTailTest {
         return AlgebraFamily.DEFAULT.toValue(Expression.parse(text).toExpression());
     }
 
-    static private final QualName PACKAGE_NAME = QualName.name("nl.utwente.groove.test.algebra");
+    static private final QualName PACKAGE_NAME = QualName.name("nl.utwente.groove.test.algebra.user");
 }

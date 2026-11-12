@@ -14,22 +14,21 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
-import nl.utwente.groove.annotation.IntSeq;
+import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
-import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User type with two sequence-valued fields, the first of which is therefore not the last field.
+ * Example user type record class.
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
-@NonNullByDefault
-@AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeSeqNotLast(IntSeq first, IntSeq second) {
-    // no operations
+public record UserTypeString(String stringField) {
+    /** Returns the length of the string wrapped in this record. */
+    @UserOperation
+    public int size() {
+        return stringField().length();
+    }
 }

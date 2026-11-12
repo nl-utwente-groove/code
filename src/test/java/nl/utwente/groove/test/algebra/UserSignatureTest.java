@@ -39,6 +39,7 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.test.algebra.user.UserTypeIntString;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -492,5 +493,5 @@ public class UserSignatureTest {
         assertArrayEquals(parSorts, op.getParamSorts().toArray(new Sort[0]));
     }
 
-    static private final QualName PACKAGE_NAME = QualName.name("nl.utwente.groove.test.algebra");
+    static private final QualName PACKAGE_NAME = QualName.name("nl.utwente.groove.test.algebra.user");
 }

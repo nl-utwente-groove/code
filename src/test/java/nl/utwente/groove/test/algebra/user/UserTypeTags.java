@@ -14,19 +14,22 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
-import nl.utwente.groove.annotation.UserOperation;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+import nl.utwente.groove.annotation.StringSeq;
+import nl.utwente.groove.annotation.UserType;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Erroneous example class with user operations: void return type
+ * User type whose only field is a sequence of strings.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOpsVoidReturnType {
-    /** User operation with erroneous void type. */
-    @UserOperation
-    static public void errVoidReturn() {
-        // empty
-    }
+@UserType
+@NonNullByDefault
+@AIGenerated("Claude Fable 5.2, 2026-11")
+public record UserTypeTags(StringSeq tags) {
+    // no operations
 }

@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import java.util.Random;
 

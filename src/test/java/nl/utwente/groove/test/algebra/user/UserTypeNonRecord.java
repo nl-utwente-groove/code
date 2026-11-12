@@ -14,25 +14,16 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
-import nl.utwente.groove.annotation.UserOperation;
-import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.annotation.UserType;
 
 /**
- * User operation that is correct by itself, but has the name of the
- * sequence-valued field of {@link UserTypeBag}.
+ * Erroneous user type class: not a record
  * @author Arend Rensink
  * @version $Revision$
  */
-@NonNullByDefault
-@AIGenerated("Claude Fable 5.2, 2026-11")
-public class UserOpsSeqName {
-    /** Has the name of a sequence-valued field of another class. */
-    @UserOperation
-    public static int elems(int count) {
-        return count;
-    }
+@UserType
+public class UserTypeNonRecord {
+    // empty
 }

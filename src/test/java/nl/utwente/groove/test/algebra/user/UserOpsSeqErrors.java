@@ -14,35 +14,39 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.annotation.UserOperation;
-import nl.utwente.groove.annotation.UserType;
+import nl.utwente.groove.annotation.UserSeq;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User type whose operations clash with those generated for its sequence-valued field:
- * another field and an operation have the names of the generated accessors,
- * and a further operation has the name of the field itself.
+ * User operations that use a sequence type where it is not allowed.
  * @author Arend Rensink
  * @version $Revision$
  */
-@UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeSeqClash(int itemsSize, IntSeq items) {
-    /** Has the name of the generated element accessor. */
+public class UserOpsSeqErrors {
+    /** A sequence as a parameter that is not the last. */
     @UserOperation
-    public int itemsAt(int index) {
-        return items().get(index);
+    static public int notLast(IntSeq values, int index) {
+        return values.get(index);
     }
 
-    /** Has the name of the sequence-valued field. */
+    /** A sequence as the result. */
     @UserOperation
-    public int items(int index) {
-        return items().get(index);
+    static public IntSeq result(int value) {
+        return IntSeq.of(value);
+    }
+
+    /** A sequence of user values that does not state the type of its elements. */
+    @UserOperation
+    @SuppressWarnings("rawtypes")
+    static public int untyped(UserSeq values) {
+        return values.size();
     }
 }

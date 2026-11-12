@@ -14,21 +14,19 @@
  *
  * $Id$
  */
-package nl.utwente.groove.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import nl.utwente.groove.annotation.UserOperation;
-import nl.utwente.groove.annotation.UserType;
 
 /**
- * Example user type record class.
+ * Erroneous example class with user operations: unknown parameter type
  * @author Arend Rensink
  * @version $Revision$
  */
-@UserType
-public record UserTypeString(String stringField) {
-    /** Returns the length of the string wrapped in this record. */
+public class UserOpsUnknownParType {
+    /** User operation with erroneous parameter type. */
     @UserOperation
-    public int size() {
-        return stringField().length();
+    static public int errObjectPar(Object par) {
+        return 0;
     }
 }

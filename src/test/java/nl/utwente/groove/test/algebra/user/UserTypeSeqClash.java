@@ -14,22 +14,35 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.annotation.StringSeq;
+import nl.utwente.groove.annotation.IntSeq;
+import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User type whose only field is a sequence of strings.
+ * User type whose operations clash with those generated for its sequence-valued field:
+ * another field and an operation have the names of the generated accessors,
+ * and a further operation has the name of the field itself.
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeTags(StringSeq tags) {
-    // no operations
+public record UserTypeSeqClash(int itemsSize, IntSeq items) {
+    /** Has the name of the generated element accessor. */
+    @UserOperation
+    public int itemsAt(int index) {
+        return items().get(index);
+    }
+
+    /** Has the name of the sequence-valued field. */
+    @UserOperation
+    public int items(int index) {
+        return items().get(index);
+    }
 }

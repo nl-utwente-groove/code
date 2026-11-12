@@ -14,39 +14,44 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.annotation.UserOperation;
-import nl.utwente.groove.annotation.UserSeq;
+import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User operations that use a sequence type where it is not allowed.
+ * User type with a sequence-valued last field: a named polynomial,
+ * given by its coefficients in the order of increasing degree.
  * @author Arend Rensink
  * @version $Revision$
  */
+@UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public class UserOpsSeqErrors {
-    /** A sequence as a parameter that is not the last. */
+public record UserTypePoly(String name, IntSeq coeffs) {
+    /** Returns the degree of this polynomial, taking its coefficients as they are. */
     @UserOperation
-    static public int notLast(IntSeq values, int index) {
-        return values.get(index);
+    public int degree() {
+        return coeffs().size() - 1;
     }
 
-    /** A sequence as the result. */
+    /** Returns this polynomial extended by a coefficient for the next higher degree. */
     @UserOperation
-    static public IntSeq result(int value) {
-        return IntSeq.of(value);
+    public UserTypePoly append(int coeff) {
+        return new UserTypePoly(name(), coeffs().append(coeff));
     }
 
-    /** A sequence of user values that does not state the type of its elements. */
+    /** Returns the sum of the values of this polynomial at any number of points. */
     @UserOperation
-    @SuppressWarnings("rawtypes")
-    static public int untyped(UserSeq values) {
-        return values.size();
+    public int sumAt(IntSeq points) {
+        int result = 0;
+        for (int i = 0; i < points.size(); i++) {
+            result += UserOpsSeq.horner(points.get(i), coeffs());
+        }
+        return result;
     }
 }

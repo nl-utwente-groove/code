@@ -14,27 +14,22 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
-import nl.utwente.groove.annotation.UserOperation;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User type that is correct on its own, but whose operations clash with those of
- * {@link UserTypeIntString}: the accessor of its record component and its annotated
- * method both carry a name that also occurs there (gh #934).
- * The component deliberately has another sort than its namesake, so that a test
- * can tell which of the two accessors is in place.
+ * User type with two sequence-valued fields, the first of which is therefore not the last field.
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
+@NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeDuplicateOps(double intField) {
-    /** Returns the textual form of the wrapped number. */
-    @UserOperation
-    public String charAt() {
-        return "" + intField();
-    }
+public record UserTypeSeqNotLast(IntSeq first, IntSeq second) {
+    // no operations
 }

@@ -14,16 +14,19 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
-import nl.utwente.groove.annotation.UserType;
+import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Erroneous user type class: non-sort field
+ * Erroneous example class with user operations: non-static method
  * @author Arend Rensink
  * @version $Revision$
  */
-@UserType
-public record UserTypeNonSort(Object field) {
-    // empty
+public class UserOpsNonStaticMethod {
+    /** Non-static user operation. */
+    @UserOperation
+    public int errNotStatic() {
+        return 0;
+    }
 }

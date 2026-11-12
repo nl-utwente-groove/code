@@ -10,6 +10,9 @@ Release 7.7.0, forthcoming
   them under a universal quantifier (gh #931)
 - New integer enumerator `range(n)`, yielding 0 up to but not including `n`
 - Enumerators are not supported in the term algebra
+- The example classes `UserOpsExample`, `UserTypeIntBool` and `UserTypeString` of package
+  `nl.utwente.groove.algebra` are no longer part of the distribution; a grammar whose
+  `userOperations` property names one of them no longer loads
 
 Release 7.6.1, 9 November 2026
 -------------------------------

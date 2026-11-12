@@ -14,22 +14,27 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
-
-import nl.utwente.groove.annotation.IntSeq;
+import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
-import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User type that consists of a sequence-valued field only.
+ * Example class with user operations.
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
-@NonNullByDefault
-@AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeBag(IntSeq elems) {
-    // no operations
+public record UserTypeIntString(int intField, String stringField) {
+    /** Retrieves the character of the wrapped string at the wrapped position. */
+    @UserOperation
+    public String charAt() {
+        return "" + stringField().charAt(intField());
+    }
+
+    /** Tests if a given string is a prefix of another. */
+    @UserOperation
+    public boolean isPrefixOf(String total) {
+        return total.startsWith(stringField());
+    }
 }

@@ -14,13 +14,19 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.test.algebra.user;
+
+import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Erroneous example class with user operations: not a public class
+ * Erroneous example class method coinciding with constructor
  * @author Arend Rensink
  * @version $Revision$
  */
-class UserOpsNonPublicClass {
-    // empty
+public class UserOpsDuplicateMethod {
+    /** User operation with erroneous void type. */
+    @UserOperation
+    static public void UserTypeIntBool() {
+        // empty
+    }
 }
