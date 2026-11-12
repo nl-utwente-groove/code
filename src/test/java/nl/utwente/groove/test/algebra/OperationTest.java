@@ -61,7 +61,7 @@ public class OperationTest {
                 Object result = operation.applyStrict(sampleArgs(family, op));
                 Algebra<?> resultAlgebra = family.getAlgebra(op.getResultSort());
                 if (op.isMultiValued() && !resultAlgebra.isErrorValue(result)) {
-                    // a multi-valued operation yields a set of values of the result sort
+                    // an enumeration yields a set of values of the result sort
                     assertTrue(result instanceof Set, op + " should yield a set");
                     for (Object value : (Set<?>) result) {
                         assertTrue(resultAlgebra.isValue(value),
@@ -73,8 +73,9 @@ public class OperationTest {
                     continue;
                 }
                 assertTrue(resultAlgebra.isValue(result),
-                           String.format("%s of %s yields %s, not a value of %s", op, family,
-                                         result, resultAlgebra.getName()));
+                           String
+                               .format("%s of %s yields %s, not a value of %s", op, family, result,
+                                       resultAlgebra.getName()));
                 if (family == AlgebraFamily.TERM && !resultAlgebra.isErrorValue(result)) {
                     // term-algebra results are expressions of the result sort
                     assertTrue(result instanceof Expression);

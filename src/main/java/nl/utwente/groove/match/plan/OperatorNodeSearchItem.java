@@ -78,7 +78,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         } else if (this.multiValued && this.value == null && !this.targetFound) {
             return new MultiValuedOperatorNodeRecord(matcher);
         } else {
-            // this includes the case of a multi-valued operator with a known target,
+            // this includes the case of an enumerator with a known target,
             // which comes down to a membership test
             return new OperatorNodeRecord(matcher);
         }
@@ -406,8 +406,10 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
             if (targetSeed == null) {
                 var algebra = OperatorNodeSearchItem.this.operation.getResultAlgebra();
                 var factory = this.factory;
-                this.imageIter
-                    = outcomes.stream().map(v -> (HostNode) factory.createNode(algebra, v)).iterator();
+                this.imageIter = outcomes
+                    .stream()
+                    .map(v -> (HostNode) factory.createNode(algebra, v))
+                    .iterator();
             } else if (outcomes.contains(((ValueNode) targetSeed).getValue())) {
                 this.imageIter = Collections.singleton(targetSeed).iterator();
             } else {

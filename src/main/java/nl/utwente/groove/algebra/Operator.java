@@ -187,8 +187,7 @@ public class Operator implements Comparable<Operator> {
                             lastType.getSimpleName());
         } else if (Seq.class.isAssignableFrom(lastType)) {
             throw Exceptions
-                .illegalArg("Sequence type %s has no known element type",
-                            lastType.getSimpleName());
+                .illegalArg("Sequence type %s has no known element type", lastType.getSimpleName());
         } else {
             return null;
         }
@@ -250,8 +249,7 @@ public class Operator implements Comparable<Operator> {
         this.multiValued = returnType instanceof ParameterizedType;
         if (returnType instanceof ParameterizedType parType) {
             if (parType.getRawType() != Set.class) {
-                throw Exceptions
-                    .illegalArg("Method '%s' does not represent multi-valued operator", this.name);
+                throw Exceptions.illegalArg("Method '%s' is not an enumerator", this.name);
             }
             if (this.varArgs) {
                 throw Exceptions

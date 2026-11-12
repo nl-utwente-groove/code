@@ -194,10 +194,10 @@ public enum AlgebraFamily implements DocumentedEnum {
                 args.add(computeStrict(arg, valuation));
             }
             if (call.getOperator().isMultiValued()) {
-                // a multi-valued operator only has a value in the context of a match
+                // an enumerator only has a value in the context of a match
                 throw getAlgebra(expr.getSort())
                     .errorValue(Exceptions
-                        .unsupportedOp("Multi-valued operator '%s' cannot be evaluated",
+                        .unsupportedOp("Enumerator '%s' cannot be evaluated",
                                        call.getOperator().getName()));
             }
             return getOperation(call.getOperator()).apply(args);
@@ -281,8 +281,7 @@ public enum AlgebraFamily implements DocumentedEnum {
             for (Sort sort : Sort.values()) {
                 Supplier<Map<Operator,Operation>> ops = switch (sort) {
                 case USER -> {
-                    var userOps
-                        = nl.utwente.groove.util.Factory.lazy(this::computeUserOperations);
+                    var userOps = nl.utwente.groove.util.Factory.lazy(this::computeUserOperations);
                     // the user operations are based on UserSignature#getMethods, which is
                     // not itself factory-tracked, so the cached map must be explicitly
                     // invalidated whenever a new user class is loaded

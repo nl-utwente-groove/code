@@ -201,14 +201,14 @@ public class RuleApplicationTest extends TestCase {
         test("sums");
     }
 
-    /** Tests the working of multi-valued operators:
+    /** Tests the working of enumerators:
      * as existential choice, under a universal quantifier, and as membership test. */
     @Test
     public void testMultiValued() {
         test("multiValued");
     }
 
-    /** Tests that the point algebra collapses a multi-valued operator to a single value. */
+    /** Tests that the point algebra collapses an enumerator to a single value. */
     @Test
     public void testMultiValuedPoint() {
         try {
@@ -224,7 +224,7 @@ public class RuleApplicationTest extends TestCase {
         }
     }
 
-    /** Tests that multi-valued operators are rejected in the term algebra. */
+    /** Tests that enumerators are rejected in the term algebra. */
     @Test
     public void testMultiValuedTerm() {
         try {
@@ -232,7 +232,7 @@ public class RuleApplicationTest extends TestCase {
             grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
             try {
                 toGrammar(grammar, AlgebraFamily.TERM);
-                Assert.fail("Multi-valued operators should be rejected in the term algebra");
+                Assert.fail("Enumerators should be rejected in the term algebra");
             } catch (FormatException e) {
                 var message = String.valueOf(e.getMessage());
                 Assert.assertTrue(message, message.contains("Multi-valued"));
