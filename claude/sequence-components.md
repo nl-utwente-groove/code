@@ -156,7 +156,7 @@ Each is one or a few commits, mergeable on its own.
    including the empty tail (`Poly("p")`) and a sequence-only record (`Bag()`).
    *Done*, with `UserSeq<T>` as a fifth carrier for operation parameters (tests:
    `UserSignatureTest.testSequenceTail`/`testSequenceErrors`, `SequenceTailTest`; fixtures
-   `UserTypePoly`, `UserTypeBag`, `UserOpsSeq` and three erroneous ones in `test/algebra`).
+   `UserTypePoly`, `UserTypeBag`, `UserOpsSeq` and three erroneous ones in `test/algebra/user`).
    As implemented:
    - the arity of a tail operator counts the tail as one parameter;
      `Operator.getParamSort(i)` and `getParamSorts(argCount)` give the sorts per argument,
@@ -205,9 +205,9 @@ Each is one or a few commits, mergeable on its own.
    grow along two confluent routes as a `DeterminismTest` row: it shows that equal
    sequences collapse to one state.
    *Done* (2026-11-12), without a change to the main tree. As implemented:
-   - the record is the existing `test.algebra.UserTypePoly`, with `append` added, and not
+   - the record is the existing `test.algebra.user.UserTypePoly`, with `append` added, and not
      a new class in the main `algebra` package: Arend asked on the same day to get the
-     example classes out of the main tree (proposal pending, see the end of this note).
+     example classes out of the main tree (see the end of this note).
      `userOps.gps` and the sample name the class in the test tree, so they load only
      where the test classes are on the class path: Maven and the JUnit launches, but not
      `Launch Simulator`, which excludes test code;
@@ -275,7 +275,12 @@ The three marked "reproduced" were run on this branch's base on 2026-11-11.
   Left to slice 2 by decision (2026-11-12): it replaces the array by a list, which removes
   the overrun, and adds the all-constant case to its parse tests as the regression test.
 
-## Proposal: example classes out of the main tree (asked 2026-11-12, not decided)
+## Example classes out of the main tree (asked 2026-11-12)
+
+Carried out on branch `user-fixtures-to-test-tree`, stacked on `sequence-components`, as
+proposed below; the count there was off by one (23 fixture classes in `test.algebra`,
+26 in the new package).
+
 
 The main package `nl.utwente.groove.algebra` holds three classes that are fixtures in all
 but location: `UserOpsExample`, `UserTypeIntBool`, `UserTypeString`. Their only users are
