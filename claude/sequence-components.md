@@ -1,11 +1,14 @@
 # Sequence-valued components of user types (gh #931, first part): proposal
 
-Proposal of 2026-11-11, nothing implemented; decisions 1, 2 and 5 were taken by Arend on
-the same day and are recorded as such. Branch `sequence-components`, stacked on
-`multi-valued-operators` (the second part, awaiting review, see
-[multi-valued-operators-state.md](multi-valued-operators-state.md)): the two parts touch the
-same files (`Operator`, `UserSignature`, `AlgebraFamily`), and the fixtures of this part use
-`range`. Part 2 is merged first; if its review changes it, this branch is rebased.
+Proposal of 2026-11-11; decisions 1, 2 and 5 were taken by Arend on the same day and are
+recorded as such. The proposal itself was merged into `multi-valued-operators` (the second
+part, see [multi-valued-operators-state.md](multi-valued-operators-state.md)) on 2026-11-12.
+The implementation is on a new branch `sequence-components` off that merge (bffb7791d): the
+two parts touch the same files (`Operator`, `UserSignature`, `AlgebraFamily`), and the
+fixtures of this part use `range`.
+
+**State (2026-11-12):** slice 1 done; slices 2 to 5 open. The sequence parameter of a
+`@UserOperation` (decision 3) is not yet confirmed by Arend and belongs to slice 2.
 
 ## Goal
 
@@ -113,7 +116,12 @@ Each is one or a few commits, mergeable on its own.
 
 1. **Carrier classes** with unit tests: equality and hash by content, hash equal across
    instances and cached, `of(array)` and `toArray()` copy, `with`/`append` leave the
-   receiver unchanged, `get` out of range throws.
+   receiver unchanged, `get` out of range throws. *Done* (`annotation.Seq` and the four
+   classes, `test.annotation.SeqTest`). Settled while writing: reals compare as
+   `Double.equals` does (`NaN` equals itself, `0.0` differs from `-0.0`), which is how a
+   record compares a `double` component; `StringSeq` rejects `null` elements at run time,
+   since user code is not null-checked; the classes carry `util.AIGenerated`, a class-file
+   reference outside the package but no run-time dependency.
 2. **Tail operators, record check, constants.** `Operator.hasTail`/`getParamSort`, the arity
    sites of decision 4, `UserSignature.parseUserClass` (sequence component accepted in last
    position only, as is a sequence parameter of an operation), packing of the tail on
