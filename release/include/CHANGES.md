@@ -19,6 +19,16 @@ Release 7.7.0, forthcoming
   the plain test did; it now holds if the tested fields have no values for which the
   test holds
 - Enumerators are not supported in the term algebra
+- The last component of a user type may be a sequence of values of one sort (`IntSeq`,
+  `RealSeq`, `BoolSeq` or `StringSeq` of package `nl.utwente.groove.annotation`): the
+  constructor and constants of the type take the elements as trailing arguments, and for
+  a component `c` the operations `cAt` and `cSize` yield the element at a position and
+  the number of elements; `range(cSize(p))` ranges over the positions (gh #931)
+- The last parameter of a user operation may be such a sequence as well, or a `UserSeq`
+  of values of a user type; the operation is called with any number of trailing arguments
+- Resolved gh #934: equally named user operations or record components in different
+  user classes are reported as an error; the one of the class listed later silently
+  replaced the other
 - The example classes `UserOpsExample`, `UserTypeIntBool` and `UserTypeString` of package
   `nl.utwente.groove.algebra` are no longer part of the distribution; a grammar whose
   `userOperations` property names one of them no longer loads

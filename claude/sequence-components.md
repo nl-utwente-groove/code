@@ -8,18 +8,27 @@ two parts touch the same files (`Operator`, `UserSignature`, `AlgebraFamily`), a
 fixtures of this part use `range`.
 
 **State (2026-11-12):** slice 1 done and reviewed, with `Seq` made generic in its element
-type on Arend's remark; slices 2, 3 and 4 done (2026-11-12); slice 5 open. The
-sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
+type on Arend's remark; slices 2, 3 and 4 done and merged by Arend; slice 5 done, awaiting
+review. The sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
 
-**Handoff (2026-11-12, end of session).** Start here in a fresh session.
-- *Branches.* `sequence-components` is at 8a8d8675a: slices 1 to 4, the move of the
-  user-class fixtures to `test.algebra.user`, and (merged by Arend on 2026-11-12) the
-  one-enumerator restriction, the fix of the collection operator over a node identifier
-  and the element-of rendering. On top of it, `enumeration-membership` (tests of the
-  item "Enumerations that are read" below) and on that `enumeration-restrictions`
-  (the restrictions of that item, and a merge of `not-test-double-negation`, the fix
-  of gh #943 off `release-7_6_1`); the worktree
-  `.claude/worktrees/sequence-components` is detached at the tip of the latter.
+**Handoff (2026-11-12, second session).** Start here in a fresh session.
+- *Branches.* `sequence-components` is at 1b5876958: slices 1 to 4, the move of the
+  user-class fixtures to `test.algebra.user`, the one-enumerator restriction, the fix of
+  the collection operator over a node identifier, the element-of rendering, and (merged
+  by Arend since the first session) `enumeration-membership` and
+  `enumeration-restrictions`, the latter with the fix of gh #943. Slice 5 is on
+  `sequence-components-docs`, stacked on it because the main checkout held
+  `sequence-components`; the worktree `.claude/worktrees/sequence-components` is detached
+  at its tip. The manual text is on website branch `sequence-components` (20051e4, off
+  `set-valued-operators`, in worktree `C:\Groove\worktrees\set-valued-operators`, detached
+  there as well). Nothing is pushed, and neither part of gh #931 is on `master`.
+- *Issues.* gh #934 and gh #943 were closed on 2026-11-12 with a comment that names the
+  fix and says it is not on `master` yet. gh #931 stays open until slice 5 is reviewed
+  and the two parts are merged. gh #935, #936 and #937 are unchanged in the code and
+  stay open; gh #930 and gh #942 are later work.
+- *Gates on the tip of slice 5* (javadoc and notes only): null-check on the two
+  annotation files, no errors or warnings; full suite with the slow tests and without
+  the GUI tests, 901 run, 2 skipped in `GrammarsTest`. No `gui/` file changed.
 - *Element-of rendering: done* (2026-11-12), on branch `element-of-rendering`, stacked
   on `single-enumerator-per-expression`, two commits. The syntax is unchanged; where a
   right-hand side is an enumeration, the display has the element-of sign (U+2208,
@@ -94,10 +103,10 @@ sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
   on it; the `CHANGES.md` entry for it is on that branch only, as the release line has
   no forthcoming section. If the fix changes in review, merge it again. Branch
   `negated-enumeration-test` is superseded and can be deleted.
-- *Next: slice 5* (documentation), now also covering the one-call restriction, the
-  named-variable form of the sum (`coeffSumVar`, which replaces the product-node form
-  as the one to show) and the element-of rendering. The website branch
-  `set-valued-operators` has none of these yet.
+- *Next:* review of slice 5, then the merge of both parts into `master` (see
+  multi-valued-operators-state.md for the conflicts to expect) and the release, at which
+  point the manual needs its `release:` front matter, the "forthcoming" marks and the
+  Maven dependency version brought to 7.7.0, and the reference pages regenerated.
 - *Open, not filed:* nothing restricts several enumerators that are written as product
   nodes by hand; Arend was told and has not asked for it.
 
@@ -339,6 +348,22 @@ Each is one or a few commits, mergeable on its own.
    `CHANGES.md`; a manual section in `manual/data.md` on a website branch stacked on
    `set-valued-operators`, including the correction of the limitation "nor of an array or
    list type".
+   *Done* (2026-11-12). As written:
+   - javadoc of `@UserType` (sequence component, the flattened tail, `cAt` and `cSize`,
+     the reserved name) and of `@UserOperation` (sequence parameter);
+   - `CHANGES.md`: sequence components, sequence parameters, and gh #934, which had no
+     entry;
+   - manual: a section "Sequence components" under the user types (carriers, constructor
+     and constants, derived operations, sequence parameters with `UserSeq`, ranging over
+     the elements with `coeffCells` and `coeffSumVar` as the two examples), and the
+     enumerator section brought in line with the restrictions. That section still said
+     that `test:x < range(a.n)` holds if it holds for one value, which is an error now.
+     No figures, as in the rest of the enumerator section;
+   - left out of the manual, as not run: that the negated membership test also holds
+     where the field has no value (see "Enumerations that are read"); that two named
+     enumeration nodes can be combined in one expression;
+   - the generated accessors stay out of the operator help, like the accessors of plain
+     fields; the manual gives the rule by which their names are derived. Not asked.
 
 Gates before handover: `null-check`, `determinism-check`, `grammar-smoke`, full suite. No
 `gui/` file is expected to change (the help is built in `algebra.Algebras`); if one does,
