@@ -8,7 +8,7 @@ two parts touch the same files (`Operator`, `UserSignature`, `AlgebraFamily`), a
 fixtures of this part use `range`.
 
 **State (2026-11-12):** slice 1 done and reviewed, with `Seq` made generic in its element
-type on Arend's remark; slices 2 and 3 done (2026-11-12); slices 4 and 5 open. The
+type on Arend's remark; slices 2, 3 and 4 done (2026-11-12); slice 5 open. The
 sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
 
 **Sequences as sorts are a later extension (gh #942), decided 2026-11-12.** Making the
@@ -204,6 +204,34 @@ Each is one or a few commits, mergeable on its own.
    elements; golden in `junit/rulecompilation`. A small sample grammar in which sequences
    grow along two confluent routes as a `DeterminismTest` row: it shows that equal
    sequences collapse to one state.
+   *Done* (2026-11-12), without a change to the main tree. As implemented:
+   - the record is the existing `test.algebra.UserTypePoly`, with `append` added, and not
+     a new class in the main `algebra` package: Arend asked on the same day to get the
+     example classes out of the main tree (proposal pending, see the end of this note).
+     `userOps.gps` and the sample name the class in the test tree, so they load only
+     where the test classes are on the class path: Maven and the JUnit launches, but not
+     `Launch Simulator`, which excludes test code;
+   - rules in `junit/rules/userOps.gps`: `polyConst` (constant in a rule and in host
+     graphs, also with an empty tail), `polyCreate` (constructor call with a tail of two
+     and with an empty one), `polyProd` (the same call as an explicit product node),
+     `coeffsAt` (in range, and two out-of-range starts that give an error value),
+     `coeffsSize`, `append`, `coeffCells` (one created node per position under `forall`),
+     `coeffSum` (`sum` over the elements). The repeated element in the fixtures of the
+     last two (`5, 6, 5`) shows that positions, not values, are enumerated: three nodes,
+     sum 16;
+   - tail operators needed no code change on the route from aspect graphs to operator
+     nodes, in the `let` form or as a product node;
+   - `coeffSum` is written with explicit product nodes because the `let` form does not
+     exist: `let:sum = sum(coeffsAt(p, range(coeffsSize(p))))` is rejected ("Set operator
+     argument ... should be one level deeper"), since an expression without a node on a
+     universal level has no way to place its argument there. The manual of slice 5 has
+     to show the product-node form. A shorter form is a matter for gh #942;
+   - the sample is `junit/samples/poly-growth.gps`: `step` appends one coefficient,
+     `leap` two, `spread` creates a node per position. 20 states and 28 transitions,
+     asserted by `ExplorationTest.testPolyGrowth`; without content equality of the
+     values the state space would be a tree. It is also a `DeterminismTest` row;
+   - the graphs have a hand-made grid layout, like those of `enumerators.gps`, and were
+     not opened in the Simulator.
 5. **Documentation.** `@UserType` javadoc; the "Release 7.7.0, forthcoming" section of
    `CHANGES.md`; a manual section in `manual/data.md` on a website branch stacked on
    `set-valued-operators`, including the correction of the limitation "nor of an array or
@@ -216,8 +244,7 @@ the GUI tests apply.
 ## Risks and things not verified
 
 - That host value nodes of sort `user` are identified through `equals` of the Java value
-  was not checked in the code; existing records could not work otherwise. Slice 4's
-  confluence grammar tests it.
+  is confirmed by slice 4's sample grammar (the state count of `poly-growth`).
 - `with` and `append` copy the array, so a rule that extends a sequence costs time linear
   in its length per application. Acceptable for the intended sizes; not measured.
 - A long sequence makes a long value-node label in the GUI. Not addressed.
@@ -247,3 +274,30 @@ The three marked "reproduced" were run on this branch's base on 2026-11-11.
   non-constant argument the array is dropped first and the message is the proper one.
   Left to slice 2 by decision (2026-11-12): it replaces the array by a list, which removes
   the overrun, and adds the all-constant case to its parse tests as the regression test.
+
+## Proposal: example classes out of the main tree (asked 2026-11-12, not decided)
+
+The main package `nl.utwente.groove.algebra` holds three classes that are fixtures in all
+but location: `UserOpsExample`, `UserTypeIntBool`, `UserTypeString`. Their only users are
+`junit/rules/userOps.gps` (by name, in `userOperations`) and `RuleApplicationTest`
+(`UserOpsExample.resetRandomness`). The website manual, `C:\Groove\grammars` and
+`C:\Groove\samples` do not name them. They are shipped in the jar and appear in the
+javadoc of an exported package. `test.algebra` in turn holds 24 fixture classes among 12
+test classes.
+
+Proposed, as a branch of its own stacked on this one (it moves files this branch adds):
+- one package for all user-class fixtures in the test tree,
+  `nl.utwente.groove.test.algebra.user`: the three from the main tree and the 24 from
+  `test.algebra`. The tests address most of them by name through one constant
+  (`UserSignatureTest.PACKAGE_NAME`); the rest become imports. `UserOpsNonPublicClass`
+  is loaded by name only, so its package-private status survives the move;
+- `userOps.gps` and `poly-growth.gps`: the `userOperations` line only. Rules, graphs and
+  the rule-compilation golden name operators without a package;
+- `Launch Simulator.launch`: `ATTR_EXCLUDE_TEST_CODE` to `false`, so that the fixture
+  grammars still open in a Simulator started from Eclipse;
+- a line in `CHANGES.md`: a grammar that names one of the three classes stops loading.
+  They were never documented.
+
+Rejected: a subpackage of the main tree (`algebra.example`): still shipped, and it needs
+its own export in `module-info`; classes inside the grammar directory (`classes/`):
+compiled binaries in the repository.
