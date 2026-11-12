@@ -43,9 +43,9 @@ import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Callback;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.UserClassPath;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FallibleObject;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -62,7 +62,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * loaded through the class path of a given grammar directory
      * on top of GROOVE's own class path (see {@link #newLoader(File, List)}).
      * All methods with an {@link UserOperation}-annotation are taken as operators.
-     * Silently ignores any annotation errors in the classes; to check for those,
+     * Silently ignores any errors in the classes; to check for those,
      * call {@link #checkUserClass} afterwards.
      * @param classNames the names of the classes to load
      * @param grammarDir the grammar directory holding the grammar-local class path;
@@ -89,7 +89,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * loaded through the currently installed class loader
      * (see {@link #setUserClass(List, File, List)}).
      * All methods with an {@link UserOperation}-annotation are taken as operators.
-     * Silently ignores any annotation errors in the classes; to check for those,
+     * Silently ignores any errors in the classes; to check for those,
      * call {@link #checkUserClass} instead.
      */
     public static void setUserClass(List<QualName> classNames) {
@@ -142,8 +142,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 }
             } catch (ClassNotFoundException exc) {
                 result
-                    .addError("Class '%s' cannot be loaded from %s", className,
-                              sourceDescription);
+                    .addError("Class '%s' cannot be loaded from %s", className, sourceDescription);
             }
         }
         return result;
@@ -421,9 +420,9 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * case-insensitively, with the exact name as tie-break; the same on all platforms,
      * unlike the natural order of {@link File}, which ignores case only on Windows.
      */
-    static private final Comparator<File> JAR_ORDER
-        = Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER)
-            .thenComparing(File::getName);
+    static private final Comparator<File> JAR_ORDER = Comparator
+        .comparing(File::getName, String.CASE_INSENSITIVE_ORDER)
+        .thenComparing(File::getName);
 
     /** Description of GROOVE's own class path, as a source of user classes. */
     static private final String GROOVE_CLASS_PATH = "GROOVE's own class path";
