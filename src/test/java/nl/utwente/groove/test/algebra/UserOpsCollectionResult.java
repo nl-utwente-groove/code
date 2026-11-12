@@ -16,19 +16,22 @@
  */
 package nl.utwente.groove.test.algebra;
 
-import java.util.List;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Erroneous example class with user operations: collection that is not a set.
+ * Erroneous example class with user operations: collection as return type.
  */
-@AIGenerated("Claude Fable 5.2, 2026-11")
-public class UserOpsSetValuedList {
-    /** Set-valued operation whose return type allows repeated values. */
+@AIGenerated("Claude Opus 5.5, 2026-11")
+@NonNullByDefault
+public class UserOpsCollectionResult {
+    /** Operation that wrongly yields a collection of values. */
     @UserOperation
-    static public List<Integer> errList(int value) {
-        return List.of(value, value);
+    static public Set<Integer> values(int value) {
+        return Set.of(value);
     }
 }

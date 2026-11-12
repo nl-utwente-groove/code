@@ -16,9 +16,7 @@
  */
 package nl.utwente.groove.algebra;
 
-import java.util.LinkedHashSet;
 import java.util.Random;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
@@ -81,34 +79,6 @@ public class UserOpsExample {
     @UserOperation
     static public boolean isPrefix(String prefix, String total) {
         return total.startsWith(prefix);
-    }
-
-    /** Set-valued operation: yields the distinct decimal digits of the absolute value
-     * of a number, in order of first occurrence. */
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    @ToolTipHeader("Decimal digits")
-    @ToolTipBody("Set-valued: yields each of the distinct decimal digits of %s.")
-    @UserOperation
-    static public Set<Integer> digits(int num) {
-        Set<Integer> result = new LinkedHashSet<>();
-        for (char c : Long.toString(Math.abs((long) num)).toCharArray()) {
-            result.add(c - '0');
-        }
-        return result;
-    }
-
-    /** Set-valued operation with user-typed values: yields the distinct
-     * characters of a string, wrapped into {@link UserTypeString} values. */
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    @ToolTipHeader("Distinct characters")
-    @ToolTipBody("Set-valued: yields each of the distinct characters of %s, as a user value.")
-    @UserOperation
-    static public Set<UserTypeString> letters(String text) {
-        Set<UserTypeString> result = new LinkedHashSet<>();
-        for (char c : text.toCharArray()) {
-            result.add(new UserTypeString("" + c));
-        }
-        return result;
     }
 
     /** Non-static user operation. */

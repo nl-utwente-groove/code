@@ -69,8 +69,8 @@ Outcome:
   component, and the rule ranges over `range(cSize(d))` with `cAt(d, i)`.
 
 The decisions above on sets, order, levels, membership and anchors stay in force for
-`range`. The removal is not done yet. It goes on branch `withdraw-set-results`, cut from
-`sequence-components` after slice 2 of the first part (1576fa09f), as one commit:
+`range`. The removal is done (2026-11-12) on branch `withdraw-set-results`, cut from
+`sequence-components` after slice 2 of the first part (1576fa09f), as one commit. Removed:
 
 - `Operator.getElementType` and its use in the user-operation constructor, including the
   check on `indeterminate`;
@@ -79,13 +79,18 @@ The decisions above on sets, order, levels, membership and anchors stay in force
   `junit/rules/userOps.gps` and their goldens; `UserSignatureTest.testSetValued`;
 - the set-valued paragraph of the `@UserOperation` javadoc.
 
-A user operation with any `Collection` return type becomes a load error, which keeps
-the form reserved. `junit/rules/setValued.gps` and `junit/samples/range-cells.gps` use
-`range` only and stay.
+A user operation with any `Collection` return type is a load error, raised in the
+`Operator(Executable)` constructor, which keeps the form reserved
+(`UserSignatureTest.testCollectionResult`). `junit/rules/setValued.gps` and
+`junit/samples/range-cells.gps` use `range` only and stay.
 
 Documentation: in `CHANGES.md` the 7.7.0 entry names `range` only. On the website branch
 `set-valued-operators`, the subsection "Set-valued user operations" of `manual/data.md`
-goes; the section "Set-valued operations" stays, for `range`.
+is removed (aab2d03); the section "Set-valued operations" stays, for `range`.
+
+Checked: null analysis of the touched files clean; fast suite 843 tests, no failures;
+`UserSignatureTest`, `RuleApplicationTest`, `RuleCompilationTest`, `DeterminismTest` and
+`OperationTest` pass with the slow tests included.
 
 ## Phase 1 (done on this branch)
 
@@ -101,7 +106,7 @@ goes; the section "Set-valued operations" stays, for `range`.
   `member`, `absent`) in `RuleApplicationTest`, with POINT and TERM tests; golden in
   `junit/rulecompilation/rules/setValued.txt`.
 
-## Phase 2 (done on this branch, withdrawn 2026-11-12, removal pending): user operations
+## Phase 2 (withdrawn and removed 2026-11-12, kept as a record): user operations
 
 - `Operator.getElementType(Method)`: a return type assignable to `Set` with a class as
   type argument makes a user operation set-valued; `Integer`, `Double`, `Boolean` map to

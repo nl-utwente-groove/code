@@ -77,13 +77,13 @@ public class Operator implements Comparable<Operator> {
                 .illegalArg("Return type %s is a sequence type, which is only allowed for the last parameter",
                             returnType.getSimpleName());
         }
-        var elementType = executable instanceof Method m
-            ? getElementType(m)
-            : null;
-        this.setValued = elementType != null;
-        this.returnSort = toReturnSort(elementType == null
-            ? returnType
-            : elementType);
+        if (executable instanceof Method && Collection.class.isAssignableFrom(returnType)) {
+            throw Exceptions
+                .illegalArg("Return type %s is a collection: a user operation yields a single value",
+                            returnType.getSimpleName());
+        }
+        this.setValued = false;
+        this.returnSort = toReturnSort(returnType);
         this.symbol = null;
         this.kind = OpKind.CALL;
         this.description = "User-defined method '" + this.name + "'";
@@ -92,49 +92,6 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = annotation == null
             ? false
             : annotation.indeterminate();
-        if (this.setValued && this.indeterminate) {
-            throw Exceptions.illegalArg("Set-valued operation cannot be indeterminate");
-        }
-    }
-
-    /**
-     * Returns the type of the values of a set-valued user-defined method,
-     * or {@code null} if the method is not set-valued.
-     * A method is set-valued if its return type is a {@link Set}
-     * (or a subtype such as {@link java.util.SortedSet}) with a class as type argument.
-     * For the system sorts, the type argument is the wrapper type (for instance {@link Integer});
-     * the type returned by this method is then the corresponding primitive type.
-     * @throws IllegalArgumentException if the return type is a set type
-     * without a class as type argument, or a collection type that is not a set
-     */
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    static @Nullable Class<?> getElementType(Method method) throws IllegalArgumentException {
-        Class<?> returnType = method.getReturnType();
-        if (!Collection.class.isAssignableFrom(returnType)) {
-            return null;
-        }
-        if (!Set.class.isAssignableFrom(returnType)) {
-            throw Exceptions
-                .illegalArg("Return type %s should be a set, as repeated values cannot be told apart",
-                            method.getGenericReturnType().getTypeName());
-        }
-        if (method.getGenericReturnType() instanceof ParameterizedType parType
-            && parType.getActualTypeArguments().length == 1
-            && parType.getActualTypeArguments()[0] instanceof Class<?> argType) {
-            if (argType == Integer.class) {
-                return int.class;
-            } else if (argType == Double.class) {
-                return double.class;
-            } else if (argType == Boolean.class) {
-                return boolean.class;
-            } else {
-                return argType;
-            }
-        } else {
-            throw Exceptions
-                .illegalArg("Return type %s does not specify the type of its elements",
-                            method.getGenericReturnType().getTypeName());
-        }
     }
 
     /**

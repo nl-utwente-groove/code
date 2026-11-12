@@ -140,26 +140,12 @@ public class UserSignatureTest {
         }
     }
 
-    /** Tests the recognition of set-valued user operations. */
+    /** Tests that a user operation with a collection as return type is rejected. */
     @Test
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    public void testSetValued() {
-        loadFail("UserOpsSetValuedIndeterminate");
-        loadFail("UserOpsSetValuedRaw");
-        loadFail("UserOpsSetValuedList");
-        load("UserOpsSetValued");
-        var ops = UserSignature.getOperators();
-        assertEquals(4, ops.size());
-        for (var op : ops.values()) {
-            assertTrue(op.getName() + " should be set-valued", op.isSetValued());
-            switch (op.getName()) {
-            case "around" -> check(op, false, Sort.INT, Sort.INT);
-            case "halves" -> check(op, false, Sort.STRING, Sort.STRING);
-            case "upTo" -> check(op, false, Sort.REAL, Sort.REAL);
-            case "both" -> check(op, false, Sort.BOOL);
-            default -> fail("Unexpected operation " + op.getName());
-            }
-        }
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    public void testCollectionResult() {
+        checkErrors("UserOpsCollectionResult",
+                    "values': Return type Set is a collection: a user operation yields a single value");
     }
 
     /** Tests that the operator documentation can be built for user operations,
