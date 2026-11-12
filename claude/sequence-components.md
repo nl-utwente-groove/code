@@ -7,8 +7,18 @@ The implementation is on a new branch `sequence-components` off that merge (bffb
 two parts touch the same files (`Operator`, `UserSignature`, `AlgebraFamily`), and the
 fixtures of this part use `range`.
 
-**State (2026-11-12):** slice 1 done; slices 2 to 5 open. The sequence parameter of a
-`@UserOperation` (decision 3) is not yet confirmed by Arend and belongs to slice 2.
+**State (2026-11-12):** slice 1 done and reviewed, with `Seq` made generic in its element
+type on Arend's remark; slices 2 to 5 open. The sequence parameter of a `@UserOperation`
+(decision 3) was confirmed by Arend.
+
+**Open, and blocking slice 2:** Arend asked (2026-11-12) to weigh making the sequence types
+real sorts (`intseq` and so on, with their own signatures and built-in operators) against
+the design below, in which a sequence is not a sort. The two give different rule-side
+syntax (`get(coeffs(p), i)` and `Poly("p", [1, 2, 3])` against `coeffs(p, i)` and
+`Poly("p", 1, 2, 3)`), so the second cannot be shipped first and the first added later
+without breaking grammars. Decisions 3 to 6 and slices 2 and 3 stand only if the answer is
+"not a sort"; the carrier classes of slice 1 are needed either way. Nothing of slice 2 is
+written.
 
 ## Goal
 
