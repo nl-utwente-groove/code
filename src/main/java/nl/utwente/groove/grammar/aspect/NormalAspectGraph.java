@@ -258,8 +258,6 @@ public class NormalAspectGraph extends AspectGraph {
             try {
                 AspectNode source = edge.source();
                 boolean sourceIsNesting = source.has(Category.NESTING);
-                boolean nac = edge.has(Category.ROLE, AspectKind::inNAC)
-                    && (sourceIsNesting || !source.has(Category.ROLE, AspectKind::inNAC));
                 Expression predicate = edge.getTest();
                 assert predicate != null;
                 AspectNode level = resolveLevel(edge, sourceIsNesting
@@ -273,8 +271,10 @@ public class NormalAspectGraph extends AspectGraph {
                         predicate.toParseString(), edge);
                 }
                 AspectNode outcome = addExpression(level, edge, predicate);
-                // specify whether the outcome should be true or false
-                outcome.set(Aspect.newAspect(Constant.instance(!nac), getRole()));
+                // the outcome should be true, also for a negated test: the nodes
+                // added for the predicate are then embargoes (see addNestedNode),
+                // which already expresses that the test should not hold
+                outcome.set(Aspect.newAspect(Constant.instance(true), getRole()));
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
@@ -526,7 +526,11 @@ public class NormalAspectGraph extends AspectGraph {
             var levelNode = owner.has(Category.NESTING)
                 ? owner.getParentNode()
                 : owner.getLevelNode();
-            result = addNestedNode(levelNode, holder);
+            // the count of a quantifier always exists, hence it is read outside
+            // any embargo in which it is tested
+            result = owner.has(Category.NESTING)
+                ? addNestedNode(levelNode, holder, false)
+                : addNestedNode(levelNode, holder);
             result.set(Aspect.getAspect(exprSort));
             // add edge to newly created field
             AspectLabel idLabel = parser.parse(expr.getField(), getRole());
@@ -653,8 +657,18 @@ public class NormalAspectGraph extends AspectGraph {
      * used for its embargo status
      */
     private AspectNode addNestedNode(@Nullable AspectNode level, AspectElement orig) {
+        return addNestedNode(level, orig, orig.has(EMBARGO));
+    }
+
+    /** Adds a node with a given nesting level and embargo status, from a given source node.
+     * @param level the nesting level node on which the node should be created
+     * @param orig the original element from which the new one is derived
+     * @param embargo if {@code true}, the new node should be an embargo
+     */
+    private AspectNode addNestedNode(@Nullable AspectNode level, AspectElement orig,
+                                     boolean embargo) {
         AspectNode result = addNormalisedNode(orig);
-        if (orig.has(EMBARGO)) {
+        if (embargo) {
             result.set(EMBARGO.getAspect());
         }
         if (level != null) {
