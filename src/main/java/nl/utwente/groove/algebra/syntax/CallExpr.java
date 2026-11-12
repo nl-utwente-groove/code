@@ -280,7 +280,7 @@ public final class CallExpr extends Expression {
             }
         } else {
             for (int i = 0; i < args.size(); i++) {
-                if (args.get(i).getSort() != argTypes.get(i)) {
+                if (args.get(i).getSort() != this.op.getParamSort(i)) {
                     return false;
                 }
             }

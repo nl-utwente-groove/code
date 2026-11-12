@@ -38,7 +38,9 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.annotation.Seq;
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.annotation.UserSeq;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Callback;
 import nl.utwente.groove.util.Exceptions;
@@ -201,7 +203,26 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                     var name = rc.getName();
                     parTypes[i] = rc.getType();
                     var sort = Sort.toSort(rc.getType());
-                    if (sort == null || !sort.isSystem()) {
+                    if (Seq.class.isAssignableFrom(rc.getType())) {
+                        // a sequence-valued field: its elements are the tail of the
+                        // constructor arguments, so it has to be the last field
+                        if (i < rcs.length - 1) {
+                            result
+                                .addError("Sequence-valued field '%s.%s' is not the last field",
+                                          className, name);
+                            clazOk = false;
+                        } else if (rc.getType() == UserSeq.class) {
+                            result
+                                .addError("Field '%s.%s' is a sequence of user values, which is only allowed as an operation parameter",
+                                          className, name);
+                            clazOk = false;
+                        } else if (rc.getType() == Seq.class) {
+                            result
+                                .addError("Type of field '%s.%s' is not a sequence of a system sort",
+                                          className, name);
+                            clazOk = false;
+                        }
+                    } else if (sort == null || !sort.isSystem()) {
                         result
                             .addError("Type of field '%s.%s' is not a system sort", className,
                                       name);
@@ -264,12 +285,17 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         try {
             var op = new Operator(m);
             boolean isObjectMethod = !Modifier.isStatic(m.getModifiers());
+            var tailType = Operator.getTailType(m);
             for (int i = 0; i < op.getArity(); i++) {
                 var parType = isObjectMethod
                     ? (i == 0
                         ? m.getDeclaringClass()
                         : m.getParameterTypes()[i - 1])
                     : m.getParameterTypes()[i];
+                if (tailType != null && i == op.getArity() - 1) {
+                    // the arguments are the elements of the sequence
+                    parType = tailType;
+                }
                 if (op.getParamSorts().get(i) == Sort.USER && !userClasses.contains(parType)) {
                     errors
                         .add("User-defined parameter type %s of user operation '%s.%s' not declared in systems properties",

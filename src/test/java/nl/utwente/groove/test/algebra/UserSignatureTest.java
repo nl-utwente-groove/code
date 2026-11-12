@@ -254,6 +254,106 @@ public class UserSignatureTest {
         assertSame(UserTypeIntString.class, method.getDeclaringClass());
     }
 
+    /** Tests the operators with a variable argument tail, which stem from a sequence type
+     * as the last field of a user type or as the last parameter of a user operation.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testSequenceTail() {
+        // a sequence of user values needs the type of its elements among the user classes
+        loadFail("UserOpsSeq");
+        load("UserTypePoly", "UserTypeBag", "UserOpsSeq");
+        var ops = UserSignature.getOperators();
+        for (var op : ops.values()) {
+            boolean tail = true;
+            switch (op.getName()) {
+            case "UserTypePoly" -> check(op, false, Sort.USER, Sort.STRING, Sort.INT);
+            case "UserTypeBag" -> check(op, false, Sort.USER, Sort.INT);
+            case "horner" -> check(op, false, Sort.INT, Sort.INT, Sort.INT);
+            case "total" -> check(op, false, Sort.REAL, Sort.REAL);
+            case "all" -> check(op, false, Sort.BOOL, Sort.BOOL);
+            case "join" -> check(op, false, Sort.STRING, Sort.STRING, Sort.STRING);
+            case "countCoeffs" -> check(op, false, Sort.INT, Sort.USER);
+            case "sumAt" -> check(op, false, Sort.INT, Sort.USER, Sort.INT);
+            case "degree" -> {
+                check(op, false, Sort.INT, Sort.USER);
+                tail = false;
+            }
+            case "name" -> {
+                check(op, false, Sort.STRING, Sort.USER);
+                tail = false;
+            }
+            // the sequence-valued fields have no accessor
+            default -> fail("Unexpected operation " + op.getName());
+            }
+            assertEquals(tail, op.hasTail(), op.getName());
+        }
+        assertEquals(10, ops.size());
+
+        var poly = ops.get("UserTypePoly");
+        assertNotNull(poly);
+        assertEquals("user:UserTypePoly(string,int...)", poly.toString());
+        // the tail may be empty, the part before it may not
+        assertFalse(poly.allowsArgCount(0));
+        assertTrue(poly.allowsArgCount(1));
+        assertTrue(poly.allowsArgCount(5));
+        assertEquals(Sort.STRING, poly.getParamSort(0));
+        assertEquals(Sort.INT, poly.getParamSort(1));
+        assertEquals(Sort.INT, poly.getParamSort(4));
+        assertEquals(List.of(Sort.STRING), poly.getParamSorts(1));
+        assertEquals(List.of(Sort.STRING, Sort.INT, Sort.INT), poly.getParamSorts(3));
+        var bag = ops.get("UserTypeBag");
+        assertNotNull(bag);
+        assertTrue(bag.allowsArgCount(0));
+        assertEquals(List.of(), bag.getParamSorts(0));
+        // the receiving object of a non-static operation is part of what precedes the tail
+        var sumAt = ops.get("sumAt");
+        assertNotNull(sumAt);
+        assertFalse(sumAt.allowsArgCount(0));
+        assertTrue(sumAt.allowsArgCount(1));
+        // an operator without a tail has its parameter sorts whatever the number of arguments
+        var degree = ops.get("degree");
+        assertNotNull(degree);
+        assertEquals(List.of(Sort.USER), degree.getParamSorts(3));
+
+        var docMap = Algebras.getOpDocMap();
+        // the syntax line marks the last parameter as standing for any number of arguments
+        assertTrue(docMap.keySet().toString(),
+                   docMap
+                       .keySet()
+                       .stream()
+                       .anyMatch(k -> k.contains("horner</") && k.contains("coeffs</i></font>*)")));
+        checkParDocs(docMap, "horner", GENERATED, "any number of ");
+        checkParDocs(docMap, "sumAt", GENERATED, "any number of ");
+    }
+
+    /** Tests that a sequence type is rejected where it is not allowed. */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testSequenceErrors() {
+        checkErrors("UserTypeSeqNotLast", ".first' is not the last field");
+        checkErrors("UserTypeUserSeq", ".polys' is a sequence of user values");
+        checkErrors("UserOpsSeqErrors",
+                    "notLast': Sequence type IntSeq is only allowed for the last parameter",
+                    "result': Return type IntSeq is a sequence type",
+                    "untyped': Sequence type UserSeq does not specify the type of its elements");
+    }
+
+    /** Tests that a given user class has precisely as many errors as there are
+     * given fragments, each of which occurs in one of the errors.
+     */
+    private void checkErrors(String className, String... fragments) {
+        var errors = UserSignature
+            .checkUserClass(List.of(PACKAGE_NAME.extend(className)))
+            .getErrors()
+            .get();
+        assertEquals(fragments.length, errors.size(), errors.toString());
+        for (var fragment : fragments) {
+            assertTrue(errors.toString(),
+                       errors.stream().anyMatch(e -> e.toString().contains(fragment)));
+        }
+    }
+
     /** Tests that the parameter documentation of a given user operation consists
      * of rows that contain the given fragments, in that order.
      */

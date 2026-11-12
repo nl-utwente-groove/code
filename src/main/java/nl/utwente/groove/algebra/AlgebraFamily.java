@@ -37,6 +37,13 @@ import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.algebra.syntax.Variable;
+import nl.utwente.groove.annotation.BoolSeq;
+import nl.utwente.groove.annotation.IntSeq;
+import nl.utwente.groove.annotation.RealSeq;
+import nl.utwente.groove.annotation.Seq;
+import nl.utwente.groove.annotation.StringSeq;
+import nl.utwente.groove.annotation.UserSeq;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Properties.ValueType;
@@ -390,7 +397,9 @@ public enum AlgebraFamily implements DocumentedEnum {
         /** Invokes the executable in this operation with the given list of argument. */
         @Override
         protected Object invoke(List<Object> args) throws ReflectiveOperationException {
-            var argsArray = args.toArray();
+            var argsArray = getOperator().hasTail()
+                ? packTail(args)
+                : args.toArray();
             switch (this.executable) {
             case Method m:
                 if (Modifier.isStatic(m.getModifiers())) {
@@ -403,6 +412,64 @@ public enum AlgebraFamily implements DocumentedEnum {
             case Constructor<?> c:
                 return c.newInstance(argsArray);
             }
+        }
+
+        /**
+         * Converts the arguments of an operator with a variable argument tail
+         * into the arguments of its executable, by collecting the tail arguments
+         * into a single sequence of the type of the last parameter.
+         * @throws IllegalArgumentException if there are too few arguments, or
+         * the tail arguments are not of the element type of the sequence
+         * @see Operator#hasTail()
+         */
+        @AIGenerated("Claude Fable 5.2, 2026-11")
+        private Object[] packTail(List<Object> args) throws IllegalArgumentException {
+            // the number of arguments before the tail, including the receiving object if any
+            int fixed = getOperator().getArity() - 1;
+            if (args.size() < fixed) {
+                throw Exceptions.illegalArg("Too few arguments for %s: %s", getOperator(), args);
+            }
+            var result = Arrays.copyOf(args.toArray(), fixed + 1);
+            var tail = args.subList(fixed, args.size());
+            var parTypes = this.executable.getParameterTypes();
+            var seqType = parTypes[parTypes.length - 1];
+            try {
+                Seq<?> seq;
+                if (seqType == IntSeq.class) {
+                    var elems = new int[tail.size()];
+                    for (int i = 0; i < elems.length; i++) {
+                        elems[i] = (Integer) tail.get(i);
+                    }
+                    seq = IntSeq.of(elems);
+                } else if (seqType == RealSeq.class) {
+                    var elems = new double[tail.size()];
+                    for (int i = 0; i < elems.length; i++) {
+                        elems[i] = (Double) tail.get(i);
+                    }
+                    seq = RealSeq.of(elems);
+                } else if (seqType == BoolSeq.class) {
+                    var elems = new boolean[tail.size()];
+                    for (int i = 0; i < elems.length; i++) {
+                        elems[i] = (Boolean) tail.get(i);
+                    }
+                    seq = BoolSeq.of(elems);
+                } else if (seqType == StringSeq.class) {
+                    var elems = new String[tail.size()];
+                    for (int i = 0; i < elems.length; i++) {
+                        elems[i] = (String) tail.get(i);
+                    }
+                    seq = StringSeq.of(elems);
+                } else {
+                    var elemType = Operator.getTailType(this.executable);
+                    assert elemType != null; // the operator has a tail
+                    seq = UserSeq.copyOf(elemType.asSubclass(Record.class), tail);
+                }
+                result[fixed] = seq;
+            } catch (ClassCastException exc) {
+                // report this like an argument of the wrong type for a parameter without a tail
+                throw new IllegalArgumentException(exc);
+            }
+            return result;
         }
 
         private final Executable executable;

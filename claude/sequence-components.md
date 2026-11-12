@@ -8,7 +8,7 @@ two parts touch the same files (`Operator`, `UserSignature`, `AlgebraFamily`), a
 fixtures of this part use `range`.
 
 **State (2026-11-12):** slice 1 done and reviewed, with `Seq` made generic in its element
-type on Arend's remark; slices 2 to 5 open. The sequence parameter of a `@UserOperation`
+type on Arend's remark; slice 2 done (2026-11-12); slices 3 to 5 open. The sequence parameter of a `@UserOperation`
 (decision 3) was confirmed by Arend.
 
 **Sequences as sorts are a later extension (gh #942), decided 2026-11-12.** Making the
@@ -148,6 +148,27 @@ Each is one or a few commits, mergeable on its own.
    sequence parameter; load failures for a sequence that is not last, two sequences, a
    sequence as operation result), `ExpressionTest`-level parse and print round trips
    including the empty tail (`Poly("p")`) and a sequence-only record (`Bag()`).
+   *Done*, with `UserSeq<T>` as a fifth carrier for operation parameters (tests:
+   `UserSignatureTest.testSequenceTail`/`testSequenceErrors`, `SequenceTailTest`; fixtures
+   `UserTypePoly`, `UserTypeBag`, `UserOpsSeq` and three erroneous ones in `test/algebra`).
+   As implemented:
+   - the arity of a tail operator counts the tail as one parameter;
+     `Operator.getParamSort(i)` and `getParamSorts(argCount)` give the sorts per argument,
+     and `Operator.getTailType(Executable)` is the one place that maps a sequence class to
+     its element type (for `UserSeq<T>`, the type argument);
+   - the tail is packed in `AlgebraFamily.UserOperation.packTail`; a user value of another
+     type than `T` gives an error value there, since all user types share one sort;
+   - a sequence-valued field has no accessor operator until slice 3;
+   - under JDT null analysis, a class that names `UserSeq<SomeType>` has to be
+     `@NonNullByDefault` (or annotate the type argument): the type parameter of `UserSeq`
+     has a non-null bound, and an unannotated argument is an error, not a warning. This
+     only concerns code compiled with that analysis, such as the fixtures;
+   - the help marks the tail parameter with a star (`horner(x,coeffs*)`), because the
+     syntax text of `Help` deletes dots;
+   - the overrun of `ExprTree.userConstArgs` (see the end of this note) is gone, with
+     `SequenceTailTest.testConstantErrors` as its regression test.
+   Not covered yet: tail operators in rules. The route from aspect graphs to operator
+   nodes was not run with a tail operator; slice 4's fixtures are the first to do so.
 3. **Generated accessors**, with clash detection against the record's other operators and
    the out-of-range error value.
 4. **Fixtures.** An example record in `algebra/` next to `UserTypeIntBool`, with

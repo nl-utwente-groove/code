@@ -52,7 +52,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         super(op);
         assert op.getKind() != OpKind.NONE;
         if (op.isConstructor()) {
-            this.userConstArgs = new Constant[op.getArity()];
+            this.userConstArgs = new ArrayList<>();
         }
     }
 
@@ -201,7 +201,8 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         var result = super.getConstant();
         var userConstArgs = this.userConstArgs;
         if (result == null && userConstArgs != null) {
-            setConstant(result = Constant.instance(getOp().getOperator(Sort.USER), userConstArgs),
+            setConstant(result = Constant
+                .instance(getOp().getOperator(Sort.USER), userConstArgs.toArray(new Constant[0])),
                         true);
         }
         return result;
@@ -214,7 +215,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         if (userConstArgs != null) {
             var constArg = arg.getConstant();
             if (constArg != null && constArg.getSort() != Sort.USER) {
-                userConstArgs[getArgs().size()] = constArg;
+                userConstArgs.add(constArg);
             } else {
                 this.userConstArgs = null;
             }
@@ -223,7 +224,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     }
 
     /** List of constructor arguments, if this expression tree represents a user type constant. */
-    private Constant @Nullable [] userConstArgs;
+    private @Nullable List<Constant> userConstArgs;
 
     /**
      * Returns the constant expression this tree represents, if any.
@@ -376,6 +377,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         if (!op.allowsArgCount(args.size())) {
             if (op.isVarArgs()) {
                 throw new FormatException("Operator '%s' must have arguments", op.toString());
+            } else if (op.hasTail()) {
+                throw new FormatException("Operator '%s' expects at least %s parameters but has %s",
+                    op.toString(), op.getArity() - 1, args.size());
             } else {
                 throw new FormatException("Operator '%s' expects %s parameters but has %s",
                     op.toString(), op.getArity(), args.size());
@@ -386,7 +390,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         for (int i = 0; i < args.size(); i++) {
             var sort = op.isVarArgs()
                 ? parTypes.get(0)
-                : parTypes.get(i);
+                : op.getParamSort(i);
             Expression arg = args.get(i).get(sort);
             if (arg == null) {
                 throw new FormatException("Parameter %s of '%s' should have type %s", i,
@@ -529,6 +533,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         private ExprOp() {
             this.varArgs = false;
             this.zeroArgs = false;
+            this.tail = false;
             this.constructor = false;
         }
 
@@ -537,7 +542,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
          * The arity should equal the kind's arity, unless the latter is unspecified.
          */
         public ExprOp(OpKind kind, String symbol, int arity) {
-            this(kind, symbol, arity, false, false, false);
+            this(kind, symbol, arity, false, false, false, false);
         }
 
         /**
@@ -547,19 +552,21 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
          */
         public ExprOp(OpKind kind, String symbol, Operator sortOp) {
             this(kind, symbol, sortOp.getArity(), sortOp.isVarArgs(), sortOp.isZeroArgs(),
-                 sortOp.isConstructor());
+                 sortOp.hasTail(), sortOp.isConstructor());
         }
 
         /**
          * Constructs a (possible collection-based) operator with a given kind, symbol and arity.
          * The arity should equal the kind's arity, unless the latter is unspecified.
          * @param varArgs if {@code true}, the operator allows a variable number of arguments
+         * @param tail if {@code true}, the operator has a variable argument tail
          */
         private ExprOp(OpKind kind, String symbol, int arity, boolean varArgs, boolean zeroArgs,
-                       boolean constructor) {
+                       boolean tail, boolean constructor) {
             super(kind, symbol, arity);
             this.varArgs = varArgs;
             this.zeroArgs = zeroArgs;
+            this.tail = tail;
             this.constructor = constructor;
             assert !varArgs || arity == 1;
         }
@@ -569,6 +576,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             assert sortOp.getArity() == getArity();
             assert sortOp.isVarArgs() == isVarArgs();
             assert sortOp.isZeroArgs() == isZeroArgs();
+            assert sortOp.hasTail() == hasTail();
             Operator old = this.sortOps.put(sortOp.getDeclaringSort(), sortOp);
             assert old == null;
         }
@@ -606,6 +614,14 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
 
         /** Flag indicating whether this is a collection-based operator that supports zero arguments. */
         private final boolean zeroArgs;
+
+        @Override
+        public boolean hasTail() {
+            return this.tail;
+        }
+
+        /** Flag indicating whether this operator has a variable argument tail. */
+        private final boolean tail;
 
         @Override
         public boolean isConstructor() {

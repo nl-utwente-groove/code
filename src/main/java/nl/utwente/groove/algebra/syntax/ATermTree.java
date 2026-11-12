@@ -103,6 +103,11 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
                     errors
                         .add("Operator '%s' must have arguments in %s", getOp().getSymbol(),
                              getParseString());
+                } else if (getOp().hasTail()) {
+                    errors
+                        .add("Operator '%s' expects at least %s but has %s operands in %s",
+                             getOp().getSymbol(), getOp().getArity() - 1, getArgs().size(),
+                             getParseString());
                 } else {
                     errors
                         .add("Operator '%s' expects %s but has %s operands in %s",

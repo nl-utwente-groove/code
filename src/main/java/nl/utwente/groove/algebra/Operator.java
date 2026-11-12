@@ -24,9 +24,15 @@ import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.ExprTreeParser;
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.annotation.BoolSeq;
+import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.annotation.OpSymbol;
+import nl.utwente.groove.annotation.RealSeq;
+import nl.utwente.groove.annotation.Seq;
+import nl.utwente.groove.annotation.StringSeq;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.annotation.UserSeq;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
@@ -53,14 +59,24 @@ public class Operator implements Comparable<Operator> {
         if (!this.constructor && !Modifier.isStatic(executable.getModifiers())) {
             this.parameterSorts.add(Sort.USER);
         }
-        for (Type t : parTypes) {
-            this.parameterSorts.add(toParSort(t));
+        var tailType = getTailType(executable);
+        this.tail = tailType != null;
+        for (int i = 0; i < parTypes.length; i++) {
+            this.parameterSorts
+                .add(toParSort(tailType != null && i == parTypes.length - 1
+                    ? tailType
+                    : parTypes[i]));
         }
         this.arity = this.parameterSorts.size();
         Class<?> returnType = switch (executable) {
         case Method m -> m.getReturnType();
         case Constructor<?> c -> c.getDeclaringClass();
         };
+        if (Seq.class.isAssignableFrom(returnType)) {
+            throw Exceptions
+                .illegalArg("Return type %s is a sequence type, which is only allowed for the last parameter",
+                            returnType.getSimpleName());
+        }
         var elementType = executable instanceof Method m
             ? getElementType(m)
             : null;
@@ -118,6 +134,63 @@ public class Operator implements Comparable<Operator> {
             throw Exceptions
                 .illegalArg("Return type %s does not specify the type of its elements",
                             method.getGenericReturnType().getTypeName());
+        }
+    }
+
+    /**
+     * Returns the type of the elements of the variable argument tail of a user-defined
+     * constructor or method, or {@code null} if it has no such tail.
+     * There is a tail if the last parameter is of one of the sequence types
+     * (see {@link Seq}): the operator then takes any number of arguments in that position,
+     * which are passed on as a single sequence.
+     * For the sequence types of the system sorts, the type returned is the
+     * corresponding Java type (for instance {@code int} for {@link IntSeq});
+     * for a {@link UserSeq} it is the type argument.
+     * @throws IllegalArgumentException if a parameter other than the last is of a sequence type,
+     * or if the last parameter is a sequence type without a known element type
+     * @see #hasTail()
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static @Nullable Class<?> getTailType(Executable executable) throws IllegalArgumentException {
+        Class<?>[] parTypes = executable.getParameterTypes();
+        int last = parTypes.length - 1;
+        for (int i = 0; i < last; i++) {
+            if (Seq.class.isAssignableFrom(parTypes[i])) {
+                throw Exceptions
+                    .illegalArg("Sequence type %s is only allowed for the last parameter",
+                                parTypes[i].getSimpleName());
+            }
+        }
+        if (last < 0) {
+            return null;
+        }
+        Class<?> lastType = parTypes[last];
+        if (lastType == IntSeq.class) {
+            return int.class;
+        } else if (lastType == RealSeq.class) {
+            return double.class;
+        } else if (lastType == BoolSeq.class) {
+            return boolean.class;
+        } else if (lastType == StringSeq.class) {
+            return String.class;
+        } else if (lastType == UserSeq.class) {
+            // the generic types can only fall short of the parameters for constructors
+            // of inner classes, which do not occur here
+            Type[] genTypes = executable.getGenericParameterTypes();
+            if (genTypes.length == parTypes.length
+                && genTypes[last] instanceof ParameterizedType parType
+                && parType.getActualTypeArguments()[0] instanceof Class<?> argType) {
+                return argType;
+            }
+            throw Exceptions
+                .illegalArg("Sequence type %s does not specify the type of its elements",
+                            lastType.getSimpleName());
+        } else if (Seq.class.isAssignableFrom(lastType)) {
+            throw Exceptions
+                .illegalArg("Sequence type %s has no known element type",
+                            lastType.getSimpleName());
+        } else {
+            return null;
         }
     }
 
@@ -184,6 +257,7 @@ public class Operator implements Comparable<Operator> {
         this.description = superMethod.getAnnotation(ToolTipHeader.class).value();
         this.indeterminate = false;
         this.constructor = false;
+        this.tail = false;
     }
 
     /** Converts a reflected parameter type into a GROOVE sort. */
@@ -256,6 +330,23 @@ public class Operator implements Comparable<Operator> {
 
     private final boolean zeroArgs;
 
+    /** Indicates if this operator has a variable argument tail: it then takes
+     * any number of arguments (including none) in the position of its last parameter,
+     * all of the sort of that parameter, in addition to one argument for each
+     * of its other parameters.
+     * This is the case for the constructor of a user type whose last component is a
+     * sequence, and for a user operation whose last parameter is one.
+     * Unlike a collection-based operator (see {@link #isVarArgs()}),
+     * the tail arguments are explicitly listed in the call.
+     * @see #getParamSort(int)
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public boolean hasTail() {
+        return this.tail;
+    }
+
+    private final boolean tail;
+
     /** Indicates if this is a set-valued operator, i.e., one that yields
      * a set of values of the result sort rather than a single one.
      * A set-valued operator is matched once for every value in the set.
@@ -281,6 +372,7 @@ public class Operator implements Comparable<Operator> {
 
     /** Returns the number of parameters of this operator.
      * For a collection-based operator, the arity is 1.
+     * For an operator with a variable argument tail, the tail counts as one parameter.
      */
     public int getArity() {
         return this.arity;
@@ -292,6 +384,8 @@ public class Operator implements Comparable<Operator> {
     public boolean allowsArgCount(int argCount) {
         if (isVarArgs()) {
             return argCount > 0 || isZeroArgs();
+        } else if (hasTail()) {
+            return argCount >= getArity() - 1;
         } else {
             return argCount == getArity();
         }
@@ -299,9 +393,46 @@ public class Operator implements Comparable<Operator> {
 
     /**
      * Returns the parameter sorts of this operator.
+     * For an operator with a variable argument tail, the last of these
+     * is the sort of each of the tail arguments.
+     * @see #getParamSort(int)
      */
     public List<Sort> getParamSorts() {
         return this.parameterSorts;
+    }
+
+    /**
+     * Returns the sort that this operator expects for the argument at a given position.
+     * This differs from the corresponding element of {@link #getParamSorts()}
+     * for an operator with a variable argument tail, where every
+     * position from the last parameter onwards has the sort of that parameter.
+     * @param index the position of the argument, counting from 0
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public Sort getParamSort(int index) {
+        return this.parameterSorts
+            .get(hasTail()
+                ? Math.min(index, getArity() - 1)
+                : index);
+    }
+
+    /**
+     * Returns the sorts that this operator expects for a given number of arguments.
+     * This equals {@link #getParamSorts()} except for an operator with a variable
+     * argument tail that allows the given number of arguments: the sort of the last parameter
+     * is then left out or repeated as often as needed.
+     * @param argCount the number of arguments
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public List<Sort> getParamSorts(int argCount) {
+        if (!hasTail() || !allowsArgCount(argCount)) {
+            return this.parameterSorts;
+        }
+        var result = new ArrayList<Sort>(argCount);
+        for (int i = 0; i < argCount; i++) {
+            result.add(getParamSort(i));
+        }
+        return result;
     }
 
     private final List<Sort> parameterSorts;
@@ -387,7 +518,10 @@ public class Operator implements Comparable<Operator> {
 
     @Override
     public String toString() {
-        return getFullName() + Strings.toString(this.parameterSorts.toArray(), "(", ")", ",");
+        return getFullName() + Strings
+            .toString(this.parameterSorts.toArray(), "(", hasTail()
+                ? "...)"
+                : ")", ",");
     }
 
     @Override

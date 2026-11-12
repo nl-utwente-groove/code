@@ -62,10 +62,20 @@ public interface Op {
         return false;
     }
 
+    /** Signals if this operator has a variable argument tail, i.e., takes any number
+     * of arguments (including none) in the position of its last parameter.
+     * The tail counts as one parameter in the arity.
+     */
+    default boolean hasTail() {
+        return false;
+    }
+
     /** Tests if this operator supports a given argument count. */
     default public boolean allowsArgCount(int argCount) {
         if (isVarArgs()) {
             return argCount > 0 || isZeroArgs();
+        } else if (hasTail()) {
+            return argCount >= getArity() - 1;
         } else {
             return argCount == getArity();
         }

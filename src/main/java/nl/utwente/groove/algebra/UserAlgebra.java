@@ -17,9 +17,11 @@
 package nl.utwente.groove.algebra;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.annotation.Seq;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.Exceptions;
 
@@ -50,16 +52,24 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
         assert op != null; // every user type has a constructor operator of the same name
         var rc = claz.getRecordComponents();
         assert rc != null : "User type '%s' is not a record".formatted(claz);
-        var args = new Expression[rc.length];
+        var args = new ArrayList<Expression>();
         for (int i = 0; i < rc.length; i++) {
             try {
                 var field = rc[i].getAccessor().invoke(value);
-                args[i] = getFamily().getAlgebra(op.getParamSorts().get(i)).toTerm(field);
+                var algebra = getFamily().getAlgebra(op.getParamSorts().get(i));
+                if (field instanceof Seq<?> seq) {
+                    // the elements of a sequence are the tail of the constructor arguments
+                    for (int j = 0; j < seq.size(); j++) {
+                        args.add(algebra.toTerm(seq.value(j)));
+                    }
+                } else {
+                    args.add(algebra.toTerm(field));
+                }
             } catch (IllegalAccessException | InvocationTargetException exc) {
                 throw Exceptions.unreachable();
             }
         }
-        return new CallExpr(op, args);
+        return new CallExpr(op, args.toArray(new Expression[0]));
     }
 
     @Override
@@ -70,26 +80,37 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
             .formatted(claz);
         result.append(claz.getSimpleName());
         result.append('(');
-        boolean first = true;
         var rc = claz.getRecordComponents();
         assert rc != null : "User type '%s' is not a record".formatted(claz);
+        // the arguments of the constructor call; a sequence contributes one for each element
+        var args = new ArrayList<>();
         for (var c : rc) {
+            try {
+                var field = c.getAccessor().invoke(value);
+                if (field instanceof Seq<?> seq) {
+                    for (int j = 0; j < seq.size(); j++) {
+                        args.add(seq.value(j));
+                    }
+                } else {
+                    args.add(field);
+                }
+            } catch (IllegalAccessException | InvocationTargetException exc) {
+                throw Exceptions.unreachable();
+            }
+        }
+        boolean first = true;
+        for (var arg : args) {
             if (first) {
                 first = false;
             } else {
                 result.append(",");
             }
-            try {
-                var field = c.getAccessor().invoke(value);
-                if (c.getType() == String.class) {
-                    result.append('"');
-                    result.append(field);
-                    result.append('"');
-                } else {
-                    result.append(field);
-                }
-            } catch (IllegalAccessException | InvocationTargetException exc) {
-                throw Exceptions.unreachable();
+            if (arg instanceof String) {
+                result.append('"');
+                result.append(arg);
+                result.append('"');
+            } else {
+                result.append(arg);
             }
         }
         result.append(')');
