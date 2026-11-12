@@ -260,7 +260,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      */
     static private Method checkMethod(Method m, Set<Class<?>> userClasses) throws FormatException {
         var errors = new FormatErrorSet();
-        var className = m.getClass().getName();
+        var className = m.getDeclaringClass().getName();
         try {
             var op = new Operator(m);
             boolean isObjectMethod = !Modifier.isStatic(m.getModifiers());
