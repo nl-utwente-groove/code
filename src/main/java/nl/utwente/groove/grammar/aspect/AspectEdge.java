@@ -908,7 +908,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         var assignTree = getAssignTree();
         assert assignTree != null;
         try {
-            return getAssign().toLine(assignSymbol);
+            var assign = getAssign();
+            return assign
+                .toLine(assign.getRhs().isEnumeration()
+                    ? ELEMENT_OF_SYMBOL
+                    : assignSymbol);
         } catch (FormatException exc) {
             return assignTree.toLine();
         }
@@ -975,7 +979,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             // make a test for a self-field look like an edge, like for let:
             if (getTest() instanceof CallExpr c && c.getOperator().isEquality()
                 && c.getArgs().get(0) instanceof FieldExpr f && f.isSelf()) {
-                return new Assignment(f.getField(), c.getArgs().get(1)).toLine(POINTS_TO_SYMBOL);
+                var value = c.getArgs().get(1);
+                return new Assignment(f.getField(), value)
+                    .toLine(value.isEnumeration()
+                        ? ELEMENT_OF_SYMBOL
+                        : POINTS_TO_SYMBOL);
             } else {
                 return getTest().toLine();
             }
@@ -1140,6 +1148,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     static private final String SPACE = " ";
     /** Points-to symbol between attribute name and value or expression. */
     static private final String POINTS_TO_SYMBOL = "" + Unicode.RA;
+    /** Element-of symbol between attribute name and an enumeration of its values. */
+    static private final String ELEMENT_OF_SYMBOL = "" + Unicode.ELEMENT_OF;
     /** Change-to symbol between attribute name and value or expression (unused right now). */
     // static private final String CHANGE_TO_SYMBOL = "" + Unicode.RA_STROKE;
     /** Typed-as symbol between attribute name and type. */
