@@ -9,6 +9,11 @@ Release 7.7.2, unreleased
   `package.*`, which stands for all classes of that package (not of its subpackages)
   that are a `@UserType` or declare a `@UserOperation`; other classes in the package,
   such as helpers, are left alone
+- Resolved gh #941: the Imager and the Viewer have an option `-l spring` or
+  `-l forest` that lays out every graph afresh before it is rendered or shown,
+  ignoring the layout stored with it; the graph files are not changed
+- The Imager lays out the nodes of a graph that have no stored position, as
+  the Viewer already did; they used to end up at random positions
 
 Release 7.7.1, 13 November 2026
 --------------------------------
