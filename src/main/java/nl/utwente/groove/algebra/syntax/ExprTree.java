@@ -29,6 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.Keywords;
@@ -342,6 +343,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         for (ExprTree arg : getArgs()) {
             resultArgs.add(arg.toExpressions(sortMap));
         }
+        // the error of a correctly sorted call of a user operator that
+        // none of the implementations of that operator can be invoked with
+        @Nullable FormatException userError = null;
         for (Operator op : getOp().getOperators()) {
             if (hasDeclaredSort() && getDeclaredSort() != op.getDeclaringSort()) {
                 // the type of op does not correspond to the known operator type
@@ -349,7 +353,17 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             }
             boolean duplicate = false;
             try {
-                duplicate = (result.put(op.getResultSort(), newCallExpr(op, resultArgs)) != null);
+                var expr = newCallExpr(op, resultArgs);
+                if (expr instanceof CallExpr call) {
+                    try {
+                        UserSignature.checkCall(call);
+                    } catch (FormatException e) {
+                        // this says more than that the operator is not applicable
+                        userError = e;
+                        throw e;
+                    }
+                }
+                duplicate = (result.put(op.getResultSort(), expr) != null);
             } catch (FormatException e) {
                 // this candidate did not work out; proceed
             }
@@ -359,6 +373,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             }
         }
         if (result.isEmpty()) {
+            if (userError != null) {
+                throw userError;
+            }
             throw new FormatException("Operator '%s' not applicable to arguments in '%s'",
                 getOp().getSymbol(), getParseString());
         }

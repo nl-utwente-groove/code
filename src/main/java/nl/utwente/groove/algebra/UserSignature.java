@@ -18,6 +18,7 @@ package nl.utwente.groove.algebra;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -40,6 +41,8 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Operator.SeqAccessor;
+import nl.utwente.groove.algebra.syntax.CallExpr;
+import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.Seq;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserSeq;
@@ -426,6 +429,182 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 ? m.getDeclaringClass()
                 : null;
             return new Impl(exec, receiver, null);
+        }
+
+        /** Returns the Java class of the outcome of this implementation:
+         * the return type of a method, and the constructed type for a constructor.
+         * This is only meaningful for an operator with result sort {@link Sort#USER}:
+         * for a generated accessor, it is the type of the field rather than of the outcome.
+         */
+        Class<?> returnClass() {
+            return switch (executable()) {
+            case Method m -> m.getReturnType();
+            case Constructor<?> c -> c.getDeclaringClass();
+            };
+        }
+
+        /** Returns the Java class that this implementation requires of the argument
+         * at a given position of a call of its operator: the receiver at position 0,
+         * if there is one, and otherwise the type of the corresponding parameter
+         * of the executable, where every position in a variable argument tail
+         * has the element type of the sequence (see {@link Operator#getTailType}).
+         * @param index the position of the argument, counting from 0
+         * @return the required class, or {@code null} if this implementation does
+         * not pass the argument on to its executable, as for the position
+         * of a generated accessor
+         */
+        @Nullable Class<?> parClass(int index) {
+            var receiver = receiver();
+            if (receiver != null) {
+                if (index == 0) {
+                    return receiver;
+                }
+                index--;
+            }
+            var parTypes = executable().getParameterTypes();
+            int last = parTypes.length - 1;
+            if (index > last) {
+                // beyond the parameters: a later position in the tail, if there is one
+                index = last;
+            }
+            if (index < 0) {
+                return null;
+            }
+            if (index == last) {
+                var tailType = Operator.getTailType(executable());
+                if (tailType != null) {
+                    return tailType;
+                }
+            }
+            return parTypes[index];
+        }
+
+        /** Tests if this implementation can be invoked with a value of a given class
+         * as the argument at a given position of a call of its operator.
+         * For the receiver, the class has to be the same, as that is how
+         * an implementation is selected; elsewhere it has to be assignable to the
+         * class of the parameter (see {@link #parClass}).
+         * @param index the position of the argument, counting from 0
+         * @param argClass the class of the argument value
+         */
+        boolean accepts(int index, Class<?> argClass) {
+            var parClass = parClass(index);
+            if (index == 0 && receiver() != null) {
+                return parClass == argClass;
+            } else {
+                return parClass == null || parClass.isAssignableFrom(argClass);
+            }
+        }
+    }
+
+    /**
+     * Returns the Java class of the values of a given expression, if the expression
+     * is of sort {@link Sort#USER} and the class is statically known (gh #933).
+     * That is the case for a user type constant and a constructor call, which have
+     * the constructed type, and for a call of another user operator if the implementations
+     * that may be selected for it all have the same return type; these are all
+     * implementations of the operator if the class of the receiver is not known,
+     * and the one with that receiver otherwise.
+     * The class of a variable or field is never known.
+     * <p>
+     * The class is derived from the currently loaded user classes whenever it is asked for,
+     * rather than stored in the expression: it is only needed while a call is being built,
+     * and the classes are replaced whenever a grammar is (re)loaded,
+     * whereas expressions are created in many places and compared by content.
+     * @return the class of the values of {@code expr}, or {@code null} if it is
+     * not statically known
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public static @Nullable Class<?> getUserClass(Expression expr) {
+        if (expr.getSort() != Sort.USER) {
+            return null;
+        }
+        CallExpr call = null;
+        if (expr instanceof CallExpr c) {
+            call = c;
+        } else if (expr instanceof Constant c) {
+            // an error value has no constructor call
+            call = c.getUserRepr();
+        }
+        if (call == null) {
+            return null;
+        }
+        var impls = getImplementations().get(call.getOperator());
+        if (impls == null) {
+            return null;
+        }
+        var args = call.getArgs();
+        var receiverClass = args.isEmpty()
+            ? null
+            : getUserClass(args.get(0));
+        Class<?> result = null;
+        for (var impl : impls) {
+            if (receiverClass != null && !impl.accepts(0, receiverClass)) {
+                continue;
+            }
+            var returnClass = impl.returnClass();
+            if (result != null && result != returnClass) {
+                return null;
+            }
+            result = returnClass;
+        }
+        return result;
+    }
+
+    /**
+     * Checks a call of a user operator against the Java classes of its implementations,
+     * as far as the classes of the arguments are statically known
+     * (see {@link #getUserClass}); arguments of unknown class are never an error (gh #933).
+     * The arguments are assumed to have the sorts that the operator requires.
+     * The implementations are narrowed down argument by argument to those that
+     * accept the class of the argument, starting with the receiver; the call is
+     * rejected at the first argument for which none is left, as its evaluation would
+     * then yield an error value whichever implementation is selected.
+     * This does nothing for an operator that is not defined in the currently loaded
+     * user classes.
+     * @throws FormatException if no implementation of the operator can be invoked
+     * with the arguments of the call
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public static void checkCall(CallExpr call) throws FormatException {
+        var op = call.getOperator();
+        var impls = getImplementations().get(op);
+        if (impls == null) {
+            return;
+        }
+        var args = call.getArgs();
+        List<Impl> candidates = impls;
+        for (int i = 0; i < args.size(); i++) {
+            var argClass = getUserClass(args.get(i));
+            if (argClass == null) {
+                continue;
+            }
+            int index = i;
+            var accepting = candidates.stream().filter(c -> c.accepts(index, argClass)).toList();
+            if (accepting.isEmpty()) {
+                // the classes that the remaining implementations require at this position
+                var required = new LinkedHashSet<String>();
+                for (var candidate : candidates) {
+                    var parClass = candidate.parClass(index);
+                    assert parClass != null; // otherwise the candidate would accept the argument
+                    required.add(parClass.getSimpleName());
+                }
+                if (i == 0 && impls.get(0).receiver() != null) {
+                    throw new FormatException(
+                        "User operation '%s' is not implemented for a value of type %s, only for %s",
+                        op.getName(), argClass.getSimpleName(), String.join(", ", required));
+                }
+                var message = String
+                    .format("Parameter %s of user operation '%s' should have type %s rather than %s",
+                            i, op.getName(), String.join(" or ", required),
+                            argClass.getSimpleName());
+                var receiver = candidates.get(0).receiver();
+                if (receiver != null && candidates.size() == 1 && impls.size() > 1) {
+                    message += ", as implemented for " + receiver.getSimpleName();
+                }
+                throw new FormatException(message);
+            }
+            candidates = accepting;
         }
     }
 
