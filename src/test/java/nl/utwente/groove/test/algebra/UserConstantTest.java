@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.test.algebra;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -29,18 +30,23 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.algebra.UserAlgebra;
 import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
+import nl.utwente.groove.annotation.StringSeq;
+import nl.utwente.groove.test.algebra.user.UserTypeString;
+import nl.utwente.groove.test.algebra.user.UserTypeTags;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Tests the recognition of constants of user types.
+ * Tests the recognition and the printing of constants of user types.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -51,7 +57,10 @@ public class UserConstantTest {
     @BeforeEach
     public void setUp() {
         UserSignature
-            .setUserClass(Stream.of("UserTypeIntBool").map(PACKAGE_NAME::extend).toList());
+            .setUserClass(Stream
+                .of("UserTypeIntBool", "UserTypeString", "UserTypeTags")
+                .map(PACKAGE_NAME::extend)
+                .toList());
     }
 
     /** Unloads the user classes, so that other tests start without them. */
@@ -83,6 +92,44 @@ public class UserConstantTest {
                                     Expression.parse("getInt(UserTypeIntBool(1,true))").toExpression());
         assertInstanceOf(Constant.class, call.getArgs().get(0));
         assertFalse(call.isUserConstant());
+    }
+
+    /**
+     * The strings in the symbol of a user value are quoted and escaped like string constants,
+     * so that the symbol is read back as the same value.
+     */
+    @Test
+    public void testStringComponents() throws FormatException {
+        // without quotes and backslashes, the symbol is as it always was
+        checkSymbol("UserTypeString(\"ab\")", new UserTypeString("ab"));
+        checkSymbol("UserTypeString(\"a\\\"b\")", new UserTypeString("a\"b"));
+        checkSymbol("UserTypeString(\"a\\\\b\")", new UserTypeString("a\\b"));
+        checkSymbol("UserTypeString(\"a\\\\\\\"b\")", new UserTypeString("a\\\"b"));
+        checkSymbol("UserTypeString(\"ab\\\\\")", new UserTypeString("ab\\"));
+        checkSymbol("UserTypeString(\"a\\\\nb\")", new UserTypeString("a\\nb"));
+        // the elements of a string sequence
+        checkSymbol("UserTypeTags(\"a\\\"b\",\"c\\\\\",\"d\")",
+                    new UserTypeTags(StringSeq.of("a\"b", "c\\", "d")));
+    }
+
+    /** Tests that a value prints as a given symbol, and that the symbol is read back as the value. */
+    private void checkSymbol(String symbol, Object value) throws FormatException {
+        assertEquals(symbol, UserAlgebra.instance.toSymbol(value));
+        assertEquals(value, AlgebraFamily.DEFAULT.toValue(Sort.USER.createConstant(symbol)));
+    }
+
+    /**
+     * Symbols printed before strings were escaped hold a backslash unescaped; where it is
+     * followed by neither a quote nor a backslash, it is still read back literally.
+     */
+    @Test
+    public void testUnescapedBackslash() throws FormatException {
+        assertEquals(new UserTypeString("a\\b"),
+                     AlgebraFamily.DEFAULT
+                         .toValue(Sort.USER.createConstant("UserTypeString(\"a\\b\")")));
+        assertEquals(new UserTypeString("a\\nb"),
+                     AlgebraFamily.DEFAULT
+                         .toValue(Sort.USER.createConstant("UserTypeString(\"a\\nb\")")));
     }
 
     static private final QualName PACKAGE_NAME = QualName.name("nl.utwente.groove.test.algebra.user");

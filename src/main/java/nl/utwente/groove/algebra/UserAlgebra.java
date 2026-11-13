@@ -24,6 +24,7 @@ import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.Seq;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.parse.StringHandler;
 
 /** User algebra.
  */
@@ -105,10 +106,8 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
             } else {
                 result.append(",");
             }
-            if (arg instanceof String) {
-                result.append('"');
-                result.append(arg);
-                result.append('"');
+            if (arg instanceof String string) {
+                result.append(StringHandler.toQuoted(string, StringHandler.DOUBLE_QUOTE));
             } else {
                 result.append(arg);
             }
