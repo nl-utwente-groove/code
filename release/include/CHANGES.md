@@ -3,6 +3,22 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.7.2, unreleased
+-------------------------
+- Resolved gh #933: user types may have fields and operations of the same name. Such
+  an operation is applied as implemented by the type of its first argument; this holds
+  for the fields of user types, the generated accessors of their sequence-valued fields
+  and their non-static `@UserOperation` methods, which have to agree on the sorts of
+  their parameters and result. Static operations and constructors still need a name
+  of their own
+- A call of a user operation is checked against the Java classes of its implementations
+  when the grammar is loaded, as far as the class of an argument is known then: that of
+  a user constant or constructor call, and of a call of an operation whose implementations
+  have the same result class. A call that no implementation can be invoked with, such as
+  an operation of one user type applied to a constant of another, is now an error in
+  the grammar; it used to load and yield an error value when evaluated, as it still
+  does if the class is not known (for a variable or field)
+
 Release 7.7.1, 13 November 2026
 --------------------------------
 - Installer-only release; GROOVE itself is unchanged
