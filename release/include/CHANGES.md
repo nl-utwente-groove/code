@@ -5,9 +5,9 @@ This document describes the major changes in the GROOVE tool set
 
 Release 7.7.2, unreleased
 -------------------------
-- Resolved gh #941: the Imager has an option `-l spring` or `-l forest` that
-  lays out every graph afresh before it is rendered, ignoring the layout
-  stored with it; the graph files are not changed
+- Resolved gh #941: the Imager and the Viewer have an option `-l spring` or
+  `-l forest` that lays out every graph afresh before it is rendered or shown,
+  ignoring the layout stored with it; the graph files are not changed
 - The Imager lays out the nodes of a graph that have no stored position, as
   the Viewer already did; they used to end up at random positions
 
