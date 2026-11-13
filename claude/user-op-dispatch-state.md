@@ -18,14 +18,23 @@ type of the first argument.
   argument tail, `indeterminate` (`Operator.hasSameSignature`). So `int` versus `IntSeq`
   in last position is an error.
 - **Classes behind `user`-sorted non-receiver parameters and results are not compared**
-  (the permissive variant). Implemented on my advice, *not yet confirmed by Arend*, who
-  leaned towards requiring the same classes at first. Reasons: binary operations on the
-  own type (`Vec2.plus(Vec2)` next to `Vec3.plus(Vec3)`) need it, results need it anyway
-  (`push` returns the own type), and the receiver alone determines the implementation.
-  If he prefers the restrictive variant: one more check in `UserSignature.addOperator`,
-  comparing the parameter classes of the executables, plus a fixture and an error message.
+  (the permissive variant; confirmed by Arend, 2026-11-13). Reasons: binary operations on
+  the own type (`Vec2.plus(Vec2)` next to `Vec3.plus(Vec3)`) need it, results need it
+  anyway (`push` returns the own type), and the receiver alone determines the
+  implementation.
 - The accessor kind moved from `Operator` to `UserSignature.Impl`.
 - The compile-time check is part of this branch (Arend, 2026-11-13).
+- **The class of a `user`-sorted expression is computed on demand**
+  (`UserSignature.getUserClass`), not stored in the expression: it is only needed while
+  a call is built, expressions are created in many places besides the parser (`bind`,
+  `relabel`, the term algebras, `Constant`) and are compared by content, and the classes
+  belong to a class loader that is replaced on every grammar (re)load.
+- **A call is rejected only if no implementation can take it.** The implementations are
+  narrowed down argument by argument (receiver first, by identity; other parameters by
+  assignability); with a receiver of unknown class all of them are candidates, so
+  `sameItems(x, UserTypeCounter(..))` is an error but `sameItems(x, UserTypeQueue(..))`
+  is not. A call of an operator whose implementations differ in result class has no
+  known class, so `count(push(x,1))` is accepted although it can never succeed.
 
 ## Done
 
@@ -34,21 +43,24 @@ type of the first argument.
   help with all declaring classes, fixtures `UserTypeStack`/`Queue`/`Counter`/
   `SignatureClash` and `UserOpsStaticClash`, tests in `UserSignatureTest`.
   Gates: default suite 877 run, 0 failures, 2 skipped; ecj clean on the touched files.
+- Slice 2, the compile-time check: `UserSignature.getUserClass` and `checkCall`, with
+  `Impl.returnClass`/`parClass`/`accepts`; called from `ExprTree.toCallExprs`, which
+  rethrows the error of the check instead of the generic "not applicable" one if no
+  other operator of that name fits. Tests in `UserCallCheckTest`; two cases of
+  `SequenceTailTest` that relied on a constant of the wrong user type yielding an error
+  value now apply the operation to values instead. CHANGES entry for gh #933 as a whole,
+  under "Release 7.7.2, unreleased" (the header of `user-ops-package-wildcard`; the
+  version number is Arend's call).
 
 ## Next
 
-1. Compile-time check. Every implementation has a concrete Java return class, so the class
-   of a `user`-sorted call expression is known when its candidate implementations agree
-   on it; constructor calls and user constants always have one; variables and fields do
-   not. In `ExprTree.newCallExpr`, infer the class of each `user`-sorted argument where
-   possible, filter the implementations on the receiver (and check the other `user`
-   parameters of the remaining ones), and throw a `FormatException` if none is left. This
-   turns latent error values in existing grammars into load errors; say so in CHANGES.
-   Open: where the inferred class lives (a nullable property of `Expression`, or computed
-   on demand from `UserSignature.getImplementations()`).
-2. CHANGES line (7.8.0), and an end-to-end grammar test if wanted (a new `junit/rules`
-   grammar needs a `RuleCompilationTest` golden).
-3. Web manual section, in the website repository.
+1. An end-to-end grammar test if wanted (a new `junit/rules` grammar needs a
+   `RuleCompilationTest` golden).
+2. Web manual section, in the website repository.
+3. Not covered by the check, by decision or omission: operator edges on product nodes
+   (`PatternBuilder`), whose arguments are nodes rather than expressions, so a constant
+   argument node of the wrong user type still yields an error value; and variables
+   whose class could be derived from an assignment or a typed node.
 
 ## Hazards
 
@@ -56,3 +68,5 @@ type of the first argument.
   also changes `UserSignature`, mostly `toClasses` and new class-path scanning; expect a
   small textual conflict around `setUserClass`/`checkUserClass`, whichever merges second.
 - ecj skips null analysis of a file with a compile error: rerun after fixing one.
+- Both branches add a "Release 7.7.2, unreleased" section to CHANGES: a certain,
+  trivial conflict.
