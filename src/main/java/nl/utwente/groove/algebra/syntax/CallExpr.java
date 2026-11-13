@@ -135,9 +135,7 @@ public final class CallExpr extends Expression {
 
     @Override
     public boolean isUserConstant() {
-        boolean result = this.op.isConstructor();
-        result = getArgs().stream().allMatch(a -> a instanceof Constant);
-        return result;
+        return this.op.isConstructor() && getArgs().stream().allMatch(a -> a instanceof Constant);
     }
 
     @Override
