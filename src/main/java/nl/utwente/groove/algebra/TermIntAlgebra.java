@@ -91,12 +91,12 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
 
     @Override
     public Expression bigmax(List<Expression> arg) {
-        return Op.PROD.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
+        return Op.BIGMAX.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
     public Expression bigmin(List<Expression> arg) {
-        return Op.MIN.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
+        return Op.BIGMIN.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
