@@ -3,6 +3,23 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.7.1, unreleased
+-------------------------
+- Installer-only release; GROOVE itself is unchanged
+- The Windows installer creates start menu entries again: the GROOVE group lists
+  GROOVE (the main launcher), Simulator, Generator, ModelChecker, Imager and Viewer
+- The Windows installer asks to close a running GROOVE before it touches anything
+  (Cancel/Retry/Ignore): the JVM holds the installed jars open, so an install over
+  a running GROOVE could not complete, and its rollback left no GROOVE installed
+- The Windows installer asks before replacing another installed version of
+  GROOVE: older, newer, or another build of the same version
+- The Windows installer offers to start the Simulator when it finishes; the
+  window opens behind those already open
+- The Windows installer shows GROOVE's own banner and panel images, and the
+  licence as formatted text
+- Linux gets an `.rpm` installer next to the `.deb`; the release page explains
+  the unsigned-package question some rpm package managers ask
+
 Release 7.7.0, 13 November 2026
 -------------------------------
 - Resolved gh #943: a negated test (`not:test:`) was negated twice and so held where
