@@ -84,7 +84,7 @@ If something goes wrong on github and you have to repeat the last step, you firs
 
 ## Installers
 
-The `installers` job of the release workflow (`.github/workflows/release.yml`) runs `jpackage/build-installer.sh` on a matrix of platform runners — jpackage can only build for the platform it runs on — and attaches the resulting installers to the same github release. The script unpacks the `-bin` zip and turns it into a native package with a bundled, jlink-trimmed Java runtime: the Simulator becomes the main launcher (which jpackage names after the application: GROOVE), the tools (Simulator, Generator, ModelChecker, Imager, Viewer) become additional launchers named after themselves, and those carry the menu entries.
+The `installers` job of the release workflow (`.github/workflows/release.yml`) runs `jpackage/build-installer.sh` on a matrix of platform runners — jpackage can only build for the platform it runs on — and attaches the resulting installers to the same github release. The script unpacks the `-bin` zip and turns it into a native package with a bundled, jlink-trimmed Java runtime: the Simulator becomes the main launcher (which jpackage names after the application: GROOVE), the tools (Simulator, Generator, ModelChecker, Imager, Viewer) become additional launchers named after themselves. All of them carry menu entries, so the menu lists GROOVE next to the Simulator: jpackage offers no way to suppress the main launcher's entry that leaves those of the tools in place.
 
 To try this locally without any packaging tools, build the release as described above and then run
 
