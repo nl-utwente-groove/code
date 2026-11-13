@@ -130,25 +130,42 @@ public class Algebras {
                 result.add(help);
             }
         }
-        for (var e : UserSignature.getMethods().entrySet()) {
+        for (var e : UserSignature.getImplementations().entrySet()) {
             var name = e.getKey().getName();
             sigMap.put("Q" + name, name);
-            Help help = createUserHelp(e.getValue(), sigMap);
-            if (help != null) {
-                help
-                    .addBody("<p style=\"margin-top:5;\"/>Declared in "
-                        + Help.source(e.getValue().getDeclaringClass().getCanonicalName()));
+            // an operator is documented once, by the first of its implementations
+            // that has documentation, and lists all classes that implement it
+            Help help = null;
+            Executable exec = null;
+            for (var impl : e.getValue()) {
+                exec = impl.executable();
+                help = createUserHelp(exec, sigMap);
+                if (help != null) {
+                    break;
+                }
+            }
+            if (help != null && exec != null) {
+                var sources = new StringBuilder();
+                for (var impl : e.getValue()) {
+                    sources.append(sources.isEmpty()
+                        ? "Declared in "
+                        : ", ");
+                    sources
+                        .append(Help
+                            .source(impl.executable().getDeclaringClass().getCanonicalName()));
+                }
+                help.addBody("<p style=\"margin-top:5;\"/>" + sources);
                 // parameter documentation, for the operands rather than the
                 // Java parameters: a non-static operation has its receiving
                 // object as additional first operand
                 var parSorts = e.getKey().getParamSorts();
                 // the lines provided by the user are for the Java parameters;
                 // they may be too few or too many, which should not be fatal
-                var pars = e.getValue().getAnnotation(ToolTipPars.class);
+                var pars = exec.getAnnotation(ToolTipPars.class);
                 var userDocs = pars == null
                     ? new String[0]
                     : pars.value();
-                int receiverCount = parSorts.size() - e.getValue().getParameterCount();
+                int receiverCount = parSorts.size() - exec.getParameterCount();
                 for (int i = 0; i < parSorts.size(); i++) {
                     int userIx = i - receiverCount;
                     boolean isTail = e.getKey().hasTail() && i == parSorts.size() - 1;

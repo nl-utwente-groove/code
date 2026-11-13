@@ -21,11 +21,12 @@ import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User type that is correct on its own, but whose operations clash with those of
- * {@link UserTypeIntString}: the accessor of its record component and its annotated
- * method both carry a name that also occurs there (gh #934).
- * The component deliberately has another sort than its namesake, so that a test
- * can tell which of the two accessors is in place.
+ * User type that is correct on its own, and whose record component and annotated
+ * method both carry a name that also occurs in {@link UserTypeIntString} (gh #934).
+ * The method has the signature of its namesake, and so is a further implementation
+ * of the same operator (gh #933). The component deliberately has another sort than
+ * its namesake, which makes it an error, and lets a test tell which of the two
+ * accessors is in place.
  * @author Arend Rensink
  * @version $Revision$
  */

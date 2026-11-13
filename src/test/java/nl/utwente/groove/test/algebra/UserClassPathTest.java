@@ -272,10 +272,10 @@ public class UserClassPathTest {
         // the class in use is the one of the application loader
         var one = UserSignature.getOperators().get("one");
         assertNotNull(one);
-        var executable = UserSignature.getMethods().get(one);
-        assertNotNull(executable);
+        var impls = UserSignature.getImplementations().get(one);
+        assertNotNull(impls);
         assertSame(UserOps.class.getClassLoader(),
-                   executable.getDeclaringClass().getClassLoader());
+                   impls.get(0).executable().getDeclaringClass().getClassLoader());
     }
 
     /** Tests the round trip between class path strings and entry lists. */

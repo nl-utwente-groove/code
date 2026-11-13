@@ -93,7 +93,6 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = annotation == null
             ? false
             : annotation.indeterminate();
-        this.seqAccessor = null;
     }
 
     /**
@@ -139,7 +138,6 @@ public class Operator implements Comparable<Operator> {
         this.arity = this.parameterSorts.size();
         this.symbol = null;
         this.kind = OpKind.CALL;
-        this.seqAccessor = accessor;
     }
 
     /**
@@ -277,7 +275,6 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = false;
         this.constructor = false;
         this.tail = false;
-        this.seqAccessor = null;
     }
 
     /** Converts a reflected parameter type into a GROOVE sort. */
@@ -512,18 +509,18 @@ public class Operator implements Comparable<Operator> {
     private final boolean constructor;
 
     /**
-     * Returns the kind of accessor that this operator is for a sequence-valued field
-     * of a user type, or {@code null} if it is not such an accessor.
-     * An accessor is generated, rather than declared by a user operation;
-     * it is evaluated by applying the accessor to the value of the field.
+     * Indicates if this operator has the same signature as another, so that
+     * the two can be implementations of one user operator: the same number of parameters,
+     * the same parameter sorts, the same result sort, and agreement on having a
+     * variable argument tail and on being indeterminate.
+     * @see UserSignature.Impl
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
-    public @Nullable SeqAccessor getSeqAccessor() {
-        return this.seqAccessor;
+    boolean hasSameSignature(Operator other) {
+        return this.arity == other.arity && this.parameterSorts.equals(other.parameterSorts)
+            && this.returnSort == other.returnSort && this.tail == other.tail
+            && this.indeterminate == other.indeterminate;
     }
-
-    /** The kind of accessor that this operator is for a sequence-valued field, if any. */
-    private final @Nullable SeqAccessor seqAccessor;
 
     /**
      * The accessors that are generated for a sequence-valued field of a user type.

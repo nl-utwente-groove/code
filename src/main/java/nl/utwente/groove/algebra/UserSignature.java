@@ -97,24 +97,25 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * call {@link #checkUserClass} instead.
      */
     public static void setUserClass(List<QualName> classNames) {
-        methods.clear();
+        implementations.clear();
         operators.reset();
         var classes = toClasses(classNames);
-        var result = new FallibleObject<>(new LinkedHashMap<Operator,Executable>());
+        var result = new FallibleObject<>(new LinkedHashMap<Operator,List<Impl>>());
         parseUserClasses(result, classes.get());
-        methods.putAll(result.get());
+        implementations.putAll(result.get());
         resetUsers();
     }
 
     /** Checks whether a given set of named classes can be loaded through the currently
      * installed class loader (see {@link #setUserClass(List, File, List)}) and have suitable
-     * user-defined operations, and returns the operations as executables, together with
-     * the errors found: a class that cannot be loaded or has annotation errors is an
-     * error, as are two operations of the same name, whether in one class or in two;
+     * user-defined operations, and returns the operations with their implementations,
+     * together with the errors found: a class that cannot be loaded or has annotation
+     * errors is an error, as are two operations of the same name that cannot be
+     * implementations of one operator (see {@link #addOperator});
      * a class that exists in more than one place on the class path is a warning.
      */
-    public static FallibleObject<Map<Operator,Executable>> checkUserClass(List<QualName> classNames) {
-        var result = new FallibleObject<Map<Operator,Executable>>(new LinkedHashMap<>());
+    public static FallibleObject<Map<Operator,List<Impl>>> checkUserClass(List<QualName> classNames) {
+        var result = new FallibleObject<Map<Operator,List<Impl>>>(new LinkedHashMap<>());
         var classes = toClasses(classNames);
         result.addErrors(classes.getErrors());
         if (!classes.getErrors().hasErrors()) {
@@ -131,7 +132,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * which only exists once sequences are values (gh #942).
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
-    private static void parseUserClasses(FallibleObject<? extends Map<Operator,Executable>> result,
+    private static void parseUserClasses(FallibleObject<? extends Map<Operator,List<Impl>>> result,
                                          Set<Class<?>> classes) {
         var seqFields = new LinkedHashMap<String,@Nullable RecordComponent>();
         for (var claz : classes) {
@@ -141,10 +142,12 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
             var name = e.getKey().getName();
             var seqField = seqFields.get(name);
             if (seqField != null) {
-                result
-                    .addError("User operation '%s' in '%s' has the name of sequence-valued field '%s.%s', which is reserved",
-                              name, e.getValue().getDeclaringClass().getCanonicalName(),
-                              seqField.getDeclaringRecord().getCanonicalName(), name);
+                for (var impl : e.getValue()) {
+                    result
+                        .addError("User operation '%s' in '%s' has the name of sequence-valued field '%s.%s', which is reserved",
+                                  name, impl.executable().getDeclaringClass().getCanonicalName(),
+                                  seqField.getDeclaringRecord().getCanonicalName(), name);
+                }
             }
         }
     }
@@ -202,12 +205,13 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * and adds the methods on which those operations are based to a given result,
      * together with the errors found.
      * The result is shared among the user classes, since the operations of all of them
-     * live in the single sort {@link Sort#USER} and so have to differ in name (gh #934).
+     * live in the single sort {@link Sort#USER}: two operations of the same name are
+     * either implementations of one operator or an error (see {@link #addOperator}).
      * A sequence-valued field has no operation of its own name, but two generated ones
      * (see {@link SeqAccessor}), both based on the accessor method of the field;
      * the field is added to a given map, from its name.
      */
-    private static void parseUserClass(FallibleObject<? extends Map<Operator,Executable>> result,
+    private static void parseUserClass(FallibleObject<? extends Map<Operator,List<Impl>>> result,
                                        Class<?> claz, Set<Class<?>> others,
                                        Map<String,@Nullable RecordComponent> seqFields) {
         String className = claz.getCanonicalName();
@@ -252,7 +256,8 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                         } else {
                             seqFields.putIfAbsent(name, rc);
                             for (var accessor : SeqAccessor.values()) {
-                                addOperator(result, new Operator(rc, accessor), rc.getAccessor());
+                                addOperator(result, new Operator(rc, accessor),
+                                            new Impl(rc.getAccessor(), claz, accessor));
                             }
                         }
                     } else if (sort == null || !sort.isSystem()) {
@@ -293,45 +298,135 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         }
     }
 
-    /** Adds the operation based on a given executable to a result, or reports an error
-     * if the result already has an operation of that name. In that case the existing
-     * operation is kept, so that an operator is never paired with the executable of another.
+    /** Adds the operation based on a given executable to a result, as an operator
+     * of its own or as a further implementation of an existing one,
+     * or reports an error if it is neither.
+     * @see #addOperator
      */
-    static private void addExecutable(FallibleObject<? extends Map<Operator,Executable>> result,
+    static private void addExecutable(FallibleObject<? extends Map<Operator,List<Impl>>> result,
                                       Executable exec) {
-        addOperator(result, new Operator(exec), exec);
+        addOperator(result, new Operator(exec), Impl.of(exec));
     }
 
-    /** Adds a given operation, with the executable it is based on, to a result, or reports
-     * an error if the result already has an operation of that name. In that case the existing
-     * operation is kept, so that an operator is never paired with the executable of another.
+    /** Adds a given operation, with its implementation, to a result.
+     * If the result already has an operator of that name, the implementation is added
+     * to those of that operator (gh #933), under two conditions:
+     * <ul>
+     * <li> The new implementation and the existing ones all have a receiver, which is
+     * to say that they are instance methods of user types (the accessors of the fields
+     * among them), and the receivers are distinct. The type of the first argument then
+     * selects the implementation when the operator is applied.
+     * <li> The new operation has the signature of the existing operator
+     * (see {@link Operator#hasSameSignature}), so that the typing of a call does not depend
+     * on the implementation. This compares sorts, not classes: the implementations
+     * may have distinct user types for their other parameters and for their result.
+     * </ul>
+     * Failing the first, the operation is reported as a duplicate; failing the second,
+     * as having a deviating signature. In both cases the existing implementations are kept,
+     * so that an operator is never paired with an implementation that does not fit it.
      * This also finds the clashes of the generated accessors of a sequence-valued field
-     * with other operations, in both orders.
+     * with other operations of the same user type, in both orders.
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
-    static private void addOperator(FallibleObject<? extends Map<Operator,Executable>> result,
-                                    Operator op, Executable exec) {
-        var oldExec = result.get().putIfAbsent(op, exec);
-        if (oldExec != null) {
-            // the operator in the result equals the new one, but may be of another kind
-            var oldOp = result.get().keySet().stream().filter(op::equals).findAny().orElse(op);
+    static private void addOperator(FallibleObject<? extends Map<Operator,List<Impl>>> result,
+                                    Operator op, Impl impl) {
+        var oldImpls = result.get().get(op);
+        if (oldImpls == null) {
+            var impls = new ArrayList<Impl>();
+            impls.add(impl);
+            result.get().put(op, impls);
+            return;
+        }
+        var clash = oldImpls
+            .stream()
+            .filter(i -> i.receiver() == null || i.receiver() == impl.receiver())
+            .findFirst()
+            .orElse(impl.receiver() == null
+                ? oldImpls.get(0)
+                : null);
+        // the operator in the result equals the new one, but may have another signature
+        var oldOp = result.get().keySet().stream().filter(op::equals).findAny().orElse(op);
+        if (clash != null) {
             result
                 .addError("Duplicate user operation '%s' in %s and %s", op.getName(),
-                          describeSource(oldOp, oldExec), describeSource(op, exec));
+                          describeSource(clash), describeSource(impl));
+        } else if (!oldOp.hasSameSignature(op)) {
+            result
+                .addError("User operation '%s' has signature %s in %s but %s in %s", op.getName(),
+                          describeSignature(oldOp), describeSource(oldImpls.get(0)),
+                          describeSignature(op), describeSource(impl));
+        } else {
+            oldImpls.add(impl);
         }
     }
 
-    /** Returns a description of where a given operation stems from, for error messages:
+    /** Returns a description of where a given implementation stems from, for error messages:
      * the class of the executable on which it is based, and for a generated accessor
      * the sequence-valued field as well.
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
-    static private String describeSource(Operator op, Executable exec) {
+    static private String describeSource(Impl impl) {
+        var exec = impl.executable();
         var result = "'" + exec.getDeclaringClass().getCanonicalName() + "'";
-        if (op.getSeqAccessor() != null) {
+        if (impl.accessor() != null) {
             result += " (generated for sequence-valued field '" + exec.getName() + "')";
         }
         return result;
+    }
+
+    /** Returns a description of the signature of a given operator, for error messages:
+     * all that the implementations of one operator have to agree on.
+     * @see Operator#hasSameSignature
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private String describeSignature(Operator op) {
+        var result = new StringBuilder("(");
+        for (int i = 0; i < op.getArity(); i++) {
+            if (i > 0) {
+                result.append(',');
+            }
+            result.append(op.getParamSorts().get(i));
+        }
+        if (op.hasTail()) {
+            result.append("...");
+        }
+        result.append(") -> ");
+        result.append(op.getResultSort());
+        if (op.isIndeterminate()) {
+            result.append(", indeterminate");
+        }
+        return result.toString();
+    }
+
+    /**
+     * An implementation of a user operator: the constructor or method that computes
+     * its outcome, together with what determines how and when that is invoked.
+     * An operator has several implementations only if all of them have a receiver;
+     * the receivers are then distinct, and the implementation that applies is the one
+     * whose receiver is the type of the first argument.
+     * @param executable the constructor or method on which the implementation is based;
+     * for a generated accessor of a sequence-valued field, this is the accessor method
+     * of the field
+     * @param receiver the user type whose values this implementation applies to
+     * as first argument, if the executable is an instance method of that type;
+     * {@code null} for a constructor or a static method
+     * @param accessor the kind of accessor that this implementation is for
+     * a sequence-valued field of the receiver, or {@code null} if it is not such an accessor.
+     * An accessor is generated, rather than declared by a user operation;
+     * it is evaluated by applying the accessor to the value of the field.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public record Impl(Executable executable, @Nullable Class<?> receiver,
+        @Nullable SeqAccessor accessor) {
+        /** Returns the implementation consisting of the invocation of a given
+         * constructor or method.
+         */
+        static Impl of(Executable exec) {
+            var receiver = exec instanceof Method m && !Modifier.isStatic(m.getModifiers())
+                ? m.getDeclaringClass()
+                : null;
+            return new Impl(exec, receiver, null);
+        }
     }
 
     /** Checks a given method for suitability as the basis for a user-defined operation.
@@ -573,13 +668,15 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         private final List<Path> copies;
     }
 
-    /** Returns the set of operators defined in the user classes. */
-    public static Map<Operator,Executable> getMethods() {
-        return methods;
+    /** Returns the operators defined in the user classes, each with its implementations,
+     * of which there is at least one.
+     */
+    public static Map<Operator,List<Impl>> getImplementations() {
+        return implementations;
     }
 
-    /** Lazily computed set of operators in the user class. */
-    static private final Map<Operator,Executable> methods = new LinkedHashMap<>();
+    /** The operators defined in the user classes, with their implementations. */
+    static private final Map<Operator,List<Impl>> implementations = new LinkedHashMap<>();
 
     /** Returns the set of operators defined in the user class. */
     public static Map<String,Operator> getOperators() {
@@ -592,7 +689,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
 
     static private Map<String,Operator> computeOperators() {
         var result = new LinkedHashMap<String,Operator>();
-        for (var op : getMethods().keySet()) {
+        for (var op : getImplementations().keySet()) {
             result.put(op.getName(), op);
         }
         return result;

@@ -34,6 +34,7 @@ import java.util.function.Supplier;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Operator.SeqAccessor;
+import nl.utwente.groove.algebra.UserSignature.Impl;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
@@ -324,9 +325,9 @@ public enum AlgebraFamily implements DocumentedEnum {
      */
     private Map<Operator,Operation> computeUserOperations() {
         Map<Operator,Operation> result = new HashMap<>();
-        for (var exec : UserSignature.getMethods().entrySet()) {
-            var op = exec.getKey();
-            var operation = new UserOperation(op, exec.getValue());
+        for (var impls : UserSignature.getImplementations().entrySet()) {
+            var op = impls.getKey();
+            var operation = new UserOperation(op, impls.getValue());
             result.put(op, operation);
         }
         return result;
@@ -389,22 +390,26 @@ public enum AlgebraFamily implements DocumentedEnum {
 
     /** Implementation of a user-defined operator. */
     private class UserOperation extends Operation {
-        UserOperation(Operator op, Executable executable) {
+        UserOperation(Operator op, List<Impl> impls) {
             super(AlgebraFamily.this, op);
-            this.executable = executable;
+            assert !impls.isEmpty();
+            this.impls = impls.toArray(new Impl[0]);
         }
 
-        /** Invokes the executable in this operation with the given list of argument. */
+        /** Invokes the implementation of this operation that applies to the given
+         * list of arguments.
+         */
         @Override
         protected Object invoke(List<Object> args) throws ReflectiveOperationException {
-            var accessor = getOperator().getSeqAccessor();
+            var impl = getImpl(args);
+            var accessor = impl.accessor();
             if (accessor != null) {
-                return accessSeq(accessor, args);
+                return accessSeq((Method) impl.executable(), accessor, args);
             }
             var argsArray = getOperator().hasTail()
-                ? packTail(args)
+                ? packTail(impl.executable(), args)
                 : args.toArray();
-            switch (this.executable) {
+            switch (impl.executable()) {
             case Method m:
                 if (Modifier.isStatic(m.getModifiers())) {
                     return m.invoke(getDeclaringAlgebra(), argsArray);
@@ -419,17 +424,56 @@ public enum AlgebraFamily implements DocumentedEnum {
         }
 
         /**
-         * Applies a generated accessor of a sequence-valued field: the executable is
-         * the accessor method of the field, whose result is the sequence to inspect.
-         * @throws IllegalArgumentException if the first argument is not a value of
-         * the user type that has the field, or the position is out of range; either
-         * makes the outcome of the operation an error value
-         * @see Operator#getSeqAccessor()
+         * Returns the implementation that applies to a given list of arguments.
+         * This is the only implementation if that has no receiver, and otherwise
+         * the one whose receiver is the type of the first argument (gh #933).
+         * The match is exact, as user types are records and so have no subtypes;
+         * the implementations are few, and are searched without relying on
+         * the (identity-based) hash codes of the types.
+         * @throws IllegalArgumentException if there is no implementation for
+         * the type of the first argument, which makes the outcome of the operation
+         * an error value
          */
         @AIGenerated("Claude Fable 5.2, 2026-11")
-        private Object accessSeq(SeqAccessor accessor,
+        private Impl getImpl(List<Object> args) throws IllegalArgumentException {
+            var impls = this.impls;
+            if (impls[0].receiver() == null) {
+                // a constructor or static method, which is the only implementation
+                return impls[0];
+            }
+            if (args.isEmpty()) {
+                throw Exceptions.illegalArg("Too few arguments for %s: %s", getOperator(), args);
+            }
+            var type = args.get(0).getClass();
+            for (var impl : impls) {
+                if (impl.receiver() == type) {
+                    return impl;
+                }
+            }
+            var receivers = new StringBuilder();
+            for (var impl : impls) {
+                var receiver = impl.receiver();
+                assert receiver != null; // only a sole implementation is without receiver
+                if (!receivers.isEmpty()) {
+                    receivers.append(", ");
+                }
+                receivers.append(receiver.getSimpleName());
+            }
+            throw Exceptions
+                .illegalArg("User operation '%s' is not implemented for a value of type %s, only for %s",
+                            getOperator().getName(), type.getSimpleName(), receivers);
+        }
+
+        /**
+         * Applies a generated accessor of a sequence-valued field to the
+         * accessor method of the field, whose result is the sequence to inspect.
+         * @throws IllegalArgumentException if the position is out of range,
+         * which makes the outcome of the operation an error value
+         * @see Impl#accessor()
+         */
+        @AIGenerated("Claude Fable 5.2, 2026-11")
+        private Object accessSeq(Method field, SeqAccessor accessor,
                                  List<Object> args) throws ReflectiveOperationException {
-            var field = (Method) this.executable;
             if (!(field.invoke(args.get(0)) instanceof Seq<?> seq)) {
                 // user code can construct a record without a value for the field
                 throw Exceptions.illegalArg("Field '%s' has no value", field.getName());
@@ -461,7 +505,8 @@ public enum AlgebraFamily implements DocumentedEnum {
          * @see Operator#hasTail()
          */
         @AIGenerated("Claude Fable 5.2, 2026-11")
-        private Object[] packTail(List<Object> args) throws IllegalArgumentException {
+        private Object[] packTail(Executable executable,
+                                  List<Object> args) throws IllegalArgumentException {
             // the number of arguments before the tail, including the receiving object if any
             int fixed = getOperator().getArity() - 1;
             if (args.size() < fixed) {
@@ -469,7 +514,7 @@ public enum AlgebraFamily implements DocumentedEnum {
             }
             var result = Arrays.copyOf(args.toArray(), fixed + 1);
             var tail = args.subList(fixed, args.size());
-            var parTypes = this.executable.getParameterTypes();
+            var parTypes = executable.getParameterTypes();
             var seqType = parTypes[parTypes.length - 1];
             try {
                 Seq<?> seq;
@@ -498,7 +543,7 @@ public enum AlgebraFamily implements DocumentedEnum {
                     }
                     seq = StringSeq.of(elems);
                 } else {
-                    var elemType = Operator.getTailType(this.executable);
+                    var elemType = Operator.getTailType(executable);
                     assert elemType != null; // the operator has a tail
                     seq = UserSeq.copyOf(elemType.asSubclass(Record.class), tail);
                 }
@@ -510,6 +555,7 @@ public enum AlgebraFamily implements DocumentedEnum {
             return result;
         }
 
-        private final Executable executable;
+        /** The implementations of this operation, of which there is at least one. */
+        private final Impl[] impls;
     }
 }
