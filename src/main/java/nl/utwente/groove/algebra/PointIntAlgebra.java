@@ -17,6 +17,7 @@
 package nl.utwente.groove.algebra;
 
 import java.util.List;
+import java.util.Set;
 
 import nl.utwente.groove.algebra.syntax.Expression;
 
@@ -161,6 +162,12 @@ public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Str
     @Override
     public Integer prod(List<Integer> arg) {
         return singleInt;
+    }
+
+    /** The point algebra cannot count, so the range collapses to the single point value. */
+    @Override
+    public Set<Integer> range(Integer arg) {
+        return Set.of(singleInt);
     }
 
     @Override

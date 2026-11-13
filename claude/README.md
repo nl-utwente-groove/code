@@ -35,6 +35,9 @@ Status lines below are as of 2026-09-11.
 | [website-manual-8_0_0.md](website-manual-8_0_0.md) | gh #896 and the 8.0.0 release: what the web user manual (website repo, `manual/`) needs, change by change, plus the wrong statements and the broken reference-page generator. Proposal only, nothing written yet. |
 | [iso-refinement-state.md](iso-refinement-state.md) | Handoff state for branch `iso-refinement` (findings 2.4 and 2.3 of the exploration performance review): commits, A/B verdicts, harness location. Transient: delete when merged. |
 | [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
+| [multi-valued-operators-state.md](multi-valued-operators-state.md) | gh #931, second part: enumerators, operators matched once per value (`range`). Handoff state for branch `multi-valued-operators`: phases 1 (built-ins and matching) and 2 (user operations) done, phase 3 (documentation) open. Phase 2 withdrawn on 2026-11-12 and removed on branch `withdraw-set-results`. Transient: delete when merged. |
+| [sequence-components.md](sequence-components.md) | gh #931, first part: sequence-valued components of user types. Proposal of 2026-11-11 with its decisions, and the state of the implementation on branch `sequence-components` (off `multi-valued-operators`): slices 1 to 4 of 5 merged into it, slice 5 (documentation) on `sequence-components-docs` awaiting review. Handoff block at the top of the note. |
+
 ## Archive
 
 Finished work, kept for the design rationale and rejected alternatives. Grouped by theme.

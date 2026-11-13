@@ -50,6 +50,8 @@ import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.test.algebra.user.UserOps;
+import nl.utwente.groove.test.algebra.user.UserTypeIntString;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.UserClassPath;

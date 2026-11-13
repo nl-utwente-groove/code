@@ -19,6 +19,9 @@ package nl.utwente.groove.algebra;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.Expression;
 
@@ -123,6 +126,27 @@ public final class BigIntAlgebra extends IntAlgebra<BigInteger,BigDecimal,Boolea
     @Override
     public BigInteger prod(List<BigInteger> arg) {
         return arg.stream().reduce(BigInteger.ONE, (i, j) -> i.multiply(j));
+    }
+
+    @Override
+    public Set<BigInteger> range(BigInteger arg) {
+        // an empty range may have a bound that does not fit into a long
+        if (arg.signum() <= 0) {
+            return Set.of();
+        }
+        return new IntInterval<>(0, arg.subtract(BigInteger.ONE).longValueExact()) {
+            @Override
+            BigInteger toValue(long number) {
+                return BigInteger.valueOf(number);
+            }
+
+            @Override
+            @Nullable Long fromValue(Object value) {
+                return value instanceof BigInteger i && i.bitLength() < Long.SIZE
+                    ? Long.valueOf(i.longValue())
+                    : null;
+            }
+        };
     }
 
     @Override

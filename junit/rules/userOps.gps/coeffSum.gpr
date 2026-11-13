@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="coeffSum">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="t">
+            <attr name="layout">
+                <string>80 80 60 30</string>
+            </attr>
+        </node>
+        <node id="pv">
+            <attr name="layout">
+                <string>310 80 60 30</string>
+            </attr>
+        </node>
+        <node id="psz">
+            <attr name="layout">
+                <string>540 80 60 30</string>
+            </attr>
+        </node>
+        <node id="n">
+            <attr name="layout">
+                <string>770 80 60 30</string>
+            </attr>
+        </node>
+        <node id="f">
+            <attr name="layout">
+                <string>1000 190 60 30</string>
+            </attr>
+        </node>
+        <node id="pr">
+            <attr name="layout">
+                <string>770 190 60 30</string>
+            </attr>
+        </node>
+        <node id="i">
+            <attr name="layout">
+                <string>540 190 60 30</string>
+            </attr>
+        </node>
+        <node id="pat">
+            <attr name="layout">
+                <string>310 190 60 30</string>
+            </attr>
+        </node>
+        <node id="e">
+            <attr name="layout">
+                <string>310 300 60 30</string>
+            </attr>
+        </node>
+        <node id="ps">
+            <attr name="layout">
+                <string>540 300 60 30</string>
+            </attr>
+        </node>
+        <node id="s">
+            <attr name="layout">
+                <string>80 300 60 30</string>
+            </attr>
+        </node>
+        <edge from="pv" to="pv">
+            <attr name="label">
+                <string>user:</string>
+            </attr>
+        </edge>
+        <edge from="psz" to="psz">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge from="n" to="n">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="f" to="f">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="pr" to="pr">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge from="i" to="i">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="pat" to="pat">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge from="e" to="e">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="ps" to="ps">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge from="s" to="s">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="t" to="pv">
+            <attr name="label">
+                <string>p</string>
+            </attr>
+        </edge>
+        <edge from="psz" to="pv">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge from="psz" to="n">
+            <attr name="label">
+                <string>user:coeffsSize</string>
+            </attr>
+        </edge>
+        <edge from="pr" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="pr" to="n">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge from="pr" to="i">
+            <attr name="label">
+                <string>int:range</string>
+            </attr>
+        </edge>
+        <edge from="i" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="pat" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="pat" to="pv">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge from="pat" to="i">
+            <attr name="label">
+                <string>arg:1</string>
+            </attr>
+        </edge>
+        <edge from="pat" to="e">
+            <attr name="label">
+                <string>user:coeffsAt</string>
+            </attr>
+        </edge>
+        <edge from="e" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="ps" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="ps" to="e">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge from="ps" to="s">
+            <attr name="label">
+                <string>int:sum</string>
+            </attr>
+        </edge>
+        <edge from="t" to="s">
+            <attr name="label">
+                <string>new:sum</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

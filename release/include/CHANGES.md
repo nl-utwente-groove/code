@@ -20,6 +20,41 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Editor: Escape cancels edits (gh #819)
 - Removed: old Ecore layer
 
+Release 7.7.0, 13 November 2026
+-------------------------------
+- Resolved gh #943: a negated test (`not:test:`) was negated twice and so held where
+  the plain test did; it now holds if the tested fields have no values for which the
+  test holds
+- Resolved gh #934: equally named user operations or record components in different
+  user classes are reported as an error; the one of the class listed later silently
+  replaced the other
+- Resolved gh #937: user-defined operations are refused under every algebra family but
+  the default one, as the `algebraFamily` of the grammar and as the `algebra` setting of
+  an exploration; under the point and big families they ended in an internal error
+- The example classes `UserOpsExample`, `UserTypeIntBool` and `UserTypeString` of package
+  `nl.utwente.groove.algebra` are no longer part of the distribution; a grammar whose
+  `userOperations` property names one of them no longer loads
+- Resolved gh #936: a user value with a double quote or a backslash in a string
+  component was saved in a form that did not read back as the same value
+- Enumerators: a built-in operation may yield a set of values, and a rule that
+  calls it is matched once for every value: one of them on an existential level, all of
+  them under a universal quantifier (gh #931)
+- New integer enumerator `range(n)`, yielding 0 up to but not including `n`
+- An expression may call at most one enumerator
+- An attribute whose value is an enumeration tests that the attribute value is one
+  of the enumerated values, and is displayed with an element-of sign
+- A `test`-edge may call an enumerator only as the value a field of its node is
+  compared to (`test:x == range(n)`), which is the same membership test; an embargo
+  edge may not point to an enumeration node unless that node is itself an embargo
+- Enumerators are not supported in the term algebra
+- The last component of a user type may be a sequence of values of one sort (`IntSeq`,
+  `RealSeq`, `BoolSeq` or `StringSeq` of package `nl.utwente.groove.annotation`): the
+  constructor and constants of the type take the elements as trailing arguments, and for
+  a component `c` the operations `cAt` and `cSize` yield the element at a position and
+  the number of elements; `range(cSize(p))` ranges over the positions (gh #931)
+- The last parameter of a user operation may be such a sequence as well, or a `UserSeq`
+  of values of a user type; the operation is called with any number of trailing arguments
+
 Release 7.6.1, 9 November 2026
 -------------------------------
 - Bug fix release

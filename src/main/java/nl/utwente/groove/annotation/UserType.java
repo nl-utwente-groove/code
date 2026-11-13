@@ -24,6 +24,24 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for records that serve as user types.
+ * The record thus annotated should be public, and its components should be of type
+ * int, double, boolean or String. The record gives rise to a constructor operation
+ * named after the record, and for each component an accessor operation named after
+ * the component.
+ * <p>
+ * The last component may instead be a sequence of values of one of those types:
+ * an {@link IntSeq}, {@link RealSeq}, {@link BoolSeq} or {@link StringSeq}. For
+ * such a component {@code c},
+ * <ul>
+ * <li> the constructor operation takes the elements of the sequence as trailing
+ * arguments, any number of them, and a constant of the type is written likewise;
+ * <li> in place of the accessor there are two operations: {@code cAt}, which takes
+ * a value of the user type and a position (counting from 0) and yields the element
+ * at that position, or an error value if there is none; and {@code cSize}, which
+ * yields the number of elements;
+ * <li> the name {@code c} itself is reserved: no user operation may have it.
+ * </ul>
+ * Methods of the record annotated with {@link UserOperation} are operations as well.
  * @author Arend Rensink
  * @version $Revision$
  */

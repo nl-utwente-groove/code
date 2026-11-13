@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import junit.framework.TestCase;
 import nl.utwente.groove.algebra.AlgebraFamily;
-import nl.utwente.groove.algebra.UserOpsExample;
+import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -45,9 +45,11 @@ import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.match.Proof;
+import nl.utwente.groove.test.algebra.user.UserOpsExample;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -200,6 +202,55 @@ public class RuleApplicationTest extends TestCase {
         test("sums");
     }
 
+    /** Tests the working of enumerators:
+     * as existential choice, under a universal quantifier, and as membership test. */
+    @Test
+    public void testEnumerators() {
+        test("enumerators");
+    }
+
+    /** Tests that the point algebra collapses an enumerator to a single value. */
+    @Test
+    public void testEnumeratorsPoint() {
+        try {
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/enumerators");
+            grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
+            var pointGrammar = toGrammar(grammar, AlgebraFamily.POINT);
+            var rule = pointGrammar.getRule(QualName.parse("pick"));
+            Assert.assertNotNull(rule);
+            var start = pointGrammar.getStartGraph().clone(AlgebraFamily.POINT);
+            Assert.assertEquals(1, rule.getProver().getAllMatches(start).size());
+        } catch (FormatException | IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    /** Tests that enumerators are rejected in the term algebra. */
+    @Test
+    public void testEnumeratorsTerm() {
+        try {
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/enumerators");
+            grammar.setLocalActiveNames(HOST, QualName.parse("pick-0"));
+            try {
+                toGrammar(grammar, AlgebraFamily.TERM);
+                Assert.fail("Enumerators should be rejected in the term algebra");
+            } catch (FormatException e) {
+                var message = String.valueOf(e.getMessage());
+                Assert.assertTrue(message, message.contains("Enumerator"));
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    /** Compiles a grammar model under a given algebra family. */
+    private Grammar toGrammar(GrammarModel model, AlgebraFamily family) throws FormatException {
+        var properties = model.getProperties().clone();
+        properties.setAlgebraFamily(family);
+        model.setProperties(properties);
+        return model.toGrammar();
+    }
+
     /** Tests the integration of user-defined operations. */
     @Test
     public void testUserOps() {
@@ -208,6 +259,26 @@ public class RuleApplicationTest extends TestCase {
         // so the test is repeatable even if it runs more than once per JVM
         UserOpsExample.resetRandomness();
         test("userOps");
+    }
+
+    /** Tests that user-defined operations are rejected in the point algebra,
+     * which has no user algebra. */
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    @Test
+    public void testUserOpsPoint() {
+        try {
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/userOps");
+            try {
+                toGrammar(grammar, AlgebraFamily.POINT);
+                Assert.fail("User operations should be rejected in the point algebra");
+            } catch (FormatException e) {
+                var message = String.valueOf(e.getMessage());
+                Assert.assertTrue(message,
+                                  message.contains("cannot be used with 'point' algebra family"));
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     /** Tests attribute expressions referring to parameter nodes

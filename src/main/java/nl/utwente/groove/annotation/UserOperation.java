@@ -25,7 +25,11 @@ import java.lang.annotation.Target;
  * Annotation for a user-defined algebraic operation.
  * The method thus annotated should be static and only have parameters
  * and return type int, double, boolean or String, or a {@link UserType}-annotated
- * record class.
+ * record class. A collection return type is not allowed: an operation yields a single value.
+ * The last parameter may instead be a sequence (an {@link IntSeq}, {@link RealSeq},
+ * {@link BoolSeq} or {@link StringSeq}, or a {@link UserSeq} of a user type), in which
+ * case the operation is called with the elements of the sequence as trailing arguments,
+ * any number of them.
  * @author Arend Rensink
  * @version $Revision$
  */

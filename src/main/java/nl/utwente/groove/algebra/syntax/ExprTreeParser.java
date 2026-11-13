@@ -225,9 +225,13 @@ public class ExprTreeParser extends ATermTreeParser<ExprTree.ExprOp,ExprTree> {
         var sig = tree.getArgs().stream().map(ExprTree::getDerivedSort).toList();
         for (var op : exprOp.getOperators()) {
             matchingOp = op;
-            for (int i = 0; i < exprOp.getArity(); i++) {
+            // with a variable argument tail there may be fewer or more arguments than parameters
+            int argCount = exprOp.hasTail()
+                ? sig.size()
+                : exprOp.getArity();
+            for (int i = 0; i < argCount; i++) {
                 var argSort = sig.get(i);
-                if (argSort != null && argSort != op.getParamSorts().get(i)) {
+                if (argSort != null && argSort != op.getParamSort(i)) {
                     matchingOp = null;
                     break;
                 }

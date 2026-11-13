@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="absent">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="a">
+            <attr name="layout">
+                <string>80 80 60 30</string>
+            </attr>
+        </node>
+        <node id="n">
+            <attr name="layout">
+                <string>250 80 60 30</string>
+            </attr>
+        </node>
+        <node id="b">
+            <attr name="layout">
+                <string>420 80 60 30</string>
+            </attr>
+        </node>
+        <node id="x">
+            <attr name="layout">
+                <string>80 190 60 30</string>
+            </attr>
+        </node>
+        <node id="p">
+            <attr name="layout">
+                <string>250 190 60 30</string>
+            </attr>
+        </node>
+        <edge from="a" to="a">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge from="n" to="n">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="b" to="b">
+            <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge from="b" to="b">
+            <attr name="label">
+                <string>new:flag:ok</string>
+            </attr>
+        </edge>
+        <edge from="x" to="x">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="p" to="p">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge from="p" to="p">
+            <attr name="label">
+                <string>not:</string>
+            </attr>
+        </edge>
+        <edge from="a" to="n">
+            <attr name="label">
+                <string>n</string>
+            </attr>
+        </edge>
+        <edge from="b" to="x">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge from="p" to="n">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge from="p" to="x">
+            <attr name="label">
+                <string>int:range</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
