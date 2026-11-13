@@ -30,6 +30,7 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.util.parse.OpKind.Direction;
@@ -68,6 +69,18 @@ public final class CallExpr extends Expression {
                 result = false;
                 break;
             }
+        }
+        return result;
+    }
+
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    @Override
+    public int getEnumeratorCount() {
+        int result = getOperator().isEnumerator()
+            ? 1
+            : 0;
+        for (Expression arg : getArgs()) {
+            result += arg.getEnumeratorCount();
         }
         return result;
     }
@@ -280,7 +293,7 @@ public final class CallExpr extends Expression {
             }
         } else {
             for (int i = 0; i < args.size(); i++) {
-                if (args.get(i).getSort() != argTypes.get(i)) {
+                if (args.get(i).getSort() != this.op.getParamSort(i)) {
                     return false;
                 }
             }

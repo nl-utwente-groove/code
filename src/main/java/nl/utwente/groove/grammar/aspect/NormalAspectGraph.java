@@ -225,6 +225,8 @@ public class NormalAspectGraph extends AspectGraph {
             } else {
                 try {
                     assert nodeExpr != null;
+                    checkEnumerators(node, nodeExpr);
+                    checkEnumerationEdges(node, nodeExpr);
                     AspectNode outcome = addExpression(level, node, nodeExpr);
                     exprNodeMap.put(node, outcome);
                 } catch (FormatException exc) {
@@ -256,16 +258,25 @@ public class NormalAspectGraph extends AspectGraph {
             try {
                 AspectNode source = edge.source();
                 boolean sourceIsNesting = source.has(Category.NESTING);
-                boolean nac = edge.has(Category.ROLE, AspectKind::inNAC)
-                    && (sourceIsNesting || !source.has(Category.ROLE, AspectKind::inNAC));
                 Expression predicate = edge.getTest();
                 assert predicate != null;
                 AspectNode level = resolveLevel(edge, sourceIsNesting
                     ? source.getParentNode()
                     : source.getLevelNode());
+                if (predicate.isEnumeration() && edge.getFieldTest() == null) {
+                    // the test would hold if it holds for some element, which
+                    // its text does not convey. A node for the element does;
+                    // so does the equality with a field, which tests that the
+                    // field value is an element and is displayed like that
+                    throw new FormatException(
+                        "Enumerator not allowed in test '%s', other than as the value of a field (test a node that has the enumeration as its value)",
+                        predicate.toParseString(), edge);
+                }
                 AspectNode outcome = addExpression(level, edge, predicate);
-                // specify whether the outcome should be true or false
-                outcome.set(Aspect.newAspect(Constant.instance(!nac), getRole()));
+                // the outcome should be true, also for a negated test: the nodes
+                // added for the predicate are then embargoes (see addNestedNode),
+                // which already expresses that the test should not hold
+                outcome.set(Aspect.newAspect(Constant.instance(true), getRole()));
             } catch (FormatException e) {
                 errors.addAll(e.getErrors());
             }
@@ -342,6 +353,7 @@ public class NormalAspectGraph extends AspectGraph {
     private AspectEdge addAssignment(@Nullable AspectNode level, AspectElement holder,
                                      Assignment assign,
                                      @Nullable AspectKind roleKind) throws FormatException {
+        checkEnumerators(holder, assign.getRhs());
         // add the expression structure
         AspectNode target = addExpression(level, holder, assign.getRhs());
         target.setParsed();
@@ -391,6 +403,49 @@ public class NormalAspectGraph extends AspectGraph {
         }
         result.setParsed();
         return result;
+    }
+
+    /**
+     * Tests that an expression on an element of this graph calls at most one
+     * enumerator. Every enumerator call is enumerated on its own: several of
+     * them in one expression would range over all combinations of their values,
+     * and two textually equal calls would not stand for the same value.
+     * @param holder the original element on which the expression occurs
+     * @param expr the parsed expression, taken as a whole
+     * @throws FormatException if the expression calls more than one enumerator
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private void checkEnumerators(AspectElement holder, Expression expr) throws FormatException {
+        if (expr.getEnumeratorCount() > 1) {
+            throw new FormatException("Expression '%s' has more than one enumerator",
+                expr.toParseString(), holder);
+        }
+    }
+
+    /**
+     * Tests that no embargo edge points to a node whose value is an
+     * enumeration, unless the node is itself an embargo. An edge to an
+     * enumeration node tests that the value is an element. As an embargo
+     * between nodes that are both read, it would hold if some element is not
+     * the value, which is not the negation of that test; the negation is that
+     * the enumeration node is an embargo.
+     * @param node a node of this graph that has an expression
+     * @param expr the expression of the node
+     * @throws FormatException if the expression is an enumeration, and an
+     * embargo edge points to the node though it is not an embargo
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private void checkEnumerationEdges(AspectNode node, Expression expr) throws FormatException {
+        if (!expr.isEnumeration() || node.has(EMBARGO)) {
+            return;
+        }
+        for (var edge : inEdgeSet(node)) {
+            if (edge.has(EMBARGO)) {
+                throw new FormatException(
+                    "Embargo edge to enumeration '%s' not allowed (make the node an embargo)",
+                    expr.toParseString(), edge);
+            }
+        }
     }
 
     /**
@@ -473,7 +528,11 @@ public class NormalAspectGraph extends AspectGraph {
             var levelNode = owner.has(Category.NESTING)
                 ? owner.getParentNode()
                 : owner.getLevelNode();
-            result = addNestedNode(levelNode, holder);
+            // the count of a quantifier always exists, hence it is read outside
+            // any embargo in which it is tested
+            result = owner.has(Category.NESTING)
+                ? addNestedNode(levelNode, holder, false)
+                : addNestedNode(levelNode, holder);
             result.set(Aspect.getAspect(exprSort));
             // add edge to newly created field
             AspectLabel idLabel = parser.parse(expr.getField(), getRole());
@@ -528,9 +587,9 @@ public class NormalAspectGraph extends AspectGraph {
         var levelErrors = new FormatErrorSet();
         AspectNode argLevel;
         Operator operator = call.getOperator();
-        if (operator.isSetValued() && getRole() != RULE) {
-            throw new FormatException("Set-valued operator '%s' only allowed in rules",
-                operator.getName(), holder);
+        if (operator.isEnumerator() && getRole() != RULE) {
+            throw new FormatException("Enumerator '%s' only allowed in rules", operator.getName(),
+                holder);
         }
         if (operator.isVarArgs()) {
             Expression arg = call.getArgs().get(0);
@@ -600,8 +659,18 @@ public class NormalAspectGraph extends AspectGraph {
      * used for its embargo status
      */
     private AspectNode addNestedNode(@Nullable AspectNode level, AspectElement orig) {
+        return addNestedNode(level, orig, orig.has(EMBARGO));
+    }
+
+    /** Adds a node with a given nesting level and embargo status, from a given source node.
+     * @param level the nesting level node on which the node should be created
+     * @param orig the original element from which the new one is derived
+     * @param embargo if {@code true}, the new node should be an embargo
+     */
+    private AspectNode addNestedNode(@Nullable AspectNode level, AspectElement orig,
+                                     boolean embargo) {
         AspectNode result = addNormalisedNode(orig);
-        if (orig.has(EMBARGO)) {
+        if (embargo) {
             result.set(EMBARGO.getAspect());
         }
         if (level != null) {
@@ -640,6 +709,13 @@ public class NormalAspectGraph extends AspectGraph {
             AspectNode target = getNodeForId(((FieldExpr) expr).getTarget());
             if (target != null) {
                 result = target.getLevelNode();
+            }
+            break;
+        case VAR:
+            // a variable stands for the node of that identifier
+            AspectNode varNode = getNodeForId(((Variable) expr).getName());
+            if (varNode != null) {
+                result = varNode.getLevelNode();
             }
             break;
         default:

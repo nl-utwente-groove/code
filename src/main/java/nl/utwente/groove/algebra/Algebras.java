@@ -151,10 +151,13 @@ public class Algebras {
                 int receiverCount = parSorts.size() - e.getValue().getParameterCount();
                 for (int i = 0; i < parSorts.size(); i++) {
                     int userIx = i - receiverCount;
+                    boolean isTail = e.getKey().hasTail() && i == parSorts.size() - 1;
                     help
                         .addPar(0 <= userIx && userIx < userDocs.length
                             ? userDocs[userIx]
-                            : parSorts.get(i).name() + "-typed expression");
+                            : isTail
+                                ? "any number of " + parSorts.get(i).name() + "-typed expressions"
+                                : parSorts.get(i).name() + "-typed expression");
                 }
                 result.add(help);
             }
@@ -196,6 +199,11 @@ public class Algebras {
         Help result = null;
         if (opName != null) {
             Arrays.stream(exec.getParameters()).map(Parameter::getName).forEach(parNames::add);
+            if (Operator.getTailType(exec) != null) {
+                // the last parameter stands for any number of arguments; this is marked by
+                // a star, as the syntax text of the help cannot hold dots
+                parNames.add(parNames.removeLast() + "*");
+            }
             String syntaxText = "[" + Sort.USER.name() + ":]Q" + opName;
             syntaxText += Strings.toString(parNames.toArray(), "(", ")", ",");
             result = Help.createOpHelp(exec, opName, syntaxText, resultSort, tokenMap);

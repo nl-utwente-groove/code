@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="intSumVar">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="b">
+            <attr name="layout">
+                <string>80 80 60 30</string>
+            </attr>
+        </node>
+        <node id="f">
+            <attr name="layout">
+                <string>310 80 60 30</string>
+            </attr>
+        </node>
+        <node id="a">
+            <attr name="layout">
+                <string>80 190 60 30</string>
+            </attr>
+        </node>
+        <node id="v">
+            <attr name="layout">
+                <string>310 190 60 30</string>
+            </attr>
+        </node>
+        <edge from="b" to="b">
+            <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge from="b" to="b">
+            <attr name="label">
+                <string>let:x = int:sum(v)</string>
+            </attr>
+        </edge>
+        <edge from="f" to="f">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="a" to="a">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge from="v" to="v">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge from="v" to="v">
+            <attr name="label">
+                <string>id:v</string>
+            </attr>
+        </edge>
+        <edge from="a" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="v" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="a" to="v">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

@@ -172,7 +172,7 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
     /** A symbolic range cannot be enumerated. */
     @Override
     public Set<Expression> range(Expression arg) {
-        throw Exceptions.unsupportedOp("Set-valued operator 'range' not supported in the term algebra");
+        throw Exceptions.unsupportedOp("Enumerator 'range' not supported in the term algebra");
     }
 
     @Override

@@ -41,8 +41,8 @@ import java.util.TreeSet;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
@@ -341,10 +341,9 @@ class PatternBuilder {
                 //                        + "(do a feature request if you want this constraint dropped!)",
                 //                    operator.getName(), operatorEdge);
             }
-            if (operator.isSetValued()
+            if (operator.isEnumerator()
                 && getGrammarProperties().getAlgebraFamily() == AlgebraFamily.TERM) {
-                throw new FormatException(
-                    "Set-valued operator '%s' not supported in the term algebra",
+                throw new FormatException("Enumerator '%s' not supported in the term algebra",
                     operator.getName(), operatorEdge);
             }
             boolean embargo = productNode.has(ROLE, AspectKind::inNAC);
@@ -467,8 +466,8 @@ class PatternBuilder {
                         .addWarning("Created edge %s duplicates a left-hand-side edge, "
                             + "so the implicit NAC arising from the %s property is always violated "
                             + "and the rule can never be applied; use injective matching under "
-                            + "a multigraph semantics, or disable the property",
-                                    nacEdge.label(), property, modelEdge);
+                            + "a multigraph semantics, or disable the property", nacEdge.label(),
+                                    property, modelEdge);
                 }
             }
         }

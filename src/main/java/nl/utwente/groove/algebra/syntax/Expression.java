@@ -32,6 +32,7 @@ import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
@@ -118,6 +119,26 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
      * This is the case if it contains no {@link FieldExpr} as argument.
      */
     public abstract boolean isTerm();
+
+    /**
+     * Returns the number of enumerator calls in this expression, at any depth.
+     * @see Operator#isEnumerator()
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public int getEnumeratorCount() {
+        return 0;
+    }
+
+    /**
+     * Indicates if this expression is an enumeration, i.e., calls an enumerator
+     * at any depth. Such an expression stands for a set of values rather than for
+     * a single one: {@code lo + range(n)} is an enumeration, as is {@code range(n)}.
+     * @see #getEnumeratorCount()
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    final public boolean isEnumeration() {
+        return getEnumeratorCount() > 0;
+    }
 
     /**
      * Indicates if this expression is closed, i.e., does not contain any variables.

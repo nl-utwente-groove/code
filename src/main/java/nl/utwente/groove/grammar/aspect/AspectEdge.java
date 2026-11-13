@@ -69,6 +69,7 @@ import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
@@ -631,10 +632,14 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case HOST:
                 case RULE:
                     // this is an attribute edge displayed as a node label
-                    result = result.append(Unicode.THIN_SPACE + POINTS_TO_SYMBOL + Unicode.THIN_SPACE);
                     var targetValue = hasGraphRole(HOST)
                         ? target().getValue()
                         : target().getExpression();
+                    // an edge to an enumeration tests that the value is an element
+                    var symbol = targetValue != null && targetValue.isEnumeration()
+                        ? ELEMENT_OF_SYMBOL
+                        : POINTS_TO_SYMBOL;
+                    result = result.append(Unicode.THIN_SPACE + symbol + Unicode.THIN_SPACE);
                     var targetLine = targetValue == null
                         ? Line.atom(type.getName()).style(Style.BOLD)
                         : targetValue.toLine();
@@ -908,7 +913,11 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         var assignTree = getAssignTree();
         assert assignTree != null;
         try {
-            return getAssign().toLine(assignSymbol);
+            var assign = getAssign();
+            return assign
+                .toLine(assign.getRhs().isEnumeration()
+                    ? ELEMENT_OF_SYMBOL
+                    : assignSymbol);
         } catch (FormatException exc) {
             return assignTree.toLine();
         }
@@ -973,16 +982,39 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         assert isParsed();
         try {
             // make a test for a self-field look like an edge, like for let:
-            if (getTest() instanceof CallExpr c && c.getOperator().isEquality()
-                && c.getArgs().get(0) instanceof FieldExpr f && f.isSelf()) {
-                return new Assignment(f.getField(), c.getArgs().get(1)).toLine(POINTS_TO_SYMBOL);
-            } else {
+            var fieldTest = getFieldTest();
+            if (fieldTest == null) {
                 return getTest().toLine();
+            } else {
+                return fieldTest
+                    .toLine(fieldTest.getRhs().isEnumeration()
+                        ? ELEMENT_OF_SYMBOL
+                        : POINTS_TO_SYMBOL);
             }
         } catch (FormatException exc) {
             var testTree = getTestTree();
             assert testTree != null;
             return testTree.toLine();
+        }
+    }
+
+    /**
+     * Returns the test wrapped by this edge as a field with its value, if the
+     * test has that form: an equality with a field of the source node on the
+     * left hand side. This is the form in which a test is displayed like an
+     * attribute edge, and the only one in which it may call an enumerator: the
+     * test is then that the field value is an element of the enumeration.
+     * Should only be called if {@link #isTest()} holds.
+     * @return the field and the expression it is compared to, or {@code null}
+     * if the test has another form
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public @Nullable Assignment getFieldTest() throws FormatException {
+        if (getTest() instanceof CallExpr c && c.getOperator().isEquality()
+            && c.getArgs().get(0) instanceof FieldExpr f && f.isSelf()) {
+            return new Assignment(f.getField(), c.getArgs().get(1));
+        } else {
+            return null;
         }
     }
 
@@ -1140,6 +1172,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     static private final String SPACE = " ";
     /** Points-to symbol between attribute name and value or expression. */
     static private final String POINTS_TO_SYMBOL = "" + Unicode.RA;
+    /** Element-of symbol between attribute name and an enumeration of its values. */
+    static private final String ELEMENT_OF_SYMBOL = "" + Unicode.ELEMENT_OF;
     /** Change-to symbol between attribute name and value or expression (unused right now). */
     // static private final String CHANGE_TO_SYMBOL = "" + Unicode.RA_STROKE;
     /** Typed-as symbol between attribute name and type. */

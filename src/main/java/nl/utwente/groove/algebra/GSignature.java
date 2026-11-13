@@ -163,7 +163,7 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     /** Range of integers below a given bound. */
     @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
     @ToolTipHeader("Integer range")
-    @ToolTipBody({"Set-valued: yields each of the integers from 0 up to but not including %2$s.",
+    @ToolTipBody({"Enumerator: yields each of the integers from 0 up to but not including %2$s.",
         "Use on a quantified level to range over those values."})
     public default Set<MAIN> range(MAIN arg) {
         throw Exceptions

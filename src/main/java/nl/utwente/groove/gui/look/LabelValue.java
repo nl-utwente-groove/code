@@ -769,10 +769,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 if (idLine == null) {
                     result = contentLine;
                 } else {
+                    // an enumeration stands for a set, of which the node is an element
+                    var expr = node.getExpression();
                     result = idLine
                         .append(TYPED_AS)
                         .append(sortLine)
-                        .append(EQUALS_TO)
+                        .append(expr != null && expr.isEnumeration()
+                            ? ELEMENT_OF
+                            : EQUALS_TO)
                         .append(contentLine);
                 }
             } else {
@@ -840,4 +844,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static private final String TYPED_AS = Unicode.HAIR_SPACE + ":" + Unicode.HAIR_SPACE;
     /** Points-to operator between field name and value. */
     static private final String EQUALS_TO = Unicode.HAIR_SPACE + "=" + Unicode.THIN_SPACE;
+    /** Element-of operator between a node identifier and an enumeration of its values. */
+    static private final String ELEMENT_OF
+        = "" + Unicode.HAIR_SPACE + Unicode.ELEMENT_OF + Unicode.THIN_SPACE;
 }

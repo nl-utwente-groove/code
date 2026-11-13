@@ -36,6 +36,8 @@ public class Unicode {
     public final static char VEE = '\u2228';
     /** Unicode hex string for "not" (negation) */
     public final static char NEG = '\u00AC';
+    /** Unicode hex string for "element of" (set membership) */
+    public final static char ELEMENT_OF = '∈';
     /** Unicode plusminus symbol. */
     static public final char PLUSMINUS = '\u00b1';
     /** Unicode times symbol. */

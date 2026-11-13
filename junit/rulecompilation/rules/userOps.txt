@@ -13,6 +13,14 @@ Existential allRandom [non-positive]
     Existential allRandom[0,0]
       root: nodes [] edges []
       lhs: nodes [] edges []
+== rule append
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x4:user]
+Existential append [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:user, x2:int, p3:user:append(user,int), x4:user] edges [n0--p-->x1, n0--v-->x2]
+  rhs: nodes [n0:Ω#, x1:user, x2:int, p3:user:append(user,int), x4:user] edges [n0--p-->x1, n0--q-->x4, n0--v-->x2]
 == rule charAt
 signature: ()
 hidden: []
@@ -21,6 +29,65 @@ Existential charAt [non-positive]
   root: nodes [] edges []
   lhs: nodes [n1:Ω#, string:"abcd":string, x3:int, p4:user:charAt(string,int), x5:string] edges [n1--i-->x3]
   rhs: nodes [n0:Ω#, n1:Ω#, string:"abcd":string, x3:int, p4:user:charAt(string,int), x5:string] edges [n0--from-->n1, n0--x-->x5, n1--i-->x3]
+== rule coeffCells
+signature: ()
+hidden: []
+anchor: []
+Existential coeffCells [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n2:Ω#, x3:user] edges [n2--p-->x3]
+  rhs: nodes [n2:Ω#, x3:user] edges [n2--p-->x3]
+  Universal coeffCells[0] [non-positive]
+    root: nodes [x3:user] edges []
+    lhs: nodes [x3:user, p4:user:coeffsSize(user), x5:int, p6:int:range(int), x7:int, p8:user:coeffsAt(user,int), x9:int] edges []
+    rhs: nodes [n0:Ω#, x3:user, p4:user:coeffsSize(user), x5:int, p6:int:range(int), x7:int, p8:user:coeffsAt(user,int), x9:int] edges [n0--val-->x9]
+    Existential coeffCells[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
+== rule coeffSum
+signature: ()
+hidden: []
+anchor: [x9:int, n10:Ω#]
+Existential coeffSum [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [x3:int, p6:int:sum(int), p7:user:coeffsSize(user), x8:user, x9:int, n10:Ω#] edges [n10--p-->x8]
+  rhs: nodes [x3:int, p6:int:sum(int), p7:user:coeffsSize(user), x8:user, x9:int, n10:Ω#] edges [n10--p-->x8, n10--sum-->x9]
+  Universal coeffSum[0] [non-positive] outputs=[x0:int]
+    root: nodes [x3:int, x8:user] edges []
+    lhs: nodes [x0:int, x2:int, x3:int, p4:user:coeffsAt(user,int), p5:int:range(int), x8:user] edges []
+    Existential coeffSum[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
+== rule coeffSumVar
+signature: ()
+hidden: []
+anchor: [n2:Ω#, x11:int]
+Existential coeffSumVar [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n2:Ω#, x3:user, p10:int:sum(int), x11:int] edges [n2--p-->x3]
+  rhs: nodes [n2:Ω#, x3:user, p10:int:sum(int), x11:int] edges [n2--p-->x3, n2--sum-->x11]
+  Universal coeffSumVar[0] [non-positive] outputs=[x9:int]
+    root: nodes [x3:user] edges []
+    lhs: nodes [x3:user, p4:user:coeffsSize(user), x5:int, p6:int:range(int), x7:int, p8:user:coeffsAt(user,int), x9:int] edges []
+    Existential coeffSumVar[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
+== rule coeffsAt
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x4:int]
+Existential coeffsAt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:user, x2:int, p3:user:coeffsAt(user,int), x4:int] edges [n0--i-->x2, n0--p-->x1]
+  rhs: nodes [n0:Ω#, x1:user, x2:int, p3:user:coeffsAt(user,int), x4:int] edges [n0--e-->x4, n0--i-->x2, n0--p-->x1]
+== rule coeffsSize
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x3:int]
+Existential coeffsSize [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:user, p2:user:coeffsSize(user), x3:int] edges [n0--p-->x1]
+  rhs: nodes [n0:Ω#, x1:user, p2:user:coeffsSize(user), x3:int] edges [n0--p-->x1, n0--s-->x3]
 == rule create
 signature: ()
 hidden: []
@@ -29,35 +96,6 @@ Existential create [non-positive]
   root: nodes [] edges []
   lhs: nodes [n0:Ω#, user:UserTypeIntBool(0, true):user, int:0:int, int:1:int, p4:int:max(int,int), x5:int] edges []
   rhs: nodes [n0:Ω#, user:UserTypeIntBool(0, true):user, int:0:int, int:1:int, p4:int:max(int,int), x5:int] edges [n0--x-->user:UserTypeIntBool(0, true), n0--y-->x5]
-== rule digitNodes
-signature: ()
-hidden: []
-anchor: []
-Existential digitNodes [non-positive]
-  root: nodes [] edges []
-  lhs: nodes [n0:Ω#, x3:int] edges [n0--A-->n0, n0--n-->x3]
-  rhs: nodes [n0:Ω#, x3:int] edges [n0--A-->n0, n0--n-->x3]
-  Universal digitNodes[0] [non-positive]
-    root: nodes [x3:int] edges []
-    lhs: nodes [x3:int, p4:user:digits(int), x5:int] edges []
-    rhs: nodes [n1:Ω#, x3:int, p4:user:digits(int), x5:int] edges [n1--C-->n1, n1--v-->x5]
-    Existential digitNodes[0,0]
-      root: nodes [] edges []
-      lhs: nodes [] edges []
-== rule digitSum
-signature: ()
-hidden: []
-anchor: [n1:Ω#, x7:int]
-Existential digitSum [non-positive]
-  root: nodes [] edges []
-  lhs: nodes [n0:Ω#, n1:Ω#, x4:int, p6:int:sum(int), x7:int] edges [n0--A-->n0, n0--n-->x4, n1--B-->n1]
-  rhs: nodes [n0:Ω#, n1:Ω#, x4:int, p6:int:sum(int), x7:int] edges [n0--A-->n0, n0--n-->x4, n1--B-->n1, n1--s-->x7]
-  Universal digitSum[0] [non-positive] outputs=[x3:int]
-    root: nodes [x4:int] edges []
-    lhs: nodes [x3:int, x4:int, p5:user:digits(int)] edges []
-    Existential digitSum[0,0]
-      root: nodes [] edges []
-      lhs: nodes [] edges []
 == rule intField
 signature: ()
 hidden: []
@@ -90,21 +128,6 @@ Existential isPrefix [non-positive]
   root: nodes [] edges []
   lhs: nodes [n0:Ω#, n1:Ω#, string:"a":string, x3:string, p4:user:isPrefix(string,string), bool:true:bool] edges [n1--s-->x3]
   rhs: nodes [n0:Ω#, n1:Ω#, string:"a":string, x3:string, p4:user:isPrefix(string,string), bool:true:bool] edges [n1--s-->x3]
-== rule letters
-signature: ()
-hidden: []
-anchor: []
-Existential letters [non-positive]
-  root: nodes [] edges []
-  lhs: nodes [n0:Ω#, x3:string] edges [n0--A-->n0, n0--t-->x3]
-  rhs: nodes [n0:Ω#, x3:string] edges [n0--A-->n0, n0--t-->x3]
-  Universal letters[0] [non-positive]
-    root: nodes [x3:string] edges []
-    lhs: nodes [x3:string, p4:user:letters(string), x5:user] edges []
-    rhs: nodes [n1:Ω#, x3:string, p4:user:letters(string), x5:user] edges [n1--C-->n1, n1--w-->x5]
-    Existential letters[0,0]
-      root: nodes [] edges []
-      lhs: nodes [] edges []
 == rule one
 signature: ()
 hidden: []
@@ -113,6 +136,30 @@ Existential one [non-positive]
   root: nodes [] edges []
   lhs: nodes [p2:user:one(), x3:int, p4:user:one(), x5:int] edges []
   rhs: nodes [n0:Ω#, n1:Ω#, p2:user:one(), x3:int, p4:user:one(), x5:int] edges [n0--x-->x3, n1--y-->x5]
+== rule polyConst
+signature: ()
+hidden: []
+anchor: [n0:Ω#]
+Existential polyConst [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, user:UserTypePoly("p", 1, 2, 3):user] edges [n0--x-->user:UserTypePoly("p", 1, 2, 3)]
+  rhs: nodes [n0:Ω#, user:UserTypePoly("p", 1, 2, 3):user] edges [n0--found-->n0, n0--x-->user:UserTypePoly("p", 1, 2, 3)]
+== rule polyCreate
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x5:user, x7:user]
+Existential polyCreate [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:string, x2:int, x3:int, p4:user:UserTypePoly(string,int...), x5:user, p6:user:UserTypePoly(string,int...), x7:user] edges [n0--a-->x2, n0--b-->x3, n0--name-->x1]
+  rhs: nodes [n0:Ω#, x1:string, x2:int, x3:int, p4:user:UserTypePoly(string,int...), x5:user, p6:user:UserTypePoly(string,int...), x7:user] edges [n0--a-->x2, n0--b-->x3, n0--name-->x1, n0--p-->x5, n0--q-->x7]
+== rule polyProd
+signature: ()
+hidden: []
+anchor: [x3:user, n5:Ω#]
+Existential polyProd [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [x0:int, x1:int, p2:user:UserTypePoly(string,int...), x3:user, x4:string, n5:Ω#] edges [n5--a-->x0, n5--b-->x1, n5--name-->x4]
+  rhs: nodes [x0:int, x1:int, p2:user:UserTypePoly(string,int...), x3:user, x4:string, n5:Ω#] edges [n5--a-->x0, n5--b-->x1, n5--name-->x4, n5--p-->x3]
 == rule random
 signature: ()
 hidden: []

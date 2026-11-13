@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="coeffSumVar">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="t">
+            <attr name="layout">
+                <string>80 80 60 30</string>
+            </attr>
+        </node>
+        <node id="f">
+            <attr name="layout">
+                <string>310 80 60 30</string>
+            </attr>
+        </node>
+        <node id="e">
+            <attr name="layout">
+                <string>310 190 60 30</string>
+            </attr>
+        </node>
+        <edge from="t" to="t">
+            <attr name="label">
+                <string>id:t</string>
+            </attr>
+        </edge>
+        <edge from="t" to="t">
+            <attr name="label">
+                <string>new:let:sum = sum(e)</string>
+            </attr>
+        </edge>
+        <edge from="f" to="f">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="e" to="e">
+            <attr name="label">
+                <string>id:e</string>
+            </attr>
+        </edge>
+        <edge from="e" to="e">
+            <attr name="label">
+                <string>int:coeffsAt(t.p, range(coeffsSize(t.p)))</string>
+            </attr>
+        </edge>
+        <edge from="e" to="f">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

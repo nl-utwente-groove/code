@@ -39,6 +39,7 @@ import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.LTSLabels;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -184,6 +185,16 @@ public class ExplorationTest {
     @Test
     public void testCounting() {
         testExploration("counting.gps", "start", "", 10, 9);
+    }
+
+    /**
+     * Tests a sequence-valued field of a user type that reaches the same
+     * value along two routes: equal sequences have to give one state (gh #931).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testPolyGrowth() {
+        testExploration("poly-growth.gps", "start", "", 20, 28);
     }
 
     /** A very simple/pure tests for the quantifier counting. */

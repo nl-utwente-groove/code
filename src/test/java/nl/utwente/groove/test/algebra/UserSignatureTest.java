@@ -39,6 +39,7 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.test.algebra.user.UserTypeIntString;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -140,26 +141,12 @@ public class UserSignatureTest {
         }
     }
 
-    /** Tests the recognition of set-valued user operations. */
+    /** Tests that a user operation with a collection as return type is rejected. */
     @Test
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    public void testSetValued() {
-        loadFail("UserOpsSetValuedIndeterminate");
-        loadFail("UserOpsSetValuedRaw");
-        loadFail("UserOpsSetValuedList");
-        load("UserOpsSetValued");
-        var ops = UserSignature.getOperators();
-        assertEquals(4, ops.size());
-        for (var op : ops.values()) {
-            assertTrue(op.getName() + " should be set-valued", op.isSetValued());
-            switch (op.getName()) {
-            case "around" -> check(op, false, Sort.INT, Sort.INT);
-            case "halves" -> check(op, false, Sort.STRING, Sort.STRING);
-            case "upTo" -> check(op, false, Sort.REAL, Sort.REAL);
-            case "both" -> check(op, false, Sort.BOOL);
-            default -> fail("Unexpected operation " + op.getName());
-            }
-        }
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    public void testCollectionResult() {
+        checkErrors("UserOpsCollectionResult",
+                    "values': Return type Set is a collection: a user operation yields a single value");
     }
 
     /** Tests that the operator documentation can be built for user operations,
@@ -254,6 +241,190 @@ public class UserSignatureTest {
         assertSame(UserTypeIntString.class, method.getDeclaringClass());
     }
 
+    /** Tests the operators with a variable argument tail, which stem from a sequence type
+     * as the last field of a user type or as the last parameter of a user operation.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testSequenceTail() {
+        // a sequence of user values needs the type of its elements among the user classes
+        loadFail("UserOpsSeq");
+        load("UserTypePoly", "UserTypeBag", "UserOpsSeq");
+        var ops = UserSignature.getOperators();
+        for (var op : ops.values()) {
+            boolean tail = true;
+            switch (op.getName()) {
+            case "UserTypePoly" -> check(op, false, Sort.USER, Sort.STRING, Sort.INT);
+            case "UserTypeBag" -> check(op, false, Sort.USER, Sort.INT);
+            case "horner" -> check(op, false, Sort.INT, Sort.INT, Sort.INT);
+            case "total" -> check(op, false, Sort.REAL, Sort.REAL);
+            case "all" -> check(op, false, Sort.BOOL, Sort.BOOL);
+            case "join" -> check(op, false, Sort.STRING, Sort.STRING, Sort.STRING);
+            case "countCoeffs" -> check(op, false, Sort.INT, Sort.USER);
+            case "sumAt" -> check(op, false, Sort.INT, Sort.USER, Sort.INT);
+            case "degree" -> {
+                check(op, false, Sort.INT, Sort.USER);
+                tail = false;
+            }
+            case "append" -> {
+                check(op, false, Sort.USER, Sort.USER, Sort.INT);
+                tail = false;
+            }
+            case "name" -> {
+                check(op, false, Sort.STRING, Sort.USER);
+                tail = false;
+            }
+            // the accessors generated for the sequence-valued fields
+            case "coeffsAt", "elemsAt" -> {
+                check(op, false, Sort.INT, Sort.USER, Sort.INT);
+                tail = false;
+            }
+            case "coeffsSize", "elemsSize" -> {
+                check(op, false, Sort.INT, Sort.USER);
+                tail = false;
+            }
+            default -> fail("Unexpected operation " + op.getName());
+            }
+            assertEquals(tail, op.hasTail(), op.getName());
+        }
+        assertEquals(15, ops.size());
+
+        var poly = ops.get("UserTypePoly");
+        assertNotNull(poly);
+        assertEquals("user:UserTypePoly(string,int...)", poly.toString());
+        // the tail may be empty, the part before it may not
+        assertFalse(poly.allowsArgCount(0));
+        assertTrue(poly.allowsArgCount(1));
+        assertTrue(poly.allowsArgCount(5));
+        assertEquals(Sort.STRING, poly.getParamSort(0));
+        assertEquals(Sort.INT, poly.getParamSort(1));
+        assertEquals(Sort.INT, poly.getParamSort(4));
+        assertEquals(List.of(Sort.STRING), poly.getParamSorts(1));
+        assertEquals(List.of(Sort.STRING, Sort.INT, Sort.INT), poly.getParamSorts(3));
+        var bag = ops.get("UserTypeBag");
+        assertNotNull(bag);
+        assertTrue(bag.allowsArgCount(0));
+        assertEquals(List.of(), bag.getParamSorts(0));
+        // the receiving object of a non-static operation is part of what precedes the tail
+        var sumAt = ops.get("sumAt");
+        assertNotNull(sumAt);
+        assertFalse(sumAt.allowsArgCount(0));
+        assertTrue(sumAt.allowsArgCount(1));
+        // an operator without a tail has its parameter sorts whatever the number of arguments
+        var degree = ops.get("degree");
+        assertNotNull(degree);
+        assertEquals(List.of(Sort.USER), degree.getParamSorts(3));
+
+        var docMap = Algebras.getOpDocMap();
+        // the syntax line marks the last parameter as standing for any number of arguments
+        assertTrue(docMap.keySet().toString(),
+                   docMap
+                       .keySet()
+                       .stream()
+                       .anyMatch(k -> k.contains("horner</") && k.contains("coeffs</i></font>*)")));
+        checkParDocs(docMap, "horner", GENERATED, "any number of ");
+        checkParDocs(docMap, "sumAt", GENERATED, "any number of ");
+    }
+
+    /** Tests that a sequence type is rejected where it is not allowed. */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testSequenceErrors() {
+        checkErrors("UserTypeSeqNotLast", ".first' is not the last field");
+        checkErrors("UserTypeUserSeq", ".polys' is a sequence of user values");
+        checkErrors("UserOpsSeqErrors",
+                    "notLast': Sequence type IntSeq is only allowed for the last parameter",
+                    "result': Return type IntSeq is a sequence type",
+                    "untyped': Sequence type UserSeq does not specify the type of its elements");
+    }
+
+    /** Tests the accessors that are generated for a sequence-valued field of a user type:
+     * one for the elements and one for the length, and none of the name of the field.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testSequenceAccessors() {
+        load("UserTypePoly", "UserTypeTags");
+        var ops = UserSignature.getOperators();
+        var coeffsAt = ops.get("coeffsAt");
+        assertNotNull(coeffsAt);
+        check(coeffsAt, false, Sort.INT, Sort.USER, Sort.INT);
+        assertEquals(Operator.SeqAccessor.AT, coeffsAt.getSeqAccessor());
+        assertEquals("user:coeffsAt(user,int)", coeffsAt.toString());
+        var coeffsSize = ops.get("coeffsSize");
+        assertNotNull(coeffsSize);
+        check(coeffsSize, false, Sort.INT, Sort.USER);
+        assertEquals(Operator.SeqAccessor.SIZE, coeffsSize.getSeqAccessor());
+        // the element accessor has the sort of the elements
+        var tagsAt = ops.get("tagsAt");
+        assertNotNull(tagsAt);
+        check(tagsAt, false, Sort.STRING, Sort.USER, Sort.INT);
+        // the name of the field is not that of an operator
+        assertNull(ops.get("coeffs"));
+        assertNull(ops.get("tags"));
+        // other operators are not accessors
+        for (var name : List.of("UserTypePoly", "name", "degree", "sumAt")) {
+            var op = ops.get(name);
+            assertNotNull(op);
+            assertNull(name, op.getSeqAccessor());
+        }
+        // both accessors are based on the accessor method of the field
+        var method = UserSignature.getMethods().get(coeffsAt);
+        assertNotNull(method);
+        assertEquals("coeffs", method.getName());
+        assertSame(method, UserSignature.getMethods().get(coeffsSize));
+        // like the accessors of other fields, they are not documented
+        var docMap = Algebras.getOpDocMap();
+        assertFalse(docMap.keySet().stream().anyMatch(k -> k.contains("coeffsAt</")));
+    }
+
+    /** Tests that the names of the accessors generated for a sequence-valued field may
+     * not be taken by other operations, and neither may the name of the field itself,
+     * in the class of the field or in another one.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testSequenceAccessorClashes() {
+        var clash = PACKAGE_NAME.extend("UserTypeSeqClash");
+        var generated = "'%s' (generated for sequence-valued field 'items')".formatted(clash);
+        checkErrors("UserTypeSeqClash",
+                    // the other field comes first, the operation comes last
+                    "Duplicate user operation 'itemsSize' in '%s' and %s"
+                        .formatted(clash, generated),
+                    "Duplicate user operation 'itemsAt' in %s and '%s'".formatted(generated, clash),
+                    "User operation 'items' in '%s' has the name of sequence-valued field '%s.items', which is reserved"
+                        .formatted(clash, clash));
+        // each of the following classes is correct on its own
+        load("UserOpsSeqName");
+        load("UserTypeBag");
+        var ops = PACKAGE_NAME.extend("UserOpsSeqName");
+        var bag = PACKAGE_NAME.extend("UserTypeBag");
+        var expected
+            = "User operation 'elems' in '%s' has the name of sequence-valued field '%s.elems', which is reserved"
+                .formatted(ops, bag);
+        // the order of the classes does not matter
+        for (var names : List.of(List.of(ops, bag), List.of(bag, ops))) {
+            var errors = UserSignature.checkUserClass(names).getErrors().get();
+            assertEquals(1, errors.size(), errors.toString());
+            assertEquals(expected, errors.iterator().next().toString());
+        }
+    }
+
+    /** Tests that a given user class has precisely as many errors as there are
+     * given fragments, each of which occurs in one of the errors.
+     */
+    private void checkErrors(String className, String... fragments) {
+        var errors = UserSignature
+            .checkUserClass(List.of(PACKAGE_NAME.extend(className)))
+            .getErrors()
+            .get();
+        assertEquals(fragments.length, errors.size(), errors.toString());
+        for (var fragment : fragments) {
+            assertTrue(errors.toString(),
+                       errors.stream().anyMatch(e -> e.toString().contains(fragment)));
+        }
+    }
+
     /** Tests that the parameter documentation of a given user operation consists
      * of rows that contain the given fragments, in that order.
      */
@@ -322,5 +493,5 @@ public class UserSignatureTest {
         assertArrayEquals(parSorts, op.getParamSorts().toArray(new Sort[0]));
     }
 
-    static private final QualName PACKAGE_NAME = QualName.name("nl.utwente.groove.test.algebra");
+    static private final QualName PACKAGE_NAME = QualName.name("nl.utwente.groove.test.algebra.user");
 }
