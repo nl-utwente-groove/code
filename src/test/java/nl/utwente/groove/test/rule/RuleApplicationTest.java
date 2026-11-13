@@ -49,6 +49,7 @@ import nl.utwente.groove.test.algebra.user.UserOpsExample;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
@@ -258,6 +259,26 @@ public class RuleApplicationTest extends TestCase {
         // so the test is repeatable even if it runs more than once per JVM
         UserOpsExample.resetRandomness();
         test("userOps");
+    }
+
+    /** Tests that user-defined operations are rejected in the point algebra,
+     * which has no user algebra. */
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    @Test
+    public void testUserOpsPoint() {
+        try {
+            var grammar = Groove.loadGrammar(INPUT_DIR + "/userOps");
+            try {
+                toGrammar(grammar, AlgebraFamily.POINT);
+                Assert.fail("User operations should be rejected in the point algebra");
+            } catch (FormatException e) {
+                var message = String.valueOf(e.getMessage());
+                Assert.assertTrue(message,
+                                  message.contains("cannot be used with 'point' algebra family"));
+            }
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     /** Tests attribute expressions referring to parameter nodes

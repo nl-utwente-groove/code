@@ -643,7 +643,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             var classNames = value.value(ValueType.QUAL_NAME_LIST);
             if (!classNames.isEmpty()) {
                 result.addAll(UserSignature.checkUserClass(classNames).getErrors());
-                if (family != AlgebraFamily.DEFAULT && family != AlgebraFamily.POINT) {
+                if (family != AlgebraFamily.DEFAULT) {
                     result
                         .add("User-defined operations cannot be used with '%s' algebra family",
                              family.getName());
