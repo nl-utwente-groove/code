@@ -216,10 +216,32 @@ public class ConfiguredExploreType extends ExploreType {
             gts.setCollapseMode(collapse);
         }
         var algebra = getAlgebraFamily();
-        if (algebra != null) {
+        // a family that the grammar cannot be explored under is left out here and
+        // reported by prepareRun, since the start state could not be built under it
+        if (algebra != null && checkAlgebra(gts.getGrammar()).isEmpty()) {
             gts.setAlgebraFamily(algebra);
         }
         gts.setPersistent(isPersistent());
+    }
+
+    /**
+     * Checks the algebra family of this configuration against a given grammar.
+     * User-defined operations are implemented in the default family only, so
+     * a grammar that declares them cannot be explored under any other one; this
+     * is what the check on the {@code userOperations} grammar property says of the
+     * family that the grammar itself sets.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private FormatErrorSet checkAlgebra(Grammar grammar) {
+        var errors = new FormatErrorSet();
+        var algebra = getAlgebraFamily();
+        if (algebra != null && algebra != AlgebraFamily.DEFAULT
+            && !grammar.getProperties().getUserOperations().isEmpty()) {
+            errors
+                .add("User-defined operations cannot be used with '%s' algebra family",
+                     algebra.getName());
+        }
+        return errors;
     }
 
     /**
@@ -231,6 +253,7 @@ public class ConfiguredExploreType extends ExploreType {
      */
     @Override
     public void prepareRun(GTS gts) throws FormatException {
+        checkAlgebra(gts.getGrammar()).throwException();
         checkGTS(gts).throwException();
         gts.setStoring(gts.isPersistent());
     }
@@ -311,6 +334,7 @@ public class ConfiguredExploreType extends ExploreType {
             Randomness.setMasterSeed((Long) getConfig().get(ExploreKey.SEED).content());
         }
         var errors = new FormatErrorSet();
+        errors.addAll(checkAlgebra(grammar));
         Strategy strategy = null;
         try {
             strategy = createStrategy(grammar);

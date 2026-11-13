@@ -31,6 +31,7 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTS.CollapseMode;
 import nl.utwente.groove.test.MasterSeedGuard;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -83,6 +84,35 @@ public class OverridesTest {
         assertEquals(AlgebraFamily.POINT, point.getRecord().getFamily(),
                      "The override should reach the derivation record");
         assertTrue(point.nodeCount() > 0);
+    }
+
+    /**
+     * Tests that the algebra override is refused for a grammar with
+     * user-defined operations, which are implemented in the default family
+     * only (gh #937): the exploration type does not pass the test against the
+     * grammar, and an exploration is refused with an error, where it used to
+     * fail on the start state under the point and big families.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testAlgebraOverrideWithUserOperations() throws Exception {
+        Grammar grammar = loadGrammar("poly-growth");
+        var error = "User-defined operations cannot be used with '%s' algebra family";
+        for (var family : new String[] {"point", "big", "term"}) {
+            var type = ExploreTypeConverter.toExploreType(ExploreConfig.parse("algebra=" + family));
+            var expected = String.format(error, family);
+            var tested = assertThrows(FormatException.class, () -> type.test(grammar));
+            var testedMessage = String.valueOf(tested.getMessage());
+            assertTrue(testedMessage.contains(expected), testedMessage);
+            var explored = assertThrows(FormatException.class,
+                                        () -> type.newExploration(new GTS(grammar)));
+            var exploredMessage = String.valueOf(explored.getMessage());
+            assertTrue(exploredMessage.contains(expected), exploredMessage);
+        }
+        // the default family is what such a grammar is explored under anyway
+        GTS byDefault = explore(grammar, "algebra=default");
+        assertEquals(AlgebraFamily.DEFAULT, byDefault.getAlgebraFamily());
+        assertTrue(byDefault.nodeCount() > 0);
     }
 
     /**
