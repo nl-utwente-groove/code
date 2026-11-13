@@ -58,6 +58,8 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
@@ -68,11 +70,15 @@ import nl.utwente.groove.gui.export.JGraphExportable;
 import nl.utwente.groove.gui.export.JGraphExporters;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
+import nl.utwente.groove.gui.layout.LayoutHandler;
+import nl.utwente.groove.gui.layout.Layouter;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.cli.CmdLineException;
@@ -295,6 +301,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             AspectJModel model = jGraph.newModel();
             model.loadGraph(aspectGraph);
             jGraph.setModel(model);
+            layout(jGraph, model);
             // Ugly hack to prevent clipping of the image. We set the
             // jGraph size to twice its normal size. This does not
             // affect the final size of the exported figure, hence
@@ -306,6 +313,30 @@ public class Imager extends GrooveCmdLineTool<Object> {
         }
         };
         return result;
+    }
+
+    /** Lays out a graph to be imaged. If a layouter was specified (gh #941),
+     * the graph is laid out afresh with it, ignoring its stored layout.
+     * Otherwise only the nodes without stored position are laid out,
+     * with the default layouter of the graph; the positions they get from the
+     * model are random ones. A graph with a complete layout is then left as it is.
+     * The layout only exists in the image: the graph is not saved.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private void layout(AspectJGraph jGraph, AspectJModel model) {
+        var layouter = this.layouter;
+        if (layouter != null) {
+            jGraph.getController().setLayouter(layouter);
+            jGraph.doLayout(true);
+        } else {
+            boolean unplaced = false;
+            for (var jCell : model.getRoots()) {
+                unplaced |= jCell instanceof ViewVertex<?> jVertex && jVertex.isLayoutable();
+            }
+            if (unplaced) {
+                jGraph.doLayout(false);
+            }
+        }
     }
 
     /** Returns the location of the file(s) to be imaged. */
@@ -364,6 +395,11 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
     @Option(names = "-e", description = "Enforces editor view export")
     private boolean editorView;
+
+    /** Prototype of the layouter with which the graphs are laid out afresh, if any. */
+    @Option(names = LayoutHandler.NAME, paramLabel = LayoutHandler.VAR,
+        description = LayoutHandler.USAGE, converter = LayoutHandler.class)
+    private @Nullable Layouter layouter;
 
     /**
      * Starts the imager with a list of options and file names.
