@@ -27,6 +27,17 @@ review. The sequence parameter of a `@UserOperation` (decision 3) was confirmed 
   that it was closeable: what is left of it is the review of slice 5, the merge and the
   release. gh #935, #936 and #937 are unchanged in the code and
   stay open; gh #930 and gh #942 are later work.
+- *Compatibility with gh #942, pinned* (asked by Arend, 2026-11-13).
+  `SequenceTailTest.testUnsortedArguments` fixes the typing of tail calls, generated
+  accessors and the user operation `append` where the arguments have no known sort, as
+  in a rule of a grammar without type graph (`ExprTree` then tries every sort). With
+  sequences as sorts a tail position could be read as an element or as a whole
+  sequence; the acceptance criterion added to gh #942 says the element reading wins,
+  the new sorts go at the end of `Sort`, and the `equals` of the carriers is not
+  touched. Arend's assessment, which the code bears out: the risk is slight, as it
+  takes user operations in a grammar without type graph; with one, the sorts of the
+  fields are known (`AspectGraph.createSortMap`). `ExprTree.toExpression` rejects an
+  expression with more than one typing, so nothing picks the first candidate there.
 - *Gates on the tip of slice 5* (javadoc and notes only): null-check on the two
   annotation files, no errors or warnings; full suite with the slow tests and without
   the GUI tests, 901 run, 2 skipped in `GrammarsTest`. No `gui/` file changed.

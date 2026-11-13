@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -33,6 +34,7 @@ import nl.utwente.groove.algebra.ErrorValue;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.UserAlgebra;
 import nl.utwente.groove.algebra.UserSignature;
+import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.test.algebra.user.UserTypeBag;
@@ -181,6 +183,48 @@ public class SequenceTailTest {
         assertInstanceOf(ErrorValue.class, eval("countCoeffs(UserTypeBag(1))"));
         assertInstanceOf(ErrorValue.class,
                          eval("countCoeffs(UserTypePoly(\"p\",1),UserTypeBag(1))"));
+    }
+
+    /**
+     * An argument whose sort is not known otherwise, as in a grammar without type graph,
+     * gets the sort that the operator has at its position, which in the tail is the sort
+     * of the elements; and the call has one typing only.
+     * This pins the typing for the sake of gh #942, where a sequence becomes a sort and
+     * an operator with a tail also accepts a sequence as a whole: an argument that can be
+     * read as an element then has to stay one, and a built-in operator on sequences that
+     * shares its name with one of these should not make the call ambiguous unnoticed.
+     */
+    @Test
+    public void testUnsortedArguments() throws FormatException {
+        // operations with a tail, for every sequence type
+        assertTyping("horner(n,x)", Sort.INT, Sort.INT, Sort.INT);
+        assertTyping("horner(a.n,a.x,b.y)", Sort.INT, Sort.INT, Sort.INT, Sort.INT);
+        assertTyping("total(x)", Sort.REAL, Sort.REAL);
+        assertTyping("all(x,y)", Sort.BOOL, Sort.BOOL, Sort.BOOL);
+        assertTyping("join(s,t)", Sort.STRING, Sort.STRING, Sort.STRING);
+        assertTyping("countCoeffs(p,q)", Sort.INT, Sort.USER, Sort.USER);
+        // a constructor with a tail, and an operation of the user type with one
+        assertTyping("UserTypePoly(name,x,y)", Sort.USER, Sort.STRING, Sort.INT, Sort.INT);
+        assertTyping("sumAt(p,x)", Sort.INT, Sort.USER, Sort.INT);
+        // the generated accessors
+        assertTyping("coeffsAt(p,i)", Sort.INT, Sort.USER, Sort.INT);
+        assertTyping("coeffsSize(p)", Sort.INT, Sort.USER);
+        // a user operation of a name that suits a built-in operator on sequences
+        assertTyping("append(p,c)", Sort.USER, Sort.USER, Sort.INT);
+        // a tail call gives its sort to the other side of a comparison
+        assertTyping("x == horner(n,y)", Sort.BOOL, Sort.INT, Sort.INT);
+    }
+
+    /**
+     * Asserts that an expression with identifiers of unknown sort has a unique typing,
+     * which is a call with a given result sort and given sorts of its arguments.
+     */
+    private void assertTyping(String text, Sort result, Sort... args) throws FormatException {
+        // the conversion fails if there is more than one typing
+        var call = assertInstanceOf(CallExpr.class, Expression.parse(text).toExpression(), text);
+        assertEquals(result, call.getSort(), text);
+        assertEquals(List.of(args), call.getArgs().stream().map(Expression::getSort).toList(),
+                     text);
     }
 
     /** Parses and evaluates a closed expression in the default algebra family. */
