@@ -208,10 +208,15 @@ public class AddOnGuiTest {
         JMenu menu = createChooserMenu();
         assertNotNull(menu);
         assertEquals(2, menu.getItemCount());
-        assertEquals(text1, menu.getItem(0).getText());
-        assertEquals(selected1, menu.getItem(0).isSelected());
-        assertEquals(text2, menu.getItem(1).getText());
-        assertEquals(selected2, menu.getItem(1).isSelected());
+        // an item is null where the menu has a separator
+        JMenuItem item1 = menu.getItem(0);
+        assertNotNull(item1);
+        assertEquals(text1, item1.getText());
+        assertEquals(selected1, item1.isSelected());
+        JMenuItem item2 = menu.getItem(1);
+        assertNotNull(item2);
+        assertEquals(text2, item2.getText());
+        assertEquals(selected2, item2.isSelected());
     }
 
     /** Writes a stand-in add-on zip: a jar for the running version and a notice. */
