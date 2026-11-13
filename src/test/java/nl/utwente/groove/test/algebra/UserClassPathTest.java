@@ -31,9 +31,13 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.CodeSource;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.spi.ToolProvider;
@@ -278,6 +282,123 @@ public class UserClassPathTest {
                    executable.getDeclaringClass().getClassLoader());
     }
 
+    /** Tests that a package wildcard in the grammar properties (gh #939) stands for
+     * the user classes of that package in the {@code classes} directory.
+     */
+    @Test
+    void wildcardLoadsTheUserClassesOfThePackage(@TempDir Path tmp) throws IOException {
+        Path grammar = tmp.resolve("wild.gps");
+        for (var e : compileWild(tmp.resolve("build")).entrySet()) {
+            Path classFile = grammar
+                .resolve(UserSignature.CLASSES_DIR)
+                .resolve(e.getKey().replace('.', '/') + ".class");
+            Files.createDirectories(classFile.getParent());
+            Files.write(classFile, e.getValue());
+        }
+        Files
+            .writeString(grammar.resolve("system.properties"),
+                         GrammarKey.USER_OPS.getName() + "=" + WILD_PACKAGE + ".*\n");
+        var model = SystemStore.newStore(grammar.toFile(), false, true).toGrammarModel();
+        try {
+            model.getProperties().check(model);
+        } catch (FormatException exc) {
+            fail(exc.getMessage());
+        }
+        assertWild();
+    }
+
+    /** Tests that a package wildcard finds the user classes in a jar, also if the jar
+     * has no directory entries, and takes them in the order of their names.
+     */
+    @Test
+    void wildcardSearchesJars(@TempDir Path tmp) throws IOException {
+        Path grammar = tmp.resolve("wildjar.gps");
+        // the jar lists the classes in reverse order of their names
+        var classes = new ArrayList<>(compileWild(tmp.resolve("build")).entrySet());
+        Collections.reverse(classes);
+        var entries = new LinkedHashMap<String,byte[]>();
+        classes.forEach(e -> entries.put(e.getKey(), e.getValue()));
+        writeJar(grammar.resolve(UserSignature.LIB_DIR).resolve("wild.jar"), entries);
+        var names = List.of(QualName.parse(WILD_PACKAGE + ".*"));
+        UserSignature.setUserClass(names, grammar.toFile());
+        var check = UserSignature.checkUserClass(names);
+        assertEquals(0, count(check.getErrors()), check.getErrors().toString());
+        assertWild();
+        var declarers = UserSignature
+            .getMethods()
+            .values()
+            .stream()
+            .map(m -> m.getDeclaringClass().getSimpleName())
+            .distinct()
+            .toList();
+        assertEquals(List.of("Alpha", "Point"), declarers);
+    }
+
+    /** Tests the errors of a package wildcard: it has to come last, and has to
+     * match at least one user class; a subpackage is a package of its own;
+     * and a class file that cannot be loaded is skipped with a warning.
+     */
+    @Test
+    void wildcardErrors(@TempDir Path tmp) throws IOException {
+        Path grammar = tmp.resolve("wilderr.gps");
+        var entries = new LinkedHashMap<>(compileWild(tmp.resolve("build")));
+        // a class file in the wrong package
+        entries.put(WILD_PACKAGE + ".Stray", compile(tmp.resolve("stray")));
+        writeJar(grammar.resolve(UserSignature.LIB_DIR).resolve("wild.jar"), entries);
+        UserSignature.setUserClass(List.of(), grammar.toFile());
+        assertWildError("nowhere.*", "No class with user-defined types or operations matches");
+        assertWildError(WILD_PACKAGE + ".*.Deep", "only allowed as the last part");
+        var sub = UserSignature.checkUserClass(List.of(QualName.parse(WILD_PACKAGE + ".sub.*")));
+        assertEquals(0, count(sub.getErrors()), sub.getErrors().toString());
+        assertEquals(1, sub.get().size());
+        var stray = UserSignature.checkUserClass(List.of(QualName.parse(WILD_PACKAGE + ".*")));
+        assertFalse(stray.getErrors().hasErrors(), stray.getErrors().toString());
+        assertEquals(1, count(stray.getErrors()), stray.getErrors().toString());
+        assertTrue(stray.getErrors().toString().contains("'wild.Stray' matching 'wild.*' is skipped"),
+                   stray.getErrors().toString());
+    }
+
+    /** Tests that a package wildcard also finds the classes on GROOVE's own class path,
+     * and that the faulty user classes among them are reported as usual.
+     */
+    @Test
+    void wildcardSearchesGrooveClassPath() {
+        var pattern = QualName.parse(UserOps.class.getPackageName() + ".*");
+        var message = UserSignature.checkUserClass(List.of(pattern)).getErrors().toString();
+        assertFalse(message.contains("No class with"), message);
+        assertFalse(message.contains("cannot be loaded"), message);
+        assertTrue(message.contains("UserTypeNonRecord' is not a record type"), message);
+        assertTrue(message.contains("UserOpsNonAccessibleMethod.errNotPublic' is not public"),
+                   message);
+        // a class without user types or operations is not a user class, so is not checked
+        assertFalse(message.contains("UserOpsNonPublicClass"), message);
+    }
+
+    /** Asserts that a given name pattern results in a single error with a given fragment. */
+    private void assertWildError(String pattern, String fragment) {
+        var errors = UserSignature.checkUserClass(List.of(QualName.parse(pattern))).getErrors();
+        assertEquals(1, count(errors), errors.toString());
+        assertTrue(errors.toString().contains(fragment), errors.toString());
+    }
+
+    /** Asserts that the user classes of the wildcard package, and only those, are loaded. */
+    private void assertWild() {
+        var ops = UserSignature.getOperators();
+        // the helper class is not a user class, but is there for the user classes to call
+        Operator alpha = ops.get("alpha");
+        assertNotNull(alpha);
+        var operation = AlgebraFamily.DEFAULT.getOperation(alpha);
+        assertNotNull(operation);
+        assertEquals(4, operation.applyStrict(List.of(3)));
+        // the user type is among the classes, so it can be a parameter type
+        assertNotNull(ops.get("Point"));
+        assertNotNull(ops.get("coord"));
+        assertNotNull(ops.get("pointCoord"));
+        // nested classes and subpackages do not belong to the package
+        assertNull(ops.get("nested"));
+        assertNull(ops.get("deep"));
+    }
+
     /** Tests the round trip between class path strings and entry lists. */
     @Test
     void userClassPathParsesAndFormats() {
@@ -325,6 +446,42 @@ public class UserClassPathTest {
                  compileClassPath(), "-proc:none", "-implicit:none", source.toString());
         assertEquals(0, status, "javac failed: " + err + out);
         return Files.readAllBytes(buildDir.resolve(PACKAGE).resolve(SIMPLE_NAME + ".class"));
+    }
+
+    /**
+     * Compiles the classes of the wildcard tests with the JDK's compiler tool and
+     * returns the bytes of all resulting classes, keyed and ordered by class name;
+     * skips the test by assumption if the tool is not available.
+     */
+    private static Map<String,byte[]> compileWild(Path buildDir) throws IOException {
+        Optional<ToolProvider> found = ToolProvider.findFirst("javac");
+        assumeTrue(found.isPresent(), "no javac tool in this runtime");
+        Path classDir = buildDir.resolve("classes");
+        var args = new ArrayList<>(List
+            .of("-d", classDir.toString(), "-cp", compileClassPath(), "-proc:none"));
+        for (var e : WILD_SOURCES.entrySet()) {
+            Path source = buildDir.resolve("src").resolve(e.getKey().replace('.', '/') + ".java");
+            Files.createDirectories(source.getParent());
+            Files.writeString(source, e.getValue());
+            args.add(source.toString());
+        }
+        var out = new StringWriter();
+        var err = new StringWriter();
+        int status = found
+            .get()
+            .run(new PrintWriter(out), new PrintWriter(err), args.toArray(new String[0]));
+        assertEquals(0, status, "javac failed: " + err + out);
+        var result = new TreeMap<String,byte[]>();
+        try (var files = Files.walk(classDir)) {
+            for (var file : files.filter(Files::isRegularFile).toList()) {
+                var name = classDir.relativize(file).toString();
+                name = name
+                    .substring(0, name.length() - ".class".length())
+                    .replace(File.separatorChar, '.');
+                result.put(name, Files.readAllBytes(file));
+            }
+        }
+        return result;
     }
 
     /**
@@ -387,4 +544,42 @@ public class UserClassPathTest {
             public static int %s(int x) { return 2 * x; }
         }
         """.formatted(PACKAGE, SIMPLE_NAME, OP_NAME);
+
+    /** Package of the classes of the wildcard tests. */
+    private static final String WILD_PACKAGE = "wild";
+    /** Sources of the classes of the wildcard tests, keyed by class name: two user
+     * classes, of which one with a nested user class; a helper that is not a user class,
+     * and is not public; and a user class in a subpackage.
+     */
+    private static final Map<String,String> WILD_SOURCES = Map.of(WILD_PACKAGE + ".Alpha", """
+        package wild;
+        import nl.utwente.groove.annotation.UserOperation;
+        public class Alpha {
+            @UserOperation
+            public static int alpha(int x) { return Helper.inc(x); }
+            @UserOperation
+            public static int pointCoord(Point p) { return p.coord(); }
+            public static class Nested {
+                @UserOperation
+                public static int nested(int x) { return x; }
+            }
+        }
+        """, WILD_PACKAGE + ".Point", """
+        package wild;
+        import nl.utwente.groove.annotation.UserType;
+        @UserType
+        public record Point(int coord) {}
+        """, WILD_PACKAGE + ".Helper", """
+        package wild;
+        class Helper {
+            static int inc(int x) { return x + 1; }
+        }
+        """, WILD_PACKAGE + ".sub.Deep", """
+        package wild.sub;
+        import nl.utwente.groove.annotation.UserOperation;
+        public class Deep {
+            @UserOperation
+            public static int deep(int x) { return x; }
+        }
+        """);
 }

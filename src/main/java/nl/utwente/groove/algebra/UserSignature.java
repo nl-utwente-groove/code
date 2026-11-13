@@ -22,7 +22,9 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.RecordComponent;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
@@ -36,6 +38,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.jar.JarFile;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -43,10 +47,12 @@ import nl.utwente.groove.algebra.Operator.SeqAccessor;
 import nl.utwente.groove.annotation.Seq;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserSeq;
+import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Callback;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.ModuleName;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.UserClassPath;
 import nl.utwente.groove.util.io.FileType;
@@ -152,27 +158,167 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     /** Returns the loadable classes among a list of class names.
      * A class that cannot be loaded is an error; a class that exists in more than one
      * place is a warning naming all places, the one actually used first.
+     * A name ending on a wildcard stands for the user classes of a package
+     * (see {@link #addPackageClasses}).
      */
     static private FallibleObject<? extends Set<Class<?>>> toClasses(List<QualName> classNames) {
         var result = new FallibleObject<>(new LinkedHashSet<Class<?>>());
         for (var className : classNames) {
-            try {
-                result.get().add(UserSignature.loader.loadClass(className.toString()));
-                var copies = findCopies(className.toString());
-                if (copies.size() > 1) {
-                    result
-                        .getErrors()
-                        .add(new FormatError(Severity.WARNING,
-                            "Class '%s' is found in several places: %s (used), %s", className,
-                            copies.get(0), String.join(", ", copies.subList(1, copies.size()))));
-                }
-            } catch (ClassNotFoundException exc) {
-                result
-                    .addError("Class '%s' cannot be loaded from %s", className, sourceDescription);
+            if (className.hasWildCard()) {
+                addPackageClasses(result, className);
+            } else {
+                addClass(result, className.toString());
             }
         }
         return result;
     }
+
+    /** Adds the class of a given name to a result, with the errors
+     * described under {@link #toClasses}.
+     */
+    static private void addClass(FallibleObject<? extends Set<Class<?>>> result, String className) {
+        try {
+            result.get().add(UserSignature.loader.loadClass(className));
+            var copies = findCopies(className);
+            if (copies.size() > 1) {
+                result
+                    .getErrors()
+                    .add(new FormatError(Severity.WARNING,
+                        "Class '%s' is found in several places: %s (used), %s", className,
+                        copies.get(0), String.join(", ", copies.subList(1, copies.size()))));
+            }
+        } catch (ClassNotFoundException exc) {
+            result.addError("Class '%s' cannot be loaded from %s", className, sourceDescription);
+        }
+    }
+
+    /** Adds the user classes of a package to a result, for a name of the form
+     * {@code package.*} (gh #939): the top-level classes of that package, not of its
+     * subpackages, that are a {@link UserType} or declare a {@link UserOperation},
+     * in the order of their names. The other classes of the package are left alone,
+     * so that helper classes need not be public or otherwise fit to be a user class.
+     * It is an error if the package has no user classes, or if the wildcard is not
+     * the last part of the name; a class that cannot be loaded is skipped with a warning.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private void addPackageClasses(FallibleObject<? extends Set<Class<?>>> result,
+                                          QualName pattern) {
+        var pkg = pattern.parent();
+        if (pkg.hasWildCard()) {
+            result
+                .addError("Wildcard in '%s' is only allowed as the last part of a class name",
+                          pattern);
+            return;
+        }
+        boolean found = false;
+        for (var className : findClassNames(pkg)) {
+            try {
+                if (isUserClass(UserSignature.loader.loadClass(className))) {
+                    addClass(result, className);
+                    found = true;
+                }
+            } catch (ClassNotFoundException | LinkageError exc) {
+                result
+                    .getErrors()
+                    .add(new FormatError(Severity.WARNING,
+                        "Class '%s' matching '%s' is skipped because it cannot be loaded (%s)",
+                        className, pattern, exc));
+            }
+        }
+        if (!found) {
+            result
+                .addError("No class with user-defined types or operations matches '%s' in %s",
+                          pattern, sourceDescription);
+        }
+    }
+
+    /** Tests if a class is a user type or declares a user operation. */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private boolean isUserClass(Class<?> claz) {
+        return claz.getAnnotation(UserType.class) != null || Arrays
+            .stream(claz.getDeclaredMethods())
+            .anyMatch(m -> m.getAnnotation(UserOperation.class) != null);
+    }
+
+    /** Returns the names of the top-level classes of a given package, in the order
+     * of the names, as found on GROOVE's own class path and in the entries of the
+     * grammar loader. A jar on GROOVE's own class path is only searched if it has
+     * a directory entry for the package, which the standard jar tool always writes.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private Set<String> findClassNames(ModuleName pkg) {
+        var result = new TreeSet<String>();
+        var prefix = pkg.isTop()
+            ? ""
+            : pkg + ".";
+        var dirName = prefix.replace('.', '/');
+        try {
+            var urls = PARENT_LOADER.getResources(dirName);
+            while (urls.hasMoreElements()) {
+                var url = urls.nextElement();
+                if (url.getProtocol().equals("file")) {
+                    addDirClassNames(result, Path.of(url.toURI()), prefix);
+                } else if (url.openConnection() instanceof JarURLConnection conn) {
+                    // an uncached connection has a jar file of its own, which can be closed
+                    conn.setUseCaches(false);
+                    try (var jar = conn.getJarFile()) {
+                        addJarClassNames(result, jar, prefix);
+                    }
+                }
+            }
+        } catch (IOException | URISyntaxException exc) {
+            // the enumeration is incomplete; report what was found
+        }
+        if (loader instanceof GrammarClassLoader grammarLoader) {
+            grammarLoader.addClassNames(result, prefix);
+        }
+        return result;
+    }
+
+    /** Adds the names of the top-level classes in a given package directory to a result.
+     * @param prefix the package name followed by a dot, or the empty string
+     * for the default package
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private void addDirClassNames(Set<String> result, Path dir, String prefix) {
+        var fileNames = dir.toFile().list();
+        if (fileNames != null) {
+            for (var fileName : fileNames) {
+                addClassName(result, prefix, fileName);
+            }
+        }
+    }
+
+    /** Adds the names of the top-level classes of a given package in a jar to a result.
+     * @param prefix the package name followed by a dot, or the empty string
+     * for the default package
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private void addJarClassNames(Set<String> result, JarFile jar, String prefix) {
+        var dirName = prefix.replace('.', '/');
+        for (var entries = jar.entries(); entries.hasMoreElements();) {
+            var entryName = entries.nextElement().getName();
+            if (entryName.startsWith(dirName) && entryName.indexOf('/', dirName.length()) < 0) {
+                addClassName(result, prefix, entryName.substring(dirName.length()));
+            }
+        }
+    }
+
+    /** Adds the name of the class in a file of a given name to a result, if this is
+     * the class file of a top-level class: not of a nested, local or anonymous class,
+     * and not a package or module descriptor.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static private void addClassName(Set<String> result, String prefix, String fileName) {
+        if (fileName.endsWith(CLASS_SUFFIX) && fileName.indexOf('$') < 0
+            && fileName.indexOf('-') < 0) {
+            result
+                .add(prefix + fileName.substring(0, fileName.length() - CLASS_SUFFIX.length()));
+        }
+    }
+
+    /** Suffix of the name of a class file. */
+    static private final String CLASS_SUFFIX = ".class";
 
     /** Returns the places where a given class is found by the current loader, as
      * descriptions, in search order: GROOVE's own class path (the parent, consulted
@@ -558,6 +704,29 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 }
             }
             return text;
+        }
+
+        /** Adds the names of the top-level classes of a given package, as found in
+         * the entries of this loader, to a result. An entry that cannot be read is skipped.
+         * @param prefix the package name followed by a dot, or the empty string
+         * for the default package
+         */
+        @AIGenerated("Claude Fable 5.2, 2026-11")
+        void addClassNames(Set<String> result, String prefix) {
+            for (var entry : this.entries.keySet()) {
+                try {
+                    var path = Path.of(entry.toURI());
+                    if (Files.isDirectory(path)) {
+                        addDirClassNames(result, path.resolve(prefix.replace('.', '/')), prefix);
+                    } else {
+                        try (var jar = new JarFile(path.toFile())) {
+                            addJarClassNames(result, jar, prefix);
+                        }
+                    }
+                } catch (IOException | URISyntaxException exc) {
+                    // the enumeration is incomplete; report what was found
+                }
+            }
         }
 
         private final Map<URL,String> entries;

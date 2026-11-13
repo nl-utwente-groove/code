@@ -3,6 +3,13 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.7.2, unreleased
+-------------------------
+- Resolved gh #939: the `userOperations` property accepts a name of the form
+  `package.*`, which stands for all classes of that package (not of its subpackages)
+  that are a `@UserType` or declare a `@UserOperation`; other classes in the package,
+  such as helpers, are left alone
+
 Release 7.7.1, 13 November 2026
 --------------------------------
 - Installer-only release; GROOVE itself is unchanged
