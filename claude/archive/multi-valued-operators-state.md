@@ -1,5 +1,14 @@
 # Enumerators (gh #931, second part): handoff state
 
+*Status (2026-11-13): done. Released as 7.7.0 (tag `release-7_7_0`) from branch
+`multi-valued-operators` and brought into master by the merge of that tag on branch
+`merge-release-7_7_0`; gh #931 is closed. The user operations with `Set` results
+(phase 2) were withdrawn before the release; `range` is the only enumerator, and an
+enumerator over the elements of a sequence is part of gh #942. The note was marked
+transient, but is kept because
+[sequence-components.md](sequence-components.md) refers to it. The text below
+describes the state on the 7.6 line.*
+
 Branch `multi-valued-operators`, off tag `release-7_6_1` (ecab903cd), the yFiles-free line:
 until Arend gives the go-ahead on yFiles, extensions are built there and merged into master
 afterwards. The API differs from master in places (no `GrammarModel.toGrammar(family)`, no

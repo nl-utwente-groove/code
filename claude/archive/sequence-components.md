@@ -1,5 +1,22 @@
 # Sequence-valued components of user types (gh #931, first part): proposal
 
+*Status (2026-11-13): done. Released as 7.7.0 (tag `release-7_7_0`, 46de1f474) from
+branch `multi-valued-operators`, the 7.6 line, together with the second part
+([multi-valued-operators-state.md](multi-valued-operators-state.md)) and the fixes
+gh #934 to #937 and gh #943; brought into master by the merge of that tag on branch
+`merge-release-7_7_0`. gh #931 and the fix issues are closed. The branch
+`multi-valued-operators` is kept alive at Arend's request. The manual text is on the
+website (`manual/data.md`, grammar `manual/user-seq.gps`). Explicitly deferred:
+sequences as sorts, gh #942, whose issue text carries the acceptance criterion
+worked out here (a 7.7.0 grammar keeps its meaning; pinned by
+`SequenceTailTest.testUnsortedArguments`); equally named operations with dispatch,
+gh #933; and, not filed, that nothing restricts several enumerators written as
+product nodes by hand. On master the algebra override of an exploration is realised
+by compiling the grammar under the family, so the refusal for grammars with user
+operations comes from the check on the `userOperations` property; what the blocks
+below say about `prepareGTS` holds for the 7.6 line only. The handoff blocks below
+are history.*
+
 Proposal of 2026-11-11; decisions 1, 2 and 5 were taken by Arend on the same day and are
 recorded as such. The proposal itself was merged into `multi-valued-operators` (the second
 part, see [multi-valued-operators-state.md](multi-valued-operators-state.md)) on 2026-11-12.
