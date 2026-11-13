@@ -22,6 +22,16 @@ review. The sequence parameter of a `@UserOperation` (decision 3) was confirmed 
   at its tip. The manual text is on website branch `sequence-components` (20051e4, off
   `set-valued-operators`, in worktree `C:\Groove\worktrees\set-valued-operators`, detached
   there as well). Nothing is pushed, and neither part of gh #931 is on `master`.
+- *Figure in the manual* (asked by Arend, 2026-11-13): website branch
+  `sequence-terms-figure` (5d39d60), stacked on the website branch `sequence-components`
+  because the website's main checkout held that one. Rule `terms` in a new manual
+  grammar `user-seq.gps` unfolds a polynomial into a `Term` node per coefficient, with
+  the position as its degree (a named value node `i` with the enumeration, on the level
+  of the `forall:`); type `user/Poly.java` next to `Date.java`, included by the manual
+  text. The six figures were made with the Imager calls of `make-figures.sh`, which
+  now renders the grammar too, without rerunning the script. The rule has no guard, by
+  choice: it is a figure, not an explorable grammar. The page was not built with
+  Jekyll, so the include and the tables are unchecked in the browser.
 - *Issues.* gh #934 and gh #943 were closed on 2026-11-12 with a comment that names the
   fix and says it is not on `master` yet, and so was gh #931 itself, on Arend's remark
   that it was closeable: what is left of it is the review of slice 5, the merge and the
