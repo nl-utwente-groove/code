@@ -45,8 +45,7 @@
          this version); this page is shown before the licence page if any of them is
          set, and says which, with the version if the search above found it.
          Continue proceeds to the licence page, Cancel asks WiX's usual confirmation
-         and leaves the installed version alone. Whether the yFiles add-on is
-         present is not checked, hence the "if installed". A silent installation
+         and leaves the installed version alone. A silent installation
          (msiexec /qn) shows no dialog and replaces the other version as before. -->
     <UI Id="GrooveReplaceWarningUI">
       <Dialog Id="GrooveReplaceDlg" Width="370" Height="270" Title="[ProductName] Setup">
@@ -94,7 +93,7 @@
           <Condition Action="show">GROOVE_SAME_VERSION_FOUND AND NOT JP_UPGRADABLE_FOUND AND NOT JP_DOWNGRADABLE_FOUND</Condition>
         </Control>
         <Control Id="Kept" Type="Text" X="20" Y="100" Width="330" Height="30" NoPrefix="yes"
-                 Text="Your grammars and preferences are not affected. If installed, the yFiles add-on is removed with the installed version and offered again at the first start."/>
+                 Text="Your grammars and preferences are not affected."/>
         <Control Id="Choice" Type="Text" X="20" Y="140" Width="330" Height="30" NoPrefix="yes"
                  Text="Click Continue to proceed, or Cancel to keep the installed version."/>
       </Dialog>
