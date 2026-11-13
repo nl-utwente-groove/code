@@ -3,8 +3,8 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
-Release 7.7.1, unreleased
--------------------------
+Release 7.7.1, 13 November 2026
+--------------------------------
 - Installer-only release; GROOVE itself is unchanged
 - The Windows installer creates start menu entries again: the GROOVE group lists
   GROOVE (the main launcher), Simulator, Generator, ModelChecker, Imager and Viewer
