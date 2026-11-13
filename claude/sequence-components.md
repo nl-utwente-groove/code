@@ -11,7 +11,37 @@ fixtures of this part use `range`.
 type on Arend's remark; slices 2, 3 and 4 done and merged by Arend; slice 5 done, awaiting
 review. The sequence parameter of a `@UserOperation` (decision 3) was confirmed by Arend.
 
-**Handoff (2026-11-12, second session).** Start here in a fresh session.
+**Release 7.7.0, prepared 2026-11-13.** Start here in a fresh session; the handoff
+block below is the state before this.
+- *Branches.* Arend merged everything into `multi-valued-operators` (715a0a15f), the
+  line the release is cut from (off `release-7_6_1`, not `master`). On it
+  `user-ops-fixes`, four commits: gh #935, gh #936, gh #937 as a grammar property, and
+  gh #937 as the exploration setting `algebra`, which crashed the same way for point
+  and big and is now refused for every family but default. On that
+  `prepare-release-7_7_0`: this note, then "Preparing release 7.7.0" (revision, build
+  date 20261113, change log) as the tip to tag. Website: `prepare-release-7_7_0` on the
+  website's `sequence-components` (which has the figure): the data chapter marked
+  7.7.0 and the reference pages regenerated. Nothing is pushed.
+- *Decisions by Arend.* Grammar version stays 3.12 (new operators never raised it);
+  the three open bugs and the override route were to be fixed first; `master` gets the
+  release line after the tag, as a task of its own; the change log leads with the
+  changes that affect existing grammars.
+- *Gates on the release state.* Full suite with slow tests 909 run, 2 skipped
+  (`GrammarsTest`); GUI tests 15 run in 4 classes; `null-check -All` 16 problems, no
+  errors, all in the known categories; packaging dry run (`mvn clean install`, release
+  reactor) produced both zips with `groove-7.7.0.jar`. The yFiles backend does not
+  exist on this line.
+- *Left for Arend.* Review; tag `release-7_7_0` on the tip and push the tag (starts
+  the release workflow); deploy to Maven Central (the manual names the 7.7.0
+  dependency); merge and push the website once the release is out; close gh #935 to
+  #937.
+- *Next task.* Merge the release line into `master`: expect conflicts in
+  `OperatorNodeSearchItem` (`DebugFlag` import) and `claude/README.md`; the element-of
+  rendering in `gui/look` has to pass the yFiles backend gate; `master`'s version and
+  change log need the 7.7.0 section. After that, archive this note and
+  multi-valued-operators-state.md.
+
+**Handoff (2026-11-12, second session).**
 - *Branches.* `sequence-components` is at 1b5876958: slices 1 to 4, the move of the
   user-class fixtures to `test.algebra.user`, the one-enumerator restriction, the fix of
   the collection operator over a node identifier, the element-of rendering, and (merged
