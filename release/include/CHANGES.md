@@ -14,6 +14,12 @@ Release 7.7.2, unreleased
   ignoring the layout stored with it; the graph files are not changed
 - The Imager lays out the nodes of a graph that have no stored position, as
   the Viewer already did; they used to end up at random positions
+- Resolved gh #938: a `@UserType` record can have a display method, a public
+  `String` method without parameters that is annotated with `@UserDisplay`; the
+  state display of the Simulator shows a value of the type by the string that
+  method returns, with the constructor term in the tooltip of the node. The value
+  itself and the way it is written, saved and parsed do not change: editors, saved
+  graphs and transition labels show the constructor term as before
 
 Release 7.7.1, 13 November 2026
 --------------------------------

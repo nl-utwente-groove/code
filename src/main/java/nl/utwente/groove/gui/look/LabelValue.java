@@ -153,6 +153,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     result.add(dataLine);
                     idLine = null;
                 }
+                // a state shows its user values by their custom display strings;
+                // elsewhere the values can be edited, which takes the constructor terms
+                boolean userDisplay = controller.getGraphView().isForState();
                 // show the visible self-edges
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (isVisible(controller, jVertex, edge)) {
@@ -160,7 +163,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                             edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                             continue;
                         }
-                        Line line = edge.toLine(true, jVertex.getAspects());
+                        Line line = edge.toLine(true, jVertex.getAspects(), userDisplay);
                         if (edge.getRole() == NODE_TYPE) {
                             line = insertUserId(idLine, line);
                             idLine = null;

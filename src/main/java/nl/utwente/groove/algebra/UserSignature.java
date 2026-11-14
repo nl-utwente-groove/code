@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
@@ -45,6 +46,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Operator.SeqAccessor;
 import nl.utwente.groove.annotation.Seq;
+import nl.utwente.groove.annotation.UserDisplay;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserSeq;
 import nl.utwente.groove.annotation.UserType;
@@ -437,7 +439,89 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 }
             }
         }
+        checkDisplayMethods(result, claz, isUserType);
     }
+
+    /** Checks the {@link UserDisplay}-annotated methods of a given class, and adds
+     * the errors found to a given result: such a method is only allowed in a user type,
+     * which can have at most one of them, and should be public and non-static, without
+     * parameters and with return type {@code String}.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private static void checkDisplayMethods(FallibleObject<?> result, Class<?> claz,
+                                            boolean isUserType) {
+        String className = claz.getCanonicalName();
+        int count = 0;
+        // the declared methods come in no particular order: sort them, for stable messages
+        var methods = Arrays
+            .stream(claz.getDeclaredMethods())
+            .filter(m -> m.getAnnotation(UserDisplay.class) != null)
+            .sorted(Comparator.comparing(Method::getName))
+            .toList();
+        for (var m : methods) {
+            count++;
+            if (!isUserType) {
+                result
+                    .addError("Display method '%s.%s' is not declared in a user type", className,
+                              m.getName());
+            } else if (!Modifier.isPublic(m.getModifiers())) {
+                result.addError("Display method '%s.%s' is not public", className, m.getName());
+            } else if (!isDisplayMethod(m)) {
+                result
+                    .addError("Display method '%s.%s' should be non-static, without parameters and with return type String",
+                              className, m.getName());
+            }
+        }
+        if (isUserType && count > 1) {
+            result.addError("User type '%s' has more than one display method", className);
+        }
+    }
+
+    /** Tests if a given method is fit to be the display method of its declaring class,
+     * apart from that class being a user type:
+     * the method is annotated with {@link UserDisplay}, public and non-static,
+     * and has no parameters and return type {@code String}.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private static boolean isDisplayMethod(Method m) {
+        int modifiers = m.getModifiers();
+        return m.getAnnotation(UserDisplay.class) != null && Modifier.isPublic(modifiers)
+            && !Modifier.isStatic(modifiers) && m.getParameterCount() == 0
+            && m.getReturnType() == String.class;
+    }
+
+    /** Returns the display method of a given class: the {@link UserDisplay}-annotated
+     * method that yields the string by which the state display shows a value of the class.
+     * @return the display method; {@code null} if the class is not a user type or does not
+     * have precisely one suitable display method (see {@link #checkDisplayMethods})
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static @Nullable Method getDisplayMethod(Class<?> claz) {
+        var result = DISPLAY_METHODS.get(claz);
+        return result == null
+            ? null
+            : result.orElse(null);
+    }
+
+    /** The display methods of the classes for which {@link #getDisplayMethod} has been called.
+     * A class value does not keep the classes of a discarded grammar class loader alive.
+     */
+    static private final ClassValue<Optional<Method>> DISPLAY_METHODS = new ClassValue<>() {
+        @Override
+        protected Optional<Method> computeValue(Class<?> claz) {
+            Optional<Method> result = Optional.empty();
+            if (Sort.toSort(claz) == Sort.USER && claz.isRecord()) {
+                var methods = Arrays
+                    .stream(claz.getDeclaredMethods())
+                    .filter(m -> m.getAnnotation(UserDisplay.class) != null)
+                    .toList();
+                if (methods.size() == 1 && isDisplayMethod(methods.get(0))) {
+                    result = Optional.of(methods.get(0));
+                }
+            }
+            return result;
+        }
+    };
 
     /** Adds the operation based on a given executable to a result, or reports an error
      * if the result already has an operation of that name. In that case the existing
