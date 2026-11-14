@@ -57,10 +57,53 @@ type of the first argument.
 1. An end-to-end grammar test if wanted (a new `junit/rules` grammar needs a
    `RuleCompilationTest` golden).
 2. Web manual section, in the website repository.
-3. Not covered by the check, by decision or omission: operator edges on product nodes
-   (`PatternBuilder`), whose arguments are nodes rather than expressions, so a constant
-   argument node of the wrong user type still yields an error value; and variables
-   whose class could be derived from an assignment or a typed node.
+3. Not covered by the check: see the next section. Not to be extended on this branch.
+
+## Beyond this branch: typing of user values
+
+Decided 2026-11-14 with Arend: the check of this branch stays as it is, local to one
+expression and with a class that is either one known class or unknown. Typing user
+values more fundamentally is a concern of its own, for a separate issue and session.
+What this branch leaves open, and the conclusions so far (a scoping, not a design; the
+points marked unverified were not checked against the code):
+
+What the check does not see:
+- Operator edges on product nodes drawn by hand. `AspectNode` compares sorts only and
+  `PatternBuilder` builds the operator node; no expression is parsed. Expressions written
+  as text are checked first and normalised into product nodes afterwards
+  (`NormalAspectGraph.addCall`).
+- A call whose implementations disagree on the result: `count(push(x,1))` is accepted
+  although `push` yields a stack or a queue and `count` exists for neither
+  (`UserCallCheckTest.testUnknownClass` pins this).
+- Variables and fields, always.
+
+What can be inferred without new syntax:
+- A set of possible classes per expression rather than one class or unknown; a call is
+  rejected if no class of the set has an accepting implementation. Small (about 30
+  lines in `getUserClass`/`checkCall`), sound, closes the second gap only.
+- Per rule, over the normalised graph: every `user` node gets the classes its producers
+  can yield (constant, target of an operator edge) intersected with the classes its
+  uses require (receiver or argument of an operator edge); an empty set is an error.
+  This covers product nodes and variables used more than once, and subsumes the
+  previous point for rules. Expressions outside rules (control arguments) still need
+  the expression-level check.
+- The limit of both: a value read from an attribute of the host graph or passed in as
+  a rule parameter is unconstrained. A whole-grammar flow analysis (which classes are
+  ever written to a field) is possible but not modular, and reports errors far from
+  their cause; explicit declarations serve better there.
+
+Explicit specification:
+- A sort per user class is not feasible short of redoing the sort system: `Sort` is an
+  enum, used as such throughout, whereas user classes are loaded per grammar.
+- Feasible: an optional class name refining `Sort.USER`, kept as a name and resolved
+  against `UserSignature` on demand (as `getUserClass` does, because the class loader
+  is replaced on reload). Places that would carry it: attribute declarations in the
+  type graph, variable nodes in rules, control variables and parameters (`var_type` in
+  `Ctrl.g`, `CtrlType`), `SortMap` for the variables of an expression.
+- Open: concrete syntax (whether `user:Name` without arguments is free in node labels
+  is unverified); whether it needs a new grammar version; whether a declaration is also
+  enforced on host graph values at run time; and how subclasses or interfaces among
+  user types relate to dispatch, which is on the exact class.
 
 ## Hazards
 
