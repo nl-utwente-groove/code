@@ -59,11 +59,11 @@ type of the first argument.
 2. Web manual section, in the website repository.
 3. Not covered by the check: see the next section. Not to be extended on this branch.
 
-## Beyond this branch: typing of user values
+## Beyond this branch: typing of user values (gh #944)
 
 Decided 2026-11-14 with Arend: the check of this branch stays as it is, local to one
 expression and with a class that is either one known class or unknown. Typing user
-values more fundamentally is a concern of its own, for a separate issue and session.
+values more fundamentally is a concern of its own, filed as gh #944, for a separate session.
 What this branch leaves open, and the conclusions so far (a scoping, not a design; the
 points marked unverified were not checked against the code):
 
