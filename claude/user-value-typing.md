@@ -12,7 +12,8 @@ What the revision changed, for a reader of the earlier version:
 - The check of slice 1 exists, in a form that knows one bound per expression
   (section 3.1). The slice shrinks to a refinement that is not worth doing on its own.
 - Declarations can name a user interface (4.1). That needs the simple names of user
-  interfaces to be unique, which nothing ensures today (decision 8).
+  interfaces to be unique, which nothing ensured; the check was added the same day,
+  for the release that introduces user interfaces (decision 8, taken).
 - The alternatives for gh #933 and the corrections to an earlier scoping are gone
   (former sections 2.1 and 7).
 
@@ -74,11 +75,11 @@ Verified by reading the code of `release-7` (b1b325b55), unless section 7 lists 
   is known; a variable or field has none. An argument is rejected if no loaded user
   type fits both its bound and the class required (`isCompatible`), which is
   `S(required) ∩ S(actual) = ∅`.
-- **Simple names of user types are unique; those of user interfaces need not be.** The
-  constructor operator of a user type is named by `getSimpleName()`, so two user types
-  of the same simple name are duplicate operations. Nothing compares the simple name
-  of a user interface with anything, although the messages of the check print it
-  (`describeType`).
+- **Simple names of user types and user interfaces are unique.** The constructor
+  operator of a user type is named by `getSimpleName()`, so two user types of the same
+  simple name are duplicate operations. A user interface with the simple name of
+  another, or of a user type, is an error of its own (`UserSignature.checkTypeNames`,
+  added for this note).
 - **An inapplicable operation yields a value, not a failed match.** A first argument
   that does not implement the receiver is refused by `UserOperation.checkReceiver`;
   another argument of the wrong class makes `Method.invoke`, the bridge method of a
@@ -277,9 +278,8 @@ The declared type is the simple name, a `String`, wherever a model keeps it:
 
 `UserSignature` resolves a name to the class on demand; an unknown name is "Unknown user
 type 'Stak'". For a user type that can go through the constructor operator. For a user
-interface it needs a map from simple names, and those names to be unique among user
-types and user interfaces together, which is a new requirement on user classes
-(decision 8). Names survive a reload, which recompiles the models anyway
+interface it needs a map from simple names; that those are unique among user types and
+user interfaces together is checked already (section 2). Names survive a reload, which recompiles the models anyway
 (`userOperations` is a reload key). No `Class` enters a compiled rule, a signature or a
 hashed collection.
 
@@ -391,7 +391,7 @@ release line.
    conflicting uses, and the quantifier and embargo cases of 3.2. A new `junit/rules`
    grammar needs a `RuleCompilationTest` golden.
 2. **Declared rule nodes.** Label syntax and the second slot on the sort aspect; the
-   name-to-class map in `UserSignature` with the uniqueness of simple names; the type in
+   name-to-class map in `UserSignature`; the type in
    `SortMap`, as the bound of a variable in the expression check; initial sets and the
    assertion in the stage of slice 1; display; help; grammar version 3.13.
 3. **Declared attributes.** `TypeEdge` type, composition and inheritance conflicts,
@@ -421,14 +421,9 @@ sets, which is the same thing less precisely.
 5. **Control syntax**: `user<Stack> s` (recommended) or `user Stack s`.
 6. **Grammar version 3.13** with the first syntax slice, or stay on 3.12.
 7. **Display**: the type name in place of `user` (recommended), or both.
-8. **Unique simple names of user interfaces.** Needed as soon as a declaration can name
-   one, and it would also keep the messages of the existing check unambiguous. It makes
-   a set of user classes with two equally named user interfaces from different
-   packages, or an interface named like a user type, an error. Recommended: require it
-   in the release that introduces user interfaces, so that it never breaks a grammar
-   that loaded before; it is a few lines in `UserSignature.parseUserClasses`. The
-   alternative is to add it with slice 2 and accept that it could, in theory, reject a
-   grammar written in between.
+8. **Unique simple names of user interfaces**: taken on 2026-11-16, required from
+   release 7.8.0 on, the release that introduces user interfaces, so that it cannot
+   break a grammar that loaded before.
 
 ## 7. Not verified
 
