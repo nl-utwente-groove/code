@@ -108,6 +108,9 @@ module nl.utwente.groove {
 
     opens nl.utwente.groove.gui to info.picocli;
     opens nl.utwente.groove.cli to info.picocli;
+    // for LayoutHandler, the converter of the layout option of the Imager and
+    // the Viewer, which picocli instantiates reflectively
+    opens nl.utwente.groove.gui.layout to info.picocli;
 
     // the following opens clauses are required to allow GROOVE to access
     // these resources at runtime
