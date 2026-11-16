@@ -17,6 +17,7 @@
 package nl.utwente.groove.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -53,6 +54,8 @@ public class GraphBackendTest {
         assertEquals(1, GraphBackend.available().size());
         assertEquals(GraphBackend.JGRAPH, GraphBackend.instance().getName());
         assertEquals("JGraph", GraphBackend.instance().getDisplayName());
+        // JGraph brings no terms of use beyond those of GROOVE
+        assertNull(GraphBackend.instance().getLicenseNotice());
     }
 
     @Test

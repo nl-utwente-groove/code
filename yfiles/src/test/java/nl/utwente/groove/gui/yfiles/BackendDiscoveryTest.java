@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Objects;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 
@@ -53,6 +55,25 @@ public class BackendDiscoveryTest {
         var backend = GraphBackend.instance();
         assertInstanceOf(YFilesBackend.class, backend);
         assertEquals(GraphBackend.YFILES, backend.getName());
+    }
+
+    /**
+     * The About box shows the notice of every available backend; that of yFiles has
+     * to state the restriction and name the file that holds it in full.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    @Test
+    void yFilesBackendStatesItsRestriction() {
+        var notices = GraphBackend
+            .available()
+            .stream()
+            .map(GraphBackend::getLicenseNotice)
+            .filter(Objects::nonNull)
+            .toList();
+        assertEquals(1, notices.size(), "notices: " + notices);
+        var notice = notices.get(0);
+        assertTrue(notice.contains("academic, non-commercial"), notice);
+        assertTrue(notice.contains("LICENSE-YFILES.txt"), notice);
     }
 
     @Test

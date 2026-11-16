@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.yfiles;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.graph.Graph;
@@ -79,4 +80,22 @@ public class YFilesBackend implements GraphBackend {
     public String getName() {
         return YFILES;
     }
+
+    /**
+     * Returns the short form of the restrictions that a distribution of GROOVE with
+     * yFiles comes with, which are stated in full in the file
+     * {@code release/yfiles/include/LICENSE-YFILES.txt} that such a distribution carries.
+     * A change to the restrictions has to reach this text as well.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    @Override
+    public @NonNull String getLicenseNotice() {
+        return LICENSE_NOTICE;
+    }
+
+    /** The notice returned by {@link #getLicenseNotice()}. */
+    private static final String LICENSE_NOTICE
+        = "This distribution of GROOVE contains the commercial library yFiles for Java (Swing)"
+            + " by yWorks GmbH. It may be used for academic, non-commercial purposes only;"
+            + " the restrictions are stated in the file LICENSE-YFILES.txt that comes with it.";
 }

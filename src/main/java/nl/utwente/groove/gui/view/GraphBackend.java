@@ -74,6 +74,19 @@ public interface GraphBackend {
     }
 
     /**
+     * Returns the notice on the terms of use that this backend brings to an
+     * application containing it, over and above the license of GROOVE itself:
+     * a sentence or two of plain text, shown in the About box whenever the backend
+     * is available, whether or not it is the selected one.
+     * @return the notice; {@code null} if the backend comes with no terms of its own,
+     * which is the default
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    default @Nullable String getLicenseNotice() {
+        return null;
+    }
+
+    /**
      * Returns the backend selected for this run.
      * The backends available are discovered once through the {@link ServiceLoader},
      * on the module path and the class path of the application (see

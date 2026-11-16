@@ -19,10 +19,13 @@ package nl.utwente.groove.gui.dialog;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
@@ -30,7 +33,11 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.gui.view.GraphBackend;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Version;
 
@@ -38,6 +45,7 @@ import nl.utwente.groove.util.Version;
  * @author Eduardo Zambon
  * @version $Revision$
  */
+@NonNullByDefault
 public class VersionDialog {
 
     /**
@@ -153,10 +161,41 @@ public class VersionDialog {
         aboutLabel.setContentType("text/html");
         aboutLabel.setText(Version.getAboutHTML());
         aboutLabel.setEditable(false);
+        JPanel southPanel = new JPanel(new BorderLayout());
+        southPanel.add(createNoticePanel(GraphBackend.available()), BorderLayout.NORTH);
+        southPanel.add(buttonPanel, BorderLayout.SOUTH);
         JPanel aboutPanel = new JPanel(new BorderLayout());
         aboutPanel.add(aboutLabel);
-        aboutPanel.add(buttonPanel, BorderLayout.SOUTH);
+        aboutPanel.add(southPanel, BorderLayout.SOUTH);
         JOptionPane.showMessageDialog(parent, aboutPanel, "About",
             JOptionPane.INFORMATION_MESSAGE);
     }
+
+    /**
+     * Creates the part of the about dialog that shows the license notices of a
+     * list of graph backends (see {@link GraphBackend#getLicenseNotice()}), one
+     * below the other; empty if none of the backends has a notice.
+     * The terms that a backend brings hold for the application whichever
+     * backend is selected, hence the notices of all available ones are shown.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    static JPanel createNoticePanel(List<GraphBackend> backends) {
+        JPanel result = new JPanel();
+        result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
+        for (GraphBackend backend : backends) {
+            String notice = backend.getLicenseNotice();
+            if (notice != null) {
+                // a label wraps its text only if the HTML body has a width
+                JLabel label = new JLabel(HTMLConverter.HTML_TAG
+                    .on("<body style='width: " + NOTICE_WIDTH + "px'>"
+                        + HTMLConverter.toHtml(notice)));
+                label.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 5));
+                result.add(label);
+            }
+        }
+        return result;
+    }
+
+    /** Width in pixels at which the license notices in the about dialog are wrapped. */
+    private static final int NOTICE_WIDTH = 240;
 }

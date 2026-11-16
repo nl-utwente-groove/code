@@ -465,9 +465,9 @@ Taken in the session, as a draft for review.
   application states the restriction. The SLA asks nothing of the kind as far as the
   notes record, and the installers have the user accept the text, but a user of the
   yFiles zip meets it only as a file at the zip's root. Arend's decision: the About
-  box names yFiles and the restriction when the yFiles backend is present. A branch
-  of its own, touching `gui/`; **not built yet**. The website's download page is
-  step 6.
+  box names yFiles and the restriction when the yFiles backend is present. Built
+  2026-11-16, branch `yfiles-about-notice`, see *The About-box notice* below. The
+  website's download page is step 6.
 
 ## Decided in step 5 (2026-11-16)
 
@@ -490,3 +490,26 @@ Consequence to remember: the release is public, with its zips, for the minutes i
 which the installers are built, and stays without installers if their job fails. That
 was so before; what is new is that the job depends on the published release rather
 than on its own build.
+
+## The About-box notice (2026-11-16)
+
+Arend's decision under *Decided in step 4*; branch `yfiles-about-notice` off `master`.
+
+- **The backend states its own terms.** `GraphBackend` has a method
+  `getLicenseNotice()`, `null` by default; `YFilesBackend` returns two sentences (the
+  distribution contains yFiles by yWorks, academic non-commercial use only, the file
+  `LICENSE-YFILES.txt`). The About box (`VersionDialog.showAbout`) shows the notices of
+  all *available* backends below the version text: the restriction holds for the
+  distribution whichever backend the user has selected. Without the backend the dialog
+  is what it was.
+- **Rejected: the text in the core, shown when a backend named `yfiles` is found.**
+  The core is the Apache artifact on Maven Central and would carry the terms of a
+  library it does not contain. In the backend the notice is present exactly when the
+  jar is, and survives the obfuscation: yGuard keeps the methods by which the backend
+  implements an interface of the core, and does not touch string constants.
+- **The wording is a draft for Arend**, a short form of restriction 1 of
+  `LICENSE-YFILES.txt`. It says "this distribution", which is not quite true for a
+  developer who runs the backend from source under a licence of their own; they see it
+  too, since the backend cannot tell.
+- One more copy of the restriction to keep in step: `release/README.md` lists it with
+  the others.
