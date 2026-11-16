@@ -3,9 +3,9 @@
 Branch `user-op-dispatch`, off `release-7` (7.7.2-SNAPSHOT) and merged with it on
 2026-11-16. Transient: delete when merged.
 
-On top of it, branch `user-seq-of-interface` (2026-11-16, two commits): the nullness
-errors that Eclipse reported on the record fixtures, and `UserSeq` of a user interface.
-The main checkout held `user-op-dispatch` for review at the time, hence the new branch.
+The last two commits (2026-11-16) came in through a branch `user-seq-of-interface`,
+since merged: the nullness errors that Eclipse reported on the record fixtures, and
+`UserSeq` of a user interface.
 
 ## Goal
 
@@ -70,7 +70,7 @@ compile-time check with its hook in `ExprTree.toCallExprs`.
 
 ## Gates (2026-11-16)
 
-On `user-seq-of-interface`: default suite 894 run, 0 failures, 2 skipped (`GrammarsTest`,
+Default suite 894 run, 0 failures, 2 skipped (`GrammarsTest`,
 which skips in a worktree), counted over the reports written by that run. The 918
 reported for slice 3 was counted over all files in `target/surefire-reports`, which
 included stale reports of slow and GUI tests; the comparable figure there is 891.
@@ -89,10 +89,11 @@ tests: nothing under `gui/` is touched.
 
 ## Hazards
 
-- The `null-check` harness pins ecj 3.42.0; Eclipse runs a newer JDT. From 3.44 on, a
-  record component whose implicit accessor implements a method of an annotated
-  interface needs an explicit `@NonNull` (see CLAUDE.md), which 3.42.0 does not
-  report. Until the pin is raised, also run ecj 3.44.0 by hand on such records
+- On this branch the `null-check` harness still pins ecj 3.42.0, which does not report
+  what Eclipse (JDT 3.44 or later) does for a record component whose implicit accessor
+  implements a method of an annotated interface (see CLAUDE.md). Branch
+  `null-check-ecj-3_44`, off `release-7`, raises the pin to 3.44.0; until that is
+  merged in, also run ecj 3.44.0 by hand on such records
   (`~/.m2/repository/org/eclipse/jdt/ecj/3.44.0`, same arguments as the script).
 
 - ecj skips null analysis of a file with a compile error: rerun after fixing one.
