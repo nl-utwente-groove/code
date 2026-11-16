@@ -19,6 +19,7 @@ package nl.utwente.groove.test.algebra;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -217,6 +218,27 @@ public class UserSignatureTest {
         assertTrue(wholeTip, wholeTip.contains("Share of 100%"));
         assertTrue(wholeTip, wholeTip.contains("Yields %2$s, which does not exist."));
         checkParDocs(docMap, "whole", "the share, in %");
+    }
+
+    /** Tests that the operator documentation is computed anew when user classes
+     * are loaded: it then is another object, which documents the operations of
+     * the new classes. The syntax help of the graph editor relies on the change
+     * of object to notice that it is out of date.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testOpDocReload() {
+        load("UserOps", "UserTypeIntString");
+        var oldDocMap = Algebras.getOpDocMap();
+        assertSame(oldDocMap, Algebras.getOpDocMap());
+        assertTrue(oldDocMap.keySet().stream().noneMatch(k -> k.contains("scaledBy</")));
+        load("UserTypeDocumented");
+        var newDocMap = Algebras.getOpDocMap();
+        assertNotSame(oldDocMap, newDocMap);
+        assertNotNull(getTip(newDocMap, "scaledBy"));
+        // also when the same classes are loaded once more
+        load("UserTypeDocumented");
+        assertNotSame(newDocMap, Algebras.getOpDocMap());
     }
 
     /** Tests fields and operations of the same name in two user types that implement

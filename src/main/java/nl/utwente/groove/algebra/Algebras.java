@@ -178,7 +178,6 @@ public class Algebras {
                 result.add(help);
             }
         }
-        UserSignature.addUser(() -> opDocMap.reset());
         return result;
     }
 
@@ -232,6 +231,11 @@ public class Algebras {
 
     /** Syntax helper map for operators, from syntax items to associated tool tips. */
     private static final Factory<HelpMap> opDocMap = lazy(Algebras::computeOpDocMap);
+    static {
+        // the operator documentation includes the user operations. The reset is
+        // registered once, here, rather than upon every computation
+        UserSignature.addUser(() -> opDocMap.reset());
+    }
 
     /**
      * Returns a syntax helper mapping for all operators.
