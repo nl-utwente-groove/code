@@ -31,7 +31,8 @@ controller-owned canvases, neutral `GraphPanel`,
 `yfiles/`, a separate Maven project on the `release/` pattern providing `YFilesBackend` as a
 service, with `GraphBackend` ranking yFiles first when present) is merged, and the unit was
 moved to the private repository `nl-utwente-groove/yfiles-lib`, where it is the root
-project, on 2026-09-09, see "License constraints"; slice 4 (the
+project, on 2026-09-09, see "License constraints" (and back into `yfiles/` on 2026-11-16,
+see `claude/yfiles-restructure.md`); slice 4 (the
 yFiles canvas) is under way: 4a (neutral cell classes in `gui.view.cell` that both backends
 show through items of their own, decision B in the phase-2 note) is merged; 4b (the
 read-only yFiles canvas for aspect graphs in the optional unit, with three review rounds on
@@ -95,6 +96,17 @@ SWT-bound); yFiles is the only serious option short of a webview/yFiles-for-HTML
 rework.
 
 ## License constraints (yFiles SLA, signed; Academic Single Developer License)
+
+**Superseded in part (2026-11-16).** yWorks stated on 2026-10-28 and 30, and confirmed on
+2026-11-13, that GROOVE's own source with its calls to the yFiles API may be public, and
+rejected the add-on. The bullets below on the academic restriction, on ownership and
+disclosure and on obfuscation's purpose record the reading of 2026-09 that made the
+backend source private and led to the add-on; they are kept as the record of that
+reasoning. What holds now is in `claude/yfiles-restructure.md`: the backend unit is back
+in `yfiles/` of this repository, while the library jar and the licence files stay in the
+private repository `nl-utwente-groove/yfiles-lib` and are never public. The other bullets
+(redistribution only obfuscated, the seat, no API re-exposure, the perpetual licence)
+stand, and so do the LLM usage ground rules of the next section.
 
 - **Redistribution only with obfuscation (§2.1c).** The yFiles jar may ship inside
   GROOVE only obfuscated (yGuard-style). The plain jar can never be in the public

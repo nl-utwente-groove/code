@@ -63,7 +63,7 @@ Before the tag, in order:
    pointer and the `.rpm` asset row (0064990, bd30077), and the Java-requirement wording
    (6c633b1).
 2. Check `YFILES_LIB_TOKEN` has not expired (no skip guard in `release.yml`).
-3. `revision` 7.5.4-SNAPSHOT -> 8.0.0 in `pom.xml` and `yfiles-lib/pom.xml`;
+3. `revision` 7.5.4-SNAPSHOT -> 8.0.0 in `pom.xml` and `yfiles/pom.xml`;
    `GROOVE_BUILD` (still 20260702); CHANGES.md heading "Upcoming release (8.0.0)" ->
    release form with date (underline style feeds `release-notes.sh`).
 4. Full suite, GUI tests, yFiles backend tests on the merged tip (not run since the

@@ -6,7 +6,8 @@ yFiles add-on, loaded from a user-level extension directory and installed by GRO
 itself) was **rejected by yWorks on 2026-10-28 and, after a request for clarification,
 again on 2026-10-30**. This note records what they object to, why, and the shape GROOVE
 has to take instead. Written 2026-10-30, before any of it is built; the reply to yWorks
-that sketches the new shape was sent the same day and awaits their reaction.
+that sketches the new shape was sent the same day. yWorks confirmed it on 2026-11-13; the
+path that follows from it, and how far it has been walked, is in the last two sections.
 
 ## What yWorks said
 
@@ -123,10 +124,78 @@ the library in the local Maven repository, and yWorks have said such co-develope
 should contact them for a licence. In Eclipse the `yfiles` module is imported only by
 those who have the jar.
 
+
+## Confirmation and decisions (2026-11-13 to 16)
+
+Thomas Wurst's reply of 2026-11-13 confirms the sketch point by point, without amendment:
+
+- "yFiles backend" is understood as the Java code within GROOVE that integrates the
+  library and where all calls to the yFiles API happen; it "can go into the public GROOVE
+  repository, no problem".
+- The binaries are run through yGuard, which obfuscates the library jar and adjusts the
+  uses of its API in GROOVE's code.
+- "The interface in GROOVE between the two rendering backends can stay in place. An
+  external add-on being a usable component on its own is what we cannot allow."
+- Apache 2.0 for the source, the academic non-commercial restriction on binaries with
+  yFiles in them, and a binary without yFiles under Apache 2.0 all "sound good".
+- A pre-release is to be offered for inspection before any public release.
+
+The development-key exposure reported on 2026-10-21 was not mentioned in any of the three
+replies. Arend's decision (2026-11-16): leave it at that and do not raise it again.
+
+Decided by Arend on 2026-11-16: the zip that keeps the name `groove-x_y_z-bin.zip` is the
+plain Apache one; the zip with yFiles is `groove-x_y_z-yfiles-bin.zip`. An installer has
+a licence page to accept and a zip has none, so the name people download by habit stays
+unrestricted.
+
+Two corrections to *The required shape*, found when starting on it:
+
+- Item 1 speaks of a reactor module under an existing `yfiles` profile of the main build.
+  There is no such profile: the main pom is a single jar project and cannot aggregate
+  modules, and the `yfiles` profile is that of the release reactor. The unit is a
+  standalone Maven project in `yfiles/`, as it was before 2026-09-09 and as it was in the
+  private repository.
+- Item 3 speaks of qualified exports to the backend module. The unit has no module
+  descriptor (it runs on the class path, as the installed application does), so there is
+  no module to export to. Either the unit becomes a named module, which needs a module
+  name for the library jar that its documentation does not state, or the four packages
+  simply stop being exported and the backend reaches them as class-path code does. To be
+  settled in step 2.
+
+## Path and state
+
+Each step is a branch off `master`; 1 to 3 touch the same files and go in this order.
+
+1. **Backend source into `yfiles/`.** Built 2026-11-16, branch `yfiles-backend-return`:
+   a plain copy of the tree of `yfiles-lib` `main` (0012def), never its history, which
+   tracks the plain jar and both licence files. Both workflows and the release scripts
+   build `yfiles/pom.xml`; the private repository is the source of the jar and the
+   licence only, and a same-named branch `yfiles-backend-return` there removes everything
+   else from it (to be merged after this one is on `master`). The licence directory
+   defaults to the clone of the private repository next to the main checkout.
+2. **Remove the add-on machinery** (item 3 above), and with it the `GROOVE-Version`
+   manifest entry of the unit's jar and the extension-directory isolation of its tests.
+3. **Distribution**: obfuscated jars in `lib/` of `-yfiles-bin.zip` and of the
+   installers' app image; most of it is the edition build of 2026-09-09 (`yfiles-edition`
+   in the history, described under phase 5 of `yfiles-migration.md`). Checks: the unit's
+   tests against the obfuscated jars, no yFiles entry in the plain zip, the shipped
+   licence is the distribution one, the yGuard mapping in no artifact.
+4. **Licence texts**: `LICENSE.txt`, the notice in the binaries, the installer's licence
+   page, the release-page text, `CHANGES.md`. Wording to be reviewed by Arend against the
+   SLA.
+5. **CI**: what is left after step 1, chiefly the release job's assets.
+6. **Website** (branch `release-8_0_0`): `installing.md` with two downloads and the
+   restriction stated, the yWorks attribution, the manual's mentions of the add-on.
+7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
+   be seen. Wait for their answer.
+8. **Release 8.0.0** by `release-8_0_0-state.md`; only the core artifact goes to Maven
+   Central.
+
 ## Open
 
-- yWorks' reaction to the sketch of 2026-10-30, in particular to the plain Apache zip and
-  to the internal seam being acceptable once nothing outside the distribution can use it.
-- The development-key exposure reported on 2026-10-21 (the development licence shipped in
-  the 99.0.x test releases between 2026-09-14 and 2026-09-21) has not been answered.
-- Whether to let yGuard rename the backend classes as well (item 2).
+- Whether yGuard renames the classes of the backend unit as well (item 2 of the required
+  shape). The core jar stays readable either way.
+- Whether there is a second, yFiles-free set of installers. One installer with yFiles as
+  an option is not a way out: the installer file would contain the library and so be the
+  restricted artifact whatever the user ticks.
+- How step 2 closes the seam, see the second correction above.
