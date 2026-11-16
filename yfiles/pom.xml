@@ -204,6 +204,44 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<!-- The licence file named by the properties above is copied to the
+				     root of the class path, where the library looks for it, and
+				     nothing else from its directory; its absence fails the build in
+				     the validate phase (the licence check above). It is copied by
+				     an execution of its own and not declared as a resource
+				     directory of the build: the directory is outside this project
+				     (by default in the clone of the private repository), and
+				     Eclipse's m2e turns every resource directory of the build into
+				     a source folder of the project, which for a directory outside
+				     it fails with "Cannot create linked resource" and leaves the
+				     project unconfigured. An execution of copy-resources m2e just
+				     runs, so that an Eclipse build puts the file into
+				     target/classes as well. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<executions>
+					<execution>
+						<id>copy-license</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${yfiles.license.dir}</directory>
+									<includes>
+										<include>${yfiles.license.file}</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<!-- The unit is a named module (src/main/java/module-info.java),
 				     so its tests are compiled and run as part of that module and
 				     see of GROOVE what the module sees: the exported packages, and
@@ -332,19 +370,5 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-			</resource>
-			<resource>
-				<!-- the licence file named above is copied to the root of the class
-				     path, and nothing else from its directory; its absence fails the
-				     build in the validate phase (the licence check above) -->
-				<directory>${yfiles.license.dir}</directory>
-				<includes>
-					<include>${yfiles.license.file}</include>
-				</includes>
-			</resource>
-		</resources>
 	</build>
 </project>

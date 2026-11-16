@@ -47,6 +47,11 @@ module*, is the reference. What a session trips over:
 - The Imager launched as a module with all three on the module path is the quick check
   that the modules fit without any option; the unit's tests cannot show that, since they
   run with the test-only exports.
+- Never declare a directory outside `yfiles/` as a `<resource>` or source directory of
+  the unit's build. Eclipse's m2e turns each into a source folder of the project and, for
+  one outside it, fails the whole project configuration with "Cannot create linked
+  resource" (2026-11-16, the licence directory). Copy from outside with an execution of
+  `maven-resources-plugin:copy-resources`, as the pom does for the licence file.
 - The library's module name, `com.yworks.yfiles.complete`, was read from the jar by
   Arend, not by a session. Its descriptor is not a permitted input (ground rules): what
   the library exports is learned from compiler errors only.
