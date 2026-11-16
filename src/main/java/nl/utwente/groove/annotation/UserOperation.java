@@ -23,7 +23,10 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for a user-defined algebraic operation.
- * The method thus annotated should be static and only have parameters
+ * The method thus annotated should be public, and either static or a non-static method
+ * of a {@link UserType}-annotated record; in the latter case the operation takes the
+ * record value as its first argument, before the parameters of the method.
+ * The method should only have parameters
  * and return type int, double, boolean or String, or a {@link UserType}-annotated
  * record class. A collection return type is not allowed: an operation yields a single value.
  * The last parameter may instead be a sequence (an {@link IntSeq}, {@link RealSeq},

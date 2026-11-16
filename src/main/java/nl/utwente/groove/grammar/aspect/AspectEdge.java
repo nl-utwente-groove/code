@@ -544,6 +544,22 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * If different from this aspect kind, the prefix will be displayed
      */
     public Line toLine(boolean onNode, Aspect.Map context) {
+        return toLine(onNode, context, false);
+    }
+
+    /**
+     * Returns the display line corresponding to this aspect edge, optionally
+     * showing an assigned user value by its custom display string.
+     * @param onNode if {@code true}, the line will be part of the node label,
+     * otherwise it is labelling a binary edge
+     * @param context aspect map of the element on which the line should be displayed.
+     * If different from this aspect kind, the prefix will be displayed
+     * @param userDisplay if {@code true} and this edge assigns a user value with a
+     * custom display string (see {@link #hasUserDisplay()}), that string is shown
+     * instead of the constructor term of the value. This is meant for showing
+     * states: the display string cannot be parsed back, so it has no place in an editor
+     */
+    public Line toLine(boolean onNode, Aspect.Map context, boolean userDisplay) {
         Line result = null;
         // Aspect on which the role prefix is based
         AspectKind roleAspect = null;
@@ -587,7 +603,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                         ? CHANGE_PREFIX
                         : NEW_PREFIX;
                 }
-                result = getAssignLine(POINTS_TO_SYMBOL);
+                result = getAssignLine(POINTS_TO_SYMBOL, userDisplay);
                 if (hasGraphRole(RULE)) {
                     color = ColorType.CREATOR;
                 }
@@ -907,8 +923,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Returns a line describing the assignment.
      * Should only be called if {@link #isAssign()} holds.
+     * @param userDisplay if {@code true}, an assigned user value is shown by
+     * its custom display string, if it has one
      */
-    private Line getAssignLine(String assignSymbol) {
+    private Line getAssignLine(String assignSymbol, boolean userDisplay) {
         assert isParsed();
         var assignTree = getAssignTree();
         assert assignTree != null;
@@ -917,9 +935,26 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             return assign
                 .toLine(assign.getRhs().isEnumeration()
                     ? ELEMENT_OF_SYMBOL
-                    : assignSymbol);
+                    : assignSymbol, userDisplay);
         } catch (FormatException exc) {
             return assignTree.toLine();
+        }
+    }
+
+    /** Indicates if this is an edge that assigns a user value with a custom display string:
+     * a value of a user type with a {@link nl.utwente.groove.annotation.UserDisplay} method.
+     * If so, {@link #toLine(boolean, Aspect.Map, boolean)} yields a different line
+     * depending on its last parameter.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public boolean hasUserDisplay() {
+        if (!isAssign() || getAssignTree() == null) {
+            return false;
+        }
+        try {
+            return getAssign().getUserDisplay() != null;
+        } catch (FormatException exc) {
+            return false;
         }
     }
 

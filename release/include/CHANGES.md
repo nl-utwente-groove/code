@@ -5,6 +5,21 @@ This document describes the major changes in the GROOVE tool set
 
 Release 7.7.2, unreleased
 -------------------------
+- Resolved gh #939: the `userOperations` property accepts a name of the form
+  `package.*`, which stands for all classes of that package (not of its subpackages)
+  that are a `@UserType` or declare a `@UserOperation`; other classes in the package,
+  such as helpers, are left alone
+- Resolved gh #941: the Imager and the Viewer have an option `-l spring` or
+  `-l forest` that lays out every graph afresh before it is rendered or shown,
+  ignoring the layout stored with it; the graph files are not changed
+- The Imager lays out the nodes of a graph that have no stored position, as
+  the Viewer already did; they used to end up at random positions
+- Resolved gh #938: a `@UserType` record can have a display method, a public
+  `String` method without parameters that is annotated with `@UserDisplay`; the
+  state display of the Simulator shows a value of the type by the string that
+  method returns, with the constructor term in the tooltip of the node. The value
+  itself and the way it is written, saved and parsed do not change: editors, saved
+  graphs and transition labels show the constructor term as before
 - Resolved gh #933: user types may have fields and operations of the same name. Such
   an operation is applied as implemented by the type of its first argument; this holds
   for the fields of user types, the generated accessors of their sequence-valued fields

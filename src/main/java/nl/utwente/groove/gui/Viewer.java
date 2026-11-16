@@ -28,6 +28,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -35,6 +38,8 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog.GraphPreviewPanel;
 import nl.utwente.groove.gui.export.JGraphExporters;
+import nl.utwente.groove.gui.layout.LayoutHandler;
+import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
@@ -94,6 +99,13 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     /** Shows a given graph in an optionally modal dialog. */
     private void show(final Graph graph, GrammarModel grammar, boolean modal) {
         GraphPreviewPanel panel = GraphPreviewDialog.createPanel(grammar, graph);
+        // the panel has laid out the nodes without stored position only
+        var layouter = this.layouter;
+        if (layouter != null) {
+            var jGraph = panel.getJGraph();
+            jGraph.getController().setLayouter(layouter);
+            jGraph.doLayout(true);
+        }
         panel.add(new NodeIdsButton(panel), BorderLayout.NORTH);
         JOptionPane optionPane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE);
         JDialog dialog = optionPane.createDialog(graph.getName());
@@ -122,6 +134,11 @@ public class Viewer extends GrooveCmdLineTool<Object> {
         description = "Graph file to be viewed. Its extension is used to guess its format and type",
         converter = ExistingFileHandler.class)
     private File inFile;
+
+    /** Prototype of the layouter with which the graph is laid out afresh, if any (gh #941). */
+    @Option(names = LayoutHandler.NAME, paramLabel = LayoutHandler.VAR,
+        description = LayoutHandler.USAGE, converter = LayoutHandler.class)
+    private @Nullable Layouter layouter;
 
     /**
      * Invokes the viewer for a given list of command-line arguments.

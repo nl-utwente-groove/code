@@ -36,6 +36,7 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.gui.view.AspectViewCell;
@@ -188,8 +189,28 @@ public class AspectJVertex extends
                 result.insert(0, AspectJModel.ROLE_NAMES.get(roleAspect.getKind()));
                 result.append("<br>" + AspectJModel.ROLE_DESCRIPTIONS.get(roleAspect.getKind()));
             }
+            appendUserValues(result);
         }
         return result;
+    }
+
+    /**
+     * Appends the user values of this vertex that the state display shows by
+     * their custom display strings to a node description, as they are shown
+     * without: the display strings do not show what the values really are.
+     * This only has an effect if the vertex is part of a state.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private void appendUserValues(StringBuilder result) {
+        var jGraph = getJGraph();
+        if (jGraph != null && jGraph.isForState()) {
+            for (AspectEdge edge : getEdges()) {
+                if (edge.hasUserDisplay()) {
+                    result.append("<br>");
+                    result.append(edge.toLine(true, getAspects()).toHTMLString());
+                }
+            }
+        }
     }
 
     @Override
