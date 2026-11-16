@@ -657,7 +657,7 @@ final public class GraphEditorTab extends ResourceTab
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges
         // when a cell edit is started in the JGraph
-        getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
+        var listener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName() == JGraph.CELL_EDIT_PROPERTY) {
@@ -667,9 +667,19 @@ final public class GraphEditorTab extends ResourceTab
                     tabbedPane.setSelectedIndex(index);
                 }
             }
-        });
+        };
+        // the listener of a superseded syntax help has to make way
+        var oldListener = this.syntaxHelpListener;
+        if (oldListener != null) {
+            getJGraph().removePropertyChangeListener(oldListener);
+        }
+        getJGraph().addPropertyChangeListener(listener);
+        this.syntaxHelpListener = listener;
         return result;
     }
+
+    /** The listener that switches the tabs of {@link #syntaxHelp}. */
+    private PropertyChangeListener syntaxHelpListener;
 
     /**
      * Creates and returns a list of aspect descriptions.
