@@ -3,8 +3,8 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
-Release 7.7.2, unreleased
--------------------------
+Release 7.8.0, 16 November 2026
+-------------------------------
 - Resolved gh #939: the `userOperations` property accepts a name of the form
   `package.*`, which stands for all classes of that package (not of its subpackages)
   that are a `@UserType` or declare a `@UserOperation`; other classes in the package,
@@ -46,6 +46,9 @@ Release 7.7.2, unreleased
   user interface applied to a value of a type that does not fit, is now an error in
   the grammar; it used to load and yield an error value when evaluated, as it still
   does if the type is not known (for a variable or field)
+- Resolved gh #932: in the term algebra, the integer operators `bigmax` and `bigmin`
+  built the wrong terms (a product, respectively a binary minimum, over all
+  arguments); they now build `bigmax` and `bigmin` terms, as the real operators did
 
 Release 7.7.1, 13 November 2026
 --------------------------------
