@@ -319,23 +319,42 @@ keep working without the library, as it does.
 The obfuscated backend jar, `release/yfiles/target/lib/groove-yfiles-x.y.z.jar`, holds
 no class under `nl/`: `jar tf` lists its classes under obfuscated package names, and its
 provider file `META-INF/services/nl.utwente.groove.gui.view.GraphBackend` names one of
-them. With the two jars on the class path of an unzipped standard release,
+them. That the yFiles zip renders on this stack is checked by the build itself, with
+the zip's own Imager launcher (see "Checks on the zips" above); by hand, `bin/Imager.jar
+-b yfiles` of the unpacked zip does the same.
 
-    java -cp "bin/Imager.jar;<directory of the two jars>/*" nl.utwente.groove.Imager -b yfiles -f png <grammar> <dir>
+The build also runs the backend's own tests on an obfuscated stack, in the `obfuscate`
+execution of `yfiles/pom.xml`, after the release pass. The tests name the backend's
+classes and so cannot link against the released backend jar. They do run when they are
+obfuscated in the same yGuard pass as the backend and the library, so the build makes a
+second pass, the test pass, with the same yGuard configuration (a macro called by both
+passes, so that the two cannot drift apart) and the backend's test classes as a third
+jar. That jar is the `tests` artifact of the backend, installed with it by its build, so
+that tests and backend come from the same build. The test classes keep their names and
+those of their members, so that the reports are readable and the JUnit console launcher
+finds them; the list of names is read from the tests jar, and the build fails if a class
+of it comes out under another name. Their package, the backend's, therefore keeps its
+name in the test pass, unlike in the release pass. The launcher then runs the tests on
+the JVM's own class path, with the three jars of the test pass, the external class path
+of yGuard and `junit-platform-console-standalone`, with the JVM settings of the backend's
+own Surefire run (assertions, native access, `groove.dir` and `groove.test.robot`). It
+fails the build if a test fails or if it finds no tests at all. Its output is in
+`release/yfiles/target/test-pass/console.txt` and its reports under `reports` there; the
+test pass writes a name mapping of its own in that directory, as unpublishable as the
+other.
 
-(with `:` for `;` outside Windows) renders on the obfuscated stack, headlessly; without
-the jars, the Imager warns that the backend is not available and renders with JGraph.
-
-The backend's own tests name its classes and so do not link against the obfuscated
-backend jar. They do run on the obfuscated stack when they are obfuscated in the same
-yGuard pass: jar the unit's `target/test-classes`, give that jar a third `inoutpair` in
-a copy of `release/yfiles/pom.xml`, with a `keep` rule for the names of the test classes
-(they share the backend's package, which then keeps its name as well, unlike in the
-real run), and run `org.junit.platform.console.ConsoleLauncher execute --scan-class-path
-<tests.jar>` with the three obfuscated jars, the external class path and
-`junit-platform-console-standalone` on the JVM's own `-classpath`. This was done by hand
-on 2026-11-16 (73 tests, the 6 Robot tests skipping by assumption); scripting it belongs
-to the build of the binaries.
+The limitation is in the word *same*: the test pass is a second obfuscation with the
+same configuration, not the released jars themselves, which differ from its output in
+the names of the backend's package and of whatever the test classes reach. What runs the
+released jars is the smoke test of the yFiles zip. The tests open Simulator windows, as
+in the backend's own build; on a machine without a display, or to keep the windows off a
+desktop in use, pass `-Dyfiles.testpass.jvmargs=-Djava.awt.headless=true`, under which
+the Simulator tests skip by assumption. `-DskipTests` or `-Dyfiles.testpass.skip=true`
+skips the test pass, and `-Dgroove.test.robot=true` adds the Robot-driven tests, as in the
+backend's build. The counts should be those of the backend's own build: headlessly, on
+2026-11-16, both ran 55 of the 73 tests, the Simulator class being skipped as a whole;
+on a display the backend's build runs all 73, 6 of them Robot tests that skip without
+the flag (the console launcher counts such skips as aborted).
 
 # How to build a Maven artefact
 

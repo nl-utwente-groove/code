@@ -204,6 +204,26 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<!-- The test classes as a jar of their own (classifier tests), which
+				     the release build obfuscates together with the backend and the
+				     library in order to run these tests on the obfuscated stack
+				     (release/yfiles/pom.xml, the test pass). Taking it from the same
+				     install as the backend jar keeps the two from different builds
+				     apart, as a path into target/test-classes would not, worktrees
+				     sharing the local repository. It is installed locally only:
+				     nothing of this unit is ever deployed. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.2.5</version>

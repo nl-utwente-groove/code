@@ -125,8 +125,10 @@ jobs:
     - name: Build release
       # the yfiles profile adds the obfuscation of the yFiles jars and the
       # zip with them, groove-x_y_z-yfiles-bin.zip, which the zip glob of the
-      # next step attaches next to the plain zips
-      run: cd release; mvn -B -Drevision=$VERSION -Pyfiles clean package
+      # next step attaches next to the plain zips. It also runs the backend's
+      # tests on an obfuscation of the backend (release/README.md, "Checking
+      # the result"), which open Simulator windows, hence Xvfb as above
+      run: cd release; xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B -Drevision=$VERSION -Pyfiles clean package
     - name: Deploy release
       uses: ncipollo/release-action@v1.21.0
       with:

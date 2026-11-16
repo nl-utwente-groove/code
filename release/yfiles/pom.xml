@@ -33,6 +33,22 @@
 		<!-- yfiles.version and the names of the two jars are properties of the
 		     parent, since the yFiles zip checks them as well -->
 		<yguard.version>4.1.1</yguard.version>
+		<!-- The test pass (see the obfuscate execution): skipped with -DskipTests
+		     or -Dyfiles.testpass.skip=true; extra arguments for its test JVM, such
+		     as -Djava.awt.headless=true, in yfiles.testpass.jvmargs. Like the
+		     backend's own build, it runs the Robot-driven tests only with
+		     -Dgroove.test.robot=true. groove.dir is the checkout whose fixtures
+		     the tests read. -->
+		<skipTests>false</skipTests>
+		<yfiles.testpass.skip>${skipTests}</yfiles.testpass.skip>
+		<yfiles.testpass.jvmargs></yfiles.testpass.jvmargs>
+		<groove.test.robot>false</groove.test.robot>
+		<groove.dir>${project.basedir}/../..</groove.dir>
+		<tests.jar>groove-yfiles-${revision}-tests.jar</tests.jar>
+		<!-- the JUnit console launcher, at the platform version belonging to the
+		     junit.version of yfiles/pom.xml; keep the two in step -->
+		<junit.platform.version>1.14.4</junit.platform.version>
+		<console.jar.name>junit-platform-console-standalone-${junit.platform.version}.jar</console.jar.name>
 	</properties>
 
 	<dependencies>
@@ -96,6 +112,35 @@
 						</configuration>
 					</execution>
 					<execution>
+						<!-- the inputs of the test pass only, resolved without being
+						     dependencies, so that the external class path of the
+						     release pass stays as it is: the backend's test classes,
+						     from the same install as the backend jar, and the JUnit
+						     console launcher that runs them -->
+						<id>copy-test-inputs</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<skip>${yfiles.testpass.skip}</skip>
+							<outputDirectory>${project.build.directory}/test-pass/in</outputDirectory>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>groove-yfiles</artifactId>
+									<version>${revision}</version>
+									<classifier>tests</classifier>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.junit.platform</groupId>
+									<artifactId>junit-platform-console-standalone</artifactId>
+									<version>${junit.platform.version}</version>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<execution>
 						<!-- everything the two jars reference but that is not itself
 						     obfuscated: the GROOVE core and its dependencies -->
 						<id>external-classpath</id>
@@ -123,53 +168,193 @@
 				</dependencies>
 				<executions>
 					<execution>
+						<!-- The obfuscation, and the test pass. The yGuard configuration
+						     exists once, as the macro obfuscate, so that the tested
+						     configuration cannot drift from the released one. The
+						     release pass obfuscates the two jars into target/lib, with
+						     the mapping in target/yguard.log.xml.gz. The test pass
+						     (skipped with -DskipTests or -Dyfiles.testpass.skip=true)
+						     then obfuscates them again, together with the backend's
+						     test classes, into target/test-pass/lib, and runs those
+						     tests there. The tests name the backend's classes, so they
+						     cannot run against the released backend jar, whose classes
+						     are renamed; in the same pass their references are renamed
+						     with them. The test classes keep their names and those of
+						     their members, so that the reports are readable and the
+						     launcher's class-name filter finds them, and so their
+						     package, the backend's, keeps its name in this pass only.
+						     The released jars come from the release pass, which has no
+						     test classes in it; what runs the released jars themselves
+						     is the smoke test of the yFiles zip
+						     (release/assembly/yfiles-bin/pom.xml). -->
 						<id>obfuscate</id>
 						<phase>package</phase>
 						<goals>
 							<goal>run</goal>
 						</goals>
 						<configuration>
-							<target>
+							<target xmlns:unless="ant:unless">
 								<taskdef name="yguard" classname="com.yworks.yguard.YGuardTask" classpathref="maven.plugin.classpath" />
-								<mkdir dir="${project.build.directory}/lib" />
-								<yguard>
-									<inoutpair in="${project.build.directory}/in/${yfiles.jar}" out="${project.build.directory}/lib/${yfiles.jar}" />
-									<inoutpair in="${project.build.directory}/in/${backend.jar}" out="${project.build.directory}/lib/${backend.jar}" />
-									<externalclasses path="${external.classpath}" />
-									<rename logfile="${project.build.directory}/yguard.log.xml.gz" replaceClassNameStrings="true" annotationclass="com.yworks.yfiles.utils.Obfuscation">
-										<keep>
-											<!-- No name of the backend is kept. Its line numbers
-											     are, so that a stack trace through it can be
-											     translated back with the name mapping; the JDK
-											     prints them only for a class that names a source
-											     file, hence the constant one (the real name would
-											     give away the class) -->
-											<sourcefile>
-												<property name="mapping" value="y" />
-												<patternset>
-													<include name="nl.utwente.groove.**" />
-												</patternset>
-											</sourcefile>
-											<linenumbertable>
-												<patternset>
-													<include name="nl.utwente.groove.**" />
-												</patternset>
-											</linenumbertable>
-										</keep>
-										<!-- the library's resource bundles are named after their
-										     classes and must follow them -->
-										<adjust replaceName="true">
-											<include name="**/*.properties" />
-										</adjust>
-										<!-- the provider file by which the ServiceLoader of the
-										     GROOVE core finds the backend names the provider
-										     class, which is renamed; the file itself is named
-										     after an interface of the core and keeps its name -->
-										<adjust replaceContentPolicy="strict" replaceContentSeparator=".">
-											<include name="META-INF/services/*" />
-										</adjust>
-									</rename>
-								</yguard>
+								<macrodef name="obfuscate">
+									<!-- the directory of the obfuscated jars -->
+									<attribute name="out" />
+									<!-- the name mapping -->
+									<attribute name="log" />
+									<!-- what the jars reference without being obfuscated -->
+									<attribute name="external" />
+									<!-- further jars to obfuscate in the same pass -->
+									<element name="extra-pairs" optional="true" />
+									<!-- further names to keep -->
+									<element name="extra-keep" optional="true" />
+									<sequential>
+										<mkdir dir="@{out}" />
+										<yguard>
+											<inoutpair in="${project.build.directory}/in/${yfiles.jar}" out="@{out}/${yfiles.jar}" />
+											<inoutpair in="${project.build.directory}/in/${backend.jar}" out="@{out}/${backend.jar}" />
+											<extra-pairs />
+											<externalclasses path="@{external}" />
+											<rename logfile="@{log}" replaceClassNameStrings="true" annotationclass="com.yworks.yfiles.utils.Obfuscation">
+												<keep>
+													<extra-keep />
+													<!-- No name of the backend is kept. Its line numbers
+													     are, so that a stack trace through it can be
+													     translated back with the name mapping; the JDK
+													     prints them only for a class that names a source
+													     file, hence the constant one (the real name would
+													     give away the class) -->
+													<sourcefile>
+														<property name="mapping" value="y" />
+														<patternset>
+															<include name="nl.utwente.groove.**" />
+														</patternset>
+													</sourcefile>
+													<linenumbertable>
+														<patternset>
+															<include name="nl.utwente.groove.**" />
+														</patternset>
+													</linenumbertable>
+												</keep>
+												<!-- the library's resource bundles are named after their
+												     classes and must follow them -->
+												<adjust replaceName="true">
+													<include name="**/*.properties" />
+												</adjust>
+												<!-- the provider file by which the ServiceLoader of the
+												     GROOVE core finds the backend names the provider
+												     class, which is renamed; the file itself is named
+												     after an interface of the core and keeps its name -->
+												<adjust replaceContentPolicy="strict" replaceContentSeparator=".">
+													<include name="META-INF/services/*" />
+												</adjust>
+											</rename>
+										</yguard>
+									</sequential>
+								</macrodef>
+								<!-- the release pass -->
+								<obfuscate out="${project.build.directory}/lib" log="${project.build.directory}/yguard.log.xml.gz" external="${external.classpath}" />
+								<!-- the test pass -->
+								<condition property="testpass.skipped">
+									<istrue value="${yfiles.testpass.skip}" />
+								</condition>
+								<sequential unless:set="testpass.skipped">
+									<property name="test.dir" location="${project.build.directory}/test-pass" />
+									<property name="tests.in" location="${test.dir}/in/${tests.jar}" />
+									<property name="tests.out" location="${test.dir}/lib/${tests.jar}" />
+									<property name="console.jar" location="${test.dir}/in/${console.jar.name}" />
+									<delete dir="${test.dir}/lib" />
+									<delete dir="${test.dir}/reports" />
+									<delete dir="${test.dir}/classes" />
+								<delete file="${test.dir}/console.txt" />
+									<!-- the names of the test classes, read from the tests
+									     jar itself, as a file of patterns, one per line -->
+									<unzip src="${tests.in}" dest="${test.dir}/classes">
+										<patternset>
+											<include name="**/*.class" />
+										</patternset>
+									</unzip>
+									<pathconvert property="test.classes" pathsep="${line.separator}" dirsep=".">
+										<fileset dir="${test.dir}/classes" includes="**/*.class" />
+										<globmapper from="${test.dir}${file.separator}classes${file.separator}*.class" to="*" handledirsep="true" />
+									</pathconvert>
+									<echo file="${test.dir}/test-classes.txt" message="${test.classes}${line.separator}" />
+									<obfuscate out="${test.dir}/lib" log="${test.dir}/yguard.log.xml.gz" external="${external.classpath}${path.separator}${console.jar}">
+										<extra-pairs>
+											<inoutpair in="${tests.in}" out="${tests.out}" />
+										</extra-pairs>
+										<extra-keep>
+											<class classes="private" methods="private" fields="private">
+												<patternset includesfile="${test.dir}/test-classes.txt" />
+											</class>
+										</extra-keep>
+									</obfuscate>
+									<!-- the guard on that keep rule: every class of the tests
+									     jar is in the obfuscated one under its own name -->
+									<pathconvert property="test.classes.in" pathsep=" ">
+										<sort>
+											<zipfileset src="${tests.in}" includes="**/*.class" />
+										</sort>
+										<regexpmapper from="^.*\.jar:(.*)$" to="\1" />
+									</pathconvert>
+									<pathconvert property="test.classes.out" pathsep=" ">
+										<sort>
+											<zipfileset src="${tests.out}" includes="**/*.class" />
+										</sort>
+										<regexpmapper from="^.*\.jar:(.*)$" to="\1" />
+									</pathconvert>
+									<condition property="test.classes.renamed">
+										<not>
+											<equals arg1="${test.classes.in}" arg2="${test.classes.out}" />
+										</not>
+									</condition>
+									<fail if="test.classes.renamed">
+
+The test pass of the obfuscation renamed classes of the backend's tests jar,
+which it should keep under their names (see ${test.dir}/test-classes.txt):
+
+  before: ${test.classes.in}
+
+  after:  ${test.classes.out}
+
+See the obfuscate execution of release/yfiles/pom.xml.
+									</fail>
+									<java classname="org.junit.platform.console.ConsoleLauncher" fork="true" jvm="${java.home}/bin/java" dir="${groove.dir}" failonerror="false" resultproperty="testpass.result" output="${test.dir}/console.txt">
+										<classpath>
+											<fileset dir="${test.dir}/lib" includes="*.jar" />
+											<pathelement path="${external.classpath}" />
+											<pathelement location="${console.jar}" />
+										</classpath>
+										<!-- as for surefire in yfiles/pom.xml -->
+										<jvmarg value="-ea" />
+										<jvmarg value="--enable-native-access=ALL-UNNAMED" />
+										<jvmarg line="${yfiles.testpass.jvmargs}" />
+										<sysproperty key="groove.dir" file="${groove.dir}" />
+										<sysproperty key="groove.test.robot" value="${groove.test.robot}" />
+										<arg value="execute" />
+										<arg value="--scan-class-path" />
+										<arg file="${tests.out}" />
+										<arg value="--fail-if-no-tests" />
+										<arg value="--details=tree" />
+										<arg value="--disable-banner" />
+										<arg value="--disable-ansi-colors" />
+										<arg value="--reports-dir" />
+										<arg file="${test.dir}/reports" />
+									</java>
+									<condition property="testpass.failed">
+										<not>
+											<equals arg1="${testpass.result}" arg2="0" />
+										</not>
+									</condition>
+									<fail if="testpass.failed">
+
+The tests of the yFiles backend failed on the obfuscated stack of the test pass
+(exit code ${testpass.result} of the JUnit console launcher, which also fails
+if it finds no tests). Its output is in ${test.dir}/console.txt and its
+reports in ${test.dir}/reports. A test that passes in the backend's own build
+but fails here depends on a name that the obfuscation changes; see the
+Distribution section of yfiles/README.md. Skip the test pass with
+-Dyfiles.testpass.skip=true.
+									</fail>
+								</sequential>
 							</target>
 						</configuration>
 					</execution>

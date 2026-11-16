@@ -170,7 +170,10 @@ pom as well, so for those the comparison holds trivially.
   gestures are driven by a Robot, which takes over the mouse: those two tests run only
   with `-Dgroove.test.robot=true` and are skipped otherwise. All need the licensed
   library and the license file: `mvn -q test` in this directory (in PowerShell, quote any
-  `-D` arguments). The tests never touch the real user preferences.
+  `-D` arguments). The tests never touch the real user preferences. The build installs
+  the test classes as a jar of their own (classifier `tests`, never deployed), with
+  which the release build runs the same tests on an obfuscated stack
+  (`release/README.md`, "Checking the result").
 
 ## Distribution
 
