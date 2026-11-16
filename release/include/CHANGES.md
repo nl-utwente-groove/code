@@ -20,19 +20,24 @@ Release 7.7.2, unreleased
   method returns, with the constructor term in the tooltip of the node. The value
   itself and the way it is written, saved and parsed do not change: editors, saved
   graphs and transition labels show the constructor term as before
-- Resolved gh #933: user types may have fields and operations of the same name. Such
-  an operation is applied as implemented by the type of its first argument; this holds
-  for the fields of user types, the generated accessors of their sequence-valued fields
-  and their non-static `@UserOperation` methods, which have to agree on the sorts of
-  their parameters and result. Static operations and constructors still need a name
-  of their own
-- A call of a user operation is checked against the Java classes of its implementations
-  when the grammar is loaded, as far as the class of an argument is known then: that of
-  a user constant or constructor call, and of a call of an operation whose implementations
-  have the same result class. A call that no implementation can be invoked with, such as
-  an operation of one user type applied to a constant of another, is now an error in
+- Resolved gh #933: user types can share fields and operations. A Java interface
+  annotated with `@UserInterface` declares operations by `@UserOperation` methods;
+  the user types that implement the interface share those operations, each
+  implementing them by a field or method of that name. Such an operation is applied
+  as implemented by the user type of its first argument. This is the only way for two
+  user types to have a field or operation of the same name; a name that is not
+  declared in a common user interface still belongs to one user type only.
+  A user interface declares a sequence-valued field `c` by a method `c()` that
+  returns the sequence, which stands for the operations `cAt` and `cSize`. User
+  interfaces can extend one another and can be used as parameter and result types
+  of user operations; they need not be listed in the `userOperations` property
+- A call of a user operation is checked against the Java types of its implementation
+  when the grammar is loaded, as far as the type of an argument is known then: that of
+  a user constant or constructor call, and the result type of a call of a user
+  operation. A call that cannot succeed, such as an operation of one user type or
+  user interface applied to a value of a type that does not fit, is now an error in
   the grammar; it used to load and yield an error value when evaluated, as it still
-  does if the class is not known (for a variable or field)
+  does if the type is not known (for a variable or field)
 
 Release 7.7.1, 13 November 2026
 --------------------------------
