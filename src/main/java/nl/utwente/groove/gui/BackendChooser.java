@@ -16,8 +16,6 @@
  */
 package nl.utwente.groove.gui;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,16 +31,13 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.gui.view.GraphBackend;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.AddOn;
-import nl.utwente.groove.util.Extensions;
 
 /**
  * The Simulator's chooser of the graph-visualisation backend: a menu with an item for
  * every backend that can be chosen for after a restart, which are the backends
- * available in this session (see {@link GraphBackend#available()}) and the backend of
- * the add-on if that is installed but not loaded, as after an installation during
- * this session. The choice is stored as the user preference
- * {@link Options#GRAPH_BACKEND_OPTION} and takes effect after a restart, since the
+ * available in this session (see {@link GraphBackend#available()}). The choice is
+ * stored as the user preference {@link Options#GRAPH_BACKEND_OPTION} and takes
+ * effect after a restart, since the
  * backend is selected at start-up (see {@link GraphBackend#instance()}); a dialog
  * says so whenever a backend other than the one in use is chosen.
  * <p>
@@ -59,18 +54,14 @@ import nl.utwente.groove.util.Extensions;
 @NonNullByDefault
 public class BackendChooser {
     /**
-     * Constructs a chooser for a given frame and add-on.
+     * Constructs a chooser for a given frame.
      * @param frame the Simulator frame, parent of the chooser's dialogs
-     * @param addOn the add-on whose backend is offered if it is installed, even if
-     * it is not loaded in this run
      */
-    public BackendChooser(JFrame frame, AddOn addOn) {
+    public BackendChooser(JFrame frame) {
         this.frame = frame;
-        this.addOn = addOn;
     }
 
     private final JFrame frame;
-    private final AddOn addOn;
 
     /**
      * Creates a fresh menu with the backends that can be chosen for after a restart,
@@ -80,30 +71,18 @@ public class BackendChooser {
      * only one backend can be chosen
      */
     public @Nullable JMenu createMenu() {
-        Path ext = Extensions.dir();
         // the backends that can be chosen, by name and display name
         Map<String,String> choices = new LinkedHashMap<>();
         for (GraphBackend backend : GraphBackend.available()) {
             choices.put(backend.getName(), backend.getDisplayName());
         }
-        boolean addOnLoads = this.addOn.loadsAtNextStart(ext);
-        if (addOnLoads) {
-            choices.putIfAbsent(this.addOn.getName(), this.addOn.getDisplayName());
-        }
         if (choices.size() < 2) {
             return null;
         }
-        // the backends expected at the next start: the choices, minus the add-on's
-        // if that is present but will not load, e.g. because its removal is pending
-        List<String> nextAvailable = new ArrayList<>(choices.keySet());
-        if (!addOnLoads && this.addOn.isPresent(ext)) {
-            nextAvailable.remove(this.addOn.getName());
-        }
         String running = GraphBackend.instance().getName();
-        String next = nextAvailable.isEmpty()
-            ? null
-            : GraphBackend
-                .selectName(nextAvailable, Options.userPrefs.get(Options.GRAPH_BACKEND_OPTION, null));
+        String next = GraphBackend
+            .selectName(List.copyOf(choices.keySet()),
+                        Options.userPrefs.get(Options.GRAPH_BACKEND_OPTION, null));
         JMenu result = new JMenu(Options.GRAPH_BACKEND_OPTION);
         result.setToolTipText("A change takes effect after a restart of the Simulator");
         boolean changePending = !running.equals(next);

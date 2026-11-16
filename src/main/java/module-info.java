@@ -45,15 +45,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.prolog.builtin;
     // -- command-line tools
     exports nl.utwente.groove.cli;
-    // -- graph-backend SPI: an add-on jar is loaded into the unnamed module and
-    //    implements/extends these types, so they must be exported for GROOVE
-    //    to run from the module path (ExtensionsTest). The controllers reach the
-    //    hosting tool only through GraphViewContext, so no Simulator type occurs
-    //    in this tier; see claude/archive/module-exports.md
-    exports nl.utwente.groove.gui.view;
-    exports nl.utwente.groove.gui.view.cell;
-    exports nl.utwente.groove.gui.look;
-    exports nl.utwente.groove.gui.layout;
     // -- Prolog predicate classes are instantiated by the Prolog engine
     exports nl.utwente.groove.prolog.builtin.algebra to gnuprologjava;
     exports nl.utwente.groove.prolog.builtin.graph to gnuprologjava;
@@ -98,7 +89,6 @@ module nl.utwente.groove {
     requires transitive java.desktop;
     requires transitive java.prefs;
     requires java.logging;
-    requires java.net.http;
     requires java.xml;
     requires com.formdev.flatlaf;
     requires jgraph;
