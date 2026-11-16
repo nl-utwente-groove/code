@@ -8,6 +8,12 @@
 	<properties>
 		<revision>0.0.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- the yFiles library and the names of the two obfuscated jars, used
+		     by the yfiles module and the yFiles zip of the yfiles profile;
+		     keep yfiles.version equal to that of yfiles/pom.xml -->
+		<yfiles.version>3.6.0.1</yfiles.version>
+		<yfiles.jar>yfiles-for-java-swing-${yfiles.version}.jar</yfiles.jar>
+		<backend.jar>groove-yfiles-${revision}.jar</backend.jar>
 	</properties>
 
 	<modules>

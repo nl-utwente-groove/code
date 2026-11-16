@@ -16,6 +16,10 @@
 	<properties>
 		<groove.basedir>${project.basedir}</groove.basedir>
 		<zip.basedir>groove-${groove-version-underscored}</zip.basedir>
+		<!-- the zip that the module assembles, and whether it is the yFiles zip,
+		     which alone may contain yFiles (see the check-zip execution) -->
+		<zip.file>${project.basedir}/../../target/${project.build.finalName}.zip</zip.file>
+		<yfiles.zip>false</yfiles.zip>
 	</properties>
 
 	<dependencies>
@@ -50,7 +54,118 @@
 						</execution>
 					</executions>
 				</plugin>
+				<plugin>
+					<!-- Release guard on the zip just assembled; every assembling
+					     module declares this plugin after the assembly plugin, so
+					     that it runs after it in the same phase. No zip may contain
+					     the name mapping of the obfuscation, which would undo it
+					     (release/README.md, "Building"), and no zip but the yFiles
+					     one may contain anything of yFiles, neither an entry named
+					     after it nor a launcher whose class path lists its jars:
+					     the plain zips are the Apache-licensed ones, and a plain
+					     library jar in any zip would breach the yFiles licence.
+					     The assembly's include filter is lenient (see zip.xml),
+					     which is why the zips are checked rather than trusted. -->
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>3.1.0</version>
+					<executions>
+						<execution>
+							<id>check-zip</id>
+							<phase>package</phase>
+							<goals>
+								<goal>run</goal>
+							</goals>
+							<configuration>
+								<target xmlns:unless="ant:unless" xmlns:rsel="antlib:org.apache.tools.ant.types.resources.selectors">
+									<property name="zip" location="${zip.file}" />
+									<property name="check.dir" location="${project.build.directory}/zip-check" />
+									<delete dir="${check.dir}" />
+									<mkdir dir="${check.dir}" />
+									<pathconvert property="mapping.entries" pathsep="${line.separator}  " setonempty="false">
+										<zipfileset src="${zip}" casesensitive="false">
+											<include name="**/*yguard*" />
+											<include name="**/*yguard*/**" />
+											<include name="**/*.log.xml.gz" />
+										</zipfileset>
+									</pathconvert>
+									<fail if="mapping.entries">
+
+${zip} contains entries that look like yGuard's name mapping:
+
+  ${mapping.entries}
+
+The mapping undoes the obfuscation and must never be published; see the
+"Building" section of "How to build the obfuscated yFiles jars" in
+release/README.md, and the zip.xml of ${project.artifactId}.
+									</fail>
+									<sequential unless:true="${yfiles.zip}">
+										<pathconvert property="yfiles.entries" pathsep="${line.separator}  " setonempty="false">
+											<zipfileset src="${zip}" casesensitive="false">
+												<include name="**/*yfiles*" />
+												<include name="**/*yfiles*/**" />
+												<include name="**/*yworks*" />
+												<include name="**/*yworks*/**" />
+											</zipfileset>
+										</pathconvert>
+										<fail if="yfiles.entries">
+
+${zip} is a zip without yFiles, but contains entries named after it:
+
+  ${yfiles.entries}
+
+Only the yFiles zip may contain yFiles; see "How to build the obfuscated
+yFiles jars" in release/README.md, and the zip.xml of ${project.artifactId}.
+										</fail>
+										<!-- the manifests of the launchers, with their
+										     continuation lines joined, so that a jar name
+										     broken across lines is still found -->
+										<unzip src="${zip}" dest="${check.dir}/bin">
+											<patternset>
+												<include name="*/bin/*.jar" />
+											</patternset>
+											<flattenmapper />
+										</unzip>
+										<concat destfile="${check.dir}/manifests.txt">
+											<restrict>
+												<archives>
+													<zips>
+														<fileset dir="${check.dir}/bin" includes="*.jar" />
+													</zips>
+												</archives>
+												<rsel:name name="META-INF/MANIFEST.MF" />
+											</restrict>
+											<filterchain>
+												<tokenfilter>
+													<filetokenizer />
+													<replaceregex pattern="\r?\n " replace="" flags="g" />
+												</tokenfilter>
+											</filterchain>
+										</concat>
+										<fail message="${zip} is a zip without yFiles, but a launcher manifest in its bin/ mentions yFiles (see ${check.dir}/manifests.txt): only the launchers of the yFiles zip may list the yFiles jars; see release/yfiles/pom.xml, execution launchers.">
+											<condition>
+												<or>
+													<resourcecontains resource="${check.dir}/manifests.txt" substring="yfiles" casesensitive="false" />
+													<resourcecontains resource="${check.dir}/manifests.txt" substring="yworks" casesensitive="false" />
+												</or>
+											</condition>
+										</fail>
+									</sequential>
+								</target>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+		<profile>
+			<!-- the yFiles zip, see the profile of the same name in the parent -->
+			<id>yfiles</id>
+			<modules>
+				<module>yfiles-bin</module>
+			</modules>
+		</profile>
+	</profiles>
 </project>

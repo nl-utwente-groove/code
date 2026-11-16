@@ -2,7 +2,8 @@
 # - building the main maven artifact
 # - zipping up the release artifacts
 # - optionally, with the argument "yfiles", also building the obfuscated
-#   yFiles jars (see README.md; needs the licensed yFiles library in the local Maven
+#   yFiles jars and the zip with yFiles, groove-x_y_z-yfiles-bin.zip (see
+#   README.md; needs the licensed yFiles library in the local Maven
 #   repository and a clone of the private yfiles-lib repository, which holds
 #   the runtime license file, next to this repository)
 # Run from the code repository main directory using launch/maven.sh
@@ -38,11 +39,12 @@ if [[ $EDITION == yfiles ]]; then
     mvn -f yfiles/pom.xml -Dgroove.install.skip=true -Drevision=$GROOVE_VERSION "-Dyfiles.license.dir=$(cd "$YFILES_LIB/lib" && pwd)" clean install
 fi
 
-# zip up the release artifacts
-cd release; mvn -Drevision=$GROOVE_VERSION clean package
-
-# obfuscate the yFiles jars (no clean: that would delete the standard zips
-# of the step before)
+# zip up the release artifacts; with the yfiles profile, the same pass also
+# obfuscates the yFiles jars and assembles the zip with yFiles, leaving the
+# plain zips as they are without it
+cd release
 if [[ $EDITION == yfiles ]]; then
-    mvn -Drevision=$GROOVE_VERSION -Pyfiles package
+    mvn -Drevision=$GROOVE_VERSION -Pyfiles clean package
+else
+    mvn -Drevision=$GROOVE_VERSION clean package
 fi

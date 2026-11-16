@@ -180,8 +180,9 @@ own: yWorks did not approve the separate add-on of the 99.0.x test releases
 yGuard over the jar of this unit together with the library, see `release/README.md`:
 every name of the library and of this unit is renamed, and the provider file in
 `META-INF/services`, by which the GROOVE core finds the backend, is rewritten to the new
-name of the provider class. The zips and installers that are to contain the two
-obfuscated jars are not built yet. Two things in this project serve the distribution:
+name of the provider class. The two obfuscated jars go into `lib/` of
+`groove-x_y_z-yfiles-bin.zip`; the installers do not contain them yet. Two things in
+this project serve the distribution:
 
 - The distribution licence file is a resource at the root of the jar, where the library
   finds it.
@@ -199,7 +200,8 @@ as well.
 
 A new yFiles version means: a new `yfiles-for-java-swing.jar` and new licence files in
 `lib/` of the private repository, a new `yfiles.version` in `pom.xml`, and the same
-version in `release/yfiles/pom.xml`, which obfuscates the library. If the two sides are
+version in `release/pom.xml`, for the module `release/yfiles`, which obfuscates the
+library. If the two sides are
 prepared on branches, give the branch of the private repository the name of the branch
 here: the workflows take the library from the same-named branch if there is one
 (`release/github/choose-backend.sh`).

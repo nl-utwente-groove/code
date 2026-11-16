@@ -30,11 +30,9 @@
 	     The plain library jar never leaves the local Maven repository. -->
 
 	<properties>
-		<!-- keep equal to the yfiles.version of yfiles/pom.xml -->
-		<yfiles.version>3.6.0.1</yfiles.version>
+		<!-- yfiles.version and the names of the two jars are properties of the
+		     parent, since the yFiles zip checks them as well -->
 		<yguard.version>4.1.1</yguard.version>
-		<yfiles.jar>yfiles-for-java-swing-${yfiles.version}.jar</yfiles.jar>
-		<backend.jar>groove-yfiles-${revision}.jar</backend.jar>
 	</properties>
 
 	<dependencies>
@@ -52,6 +50,18 @@
 			<groupId>com.google.code.findbugs</groupId>
 			<artifactId>jsr305</artifactId>
 			<version>3.0.2</version>
+		</dependency>
+		<dependency>
+			<!-- the launcher jars below are made from those of the runnable
+			     modules, as in the assembly modules. The dependency puts this
+			     module after the runnable aggregator only, which itself precedes
+			     its modules; what puts it after them is the order of the modules
+			     in the parent, profile modules coming last. Excluded from the
+			     external class path -->
+			<groupId>${project.groupId}</groupId>
+			<artifactId>runnable</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
 		</dependency>
 	</dependencies>
 
@@ -94,7 +104,7 @@
 							<goal>build-classpath</goal>
 						</goals>
 						<configuration>
-							<excludeArtifactIds>groove-yfiles,yfiles-for-java-swing</excludeArtifactIds>
+							<excludeArtifactIds>groove-yfiles,yfiles-for-java-swing,runnable</excludeArtifactIds>
 							<outputProperty>external.classpath</outputProperty>
 						</configuration>
 					</execution>
@@ -160,6 +170,44 @@
 										</adjust>
 									</rename>
 								</yguard>
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- The launcher jars of the yFiles zip, in target/bin: those of
+						     the runnable modules, whose manifest Class-Path lists the
+						     jars of lib/ that the GROOVE core needs, with the two
+						     obfuscated jars added to it. They are made here rather than
+						     by switching the runnable modules under the profile, so that
+						     the plain launcher jars, and with them the plain zips, are
+						     the same whether or not the profile is active. Ant merges
+						     the manifest of the source jar with the nested one into a
+						     single Class-Path attribute and keeps the other attributes
+						     (Main-Class, Enable-Native-Access) as they are. -->
+						<id>launchers</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<macrodef name="launcher">
+									<attribute name="name" />
+									<sequential>
+										<jar destfile="${project.build.directory}/bin/@{name}.jar" filesetmanifest="merge" mergeClassPathAttributes="true" flattenAttributes="true">
+											<zipfileset src="${project.basedir}/../runnable/target/@{name}.jar" />
+											<manifest>
+												<attribute name="Class-Path" value="../lib/${backend.jar} ../lib/${yfiles.jar}" />
+											</manifest>
+										</jar>
+									</sequential>
+								</macrodef>
+								<delete dir="${project.build.directory}/bin" />
+								<launcher name="Simulator" />
+								<launcher name="Generator" />
+								<launcher name="ModelChecker" />
+								<launcher name="Imager" />
+								<launcher name="Viewer" />
 							</target>
 						</configuration>
 					</execution>

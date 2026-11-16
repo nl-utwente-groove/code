@@ -2,14 +2,15 @@
 
 This chapter explains how to build a github release for Groove. A second chapter, below, summarises the actions to create a Maven artifact.
 
-The github release, as meant here, consists of two dedicated zip-files (as well as the complete source code, in `.zip` and `.tar.gz` format):
+The github release, as meant here, consists of three dedicated zip-files (as well as the complete source code, in `.zip` and `.tar.gz` format):
 
 - `groove-x_y_z-bin.zip`
 - `groove-x_y_z-bin+doc.zip`
+- `groove-x_y_z-yfiles-bin.zip`, the first of these with the yFiles backend and library added in obfuscated form, built only with the `yfiles` profile; see the second chapter
 
-Both of these contain a top-level README.md that explains their structure and how to install the tool.
+All of these contain a top-level README.md that explains their structure and how to install the tool. The first two contain nothing of yFiles and are under the Apache licence of GROOVE alone.
 
-In addition, the release workflow builds self-contained installers (with a bundled Java runtime, so users need no Java installation) for Windows (`.msi`), macOS (`.dmg`, both Intel and Apple silicon) and Linux (`.deb` and `.rpm`); see the Installers section below. A release built with the `yfiles` profile also obfuscates the yFiles backend and library for distribution; see the second chapter.
+In addition, the release workflow builds self-contained installers (with a bundled Java runtime, so users need no Java installation) for Windows (`.msi`), macOS (`.dmg`, both Intel and Apple silicon) and Linux (`.deb` and `.rpm`); see the Installers section below.
 
 ## Preparation
 
@@ -162,10 +163,12 @@ The optional yFiles graph-visualisation backend (the unit in `yfiles/` of this
 repository, see its README) runs on the commercial yFiles library. The two reach users
 inside GROOVE's binaries, in obfuscated form, and never as a component of their own:
 yWorks did not approve the separate add-on of the 99.0.x test releases (see
-`claude/yfiles-restructure.md`). **The binaries that are to contain them, a
-`groove-x_y_z-yfiles-bin.zip` and the installers, are not built yet**; what exists is the
-obfuscation, described in this chapter. The yFiles license (an academic project license
-held by the University of Twente) has four consequences that shape this build:
+`claude/yfiles-restructure.md`). The release reactor's `yfiles` profile obfuscates the
+two and assembles `groove-x_y_z-yfiles-bin.zip` from them: the content of the plain
+`groove-x_y_z-bin.zip`, plus the two obfuscated jars in `lib/`, launchers in `bin/` whose
+class path lists them, and the yFiles notice at the root. The installers do not contain
+them yet. The yFiles license (an academic project license held by the University of
+Twente) has four consequences that shape this build:
 
 - The library may be redistributed only in obfuscated form, and yWorks require the same
   of the code that calls it. The release reactor therefore has a module `yfiles` that
@@ -182,8 +185,9 @@ held by the University of Twente) has four consequences that shape this build:
   repository the release workflow checks out (see below). It must never be uploaded
   anywhere public.
 - A binary with the library in it may be used for non-commercial purposes only, and
-  has to say so. `yfiles/include/YFILES-ADDON.md` said it for the former add-on and is
-  the basis of the notice those binaries are to carry; nothing packages it at present.
+  has to say so. The yFiles zip carries `yfiles/include/YFILES-ADDON.md` at its root for
+  that, as it is: the file was written for the former add-on, and its text and name are
+  still to be rewritten for the distribution, with the licence texts of the binaries.
 - The license file the backend jar carries must itself be redistributable. The backend
   packages the distribution license (`yfiles.license.file`, see below) and never the
   development license, whose `<distribution>false</distribution>` forbids precisely
@@ -209,13 +213,19 @@ installed in the local Maven repository from that jar, as described in
     (from the repository root; this runs the backend's tests, which open a
     Simulator window briefly).
 
-2. Obfuscate by running Maven in the release directory with the `yfiles` profile:
+2. Package by running Maven in the release directory with the `yfiles` profile:
 
     `mvn clean package -Drevision=x.y.z -Pyfiles`
 
-    This produces the standard zips in `release/target`, which do not contain yFiles,
-    and the two obfuscated jars in `release/yfiles/target/lib`, under the file names of
-    their inputs. The name mapping of the obfuscation is written to
+    This one pass produces the standard zips in `release/target`, exactly as without
+    the profile, and next to them `groove-x_y_z-yfiles-bin.zip`. On the way, the module
+    `yfiles` writes the two obfuscated jars to `release/yfiles/target/lib`, under the
+    file names of their inputs, and the launchers of the yFiles zip to
+    `release/yfiles/target/bin`: copies of the standard launchers, with the two jars
+    added to the `Class-Path` of their manifests. The standard launchers themselves are
+    not touched, which is why the profile leaves the standard zips unchanged; the
+    September build of a yFiles edition, which switched the whole reactor in a second
+    pass, did not. The name mapping of the obfuscation is written to
     `release/yfiles/target/yguard.log.xml.gz` (view it with
     `java -jar yguard.jar <log>` from the yGuard distribution).
 
@@ -242,7 +252,37 @@ that repository out by branch name, which does not fix the commit, so it records
 commit at the end of the release notes, as an HTML comment that the release page does
 not show: `gh release view release-x_y_z --json body` prints it.
 
-The script `do-all.sh yfiles` runs the standard steps and then these two.
+The script `do-all.sh yfiles` runs the standard steps with these two in place of the
+standard packaging.
+
+## Checks on the zips
+
+The build checks what it is about to distribute rather than how it was configured,
+each check failing the build with a message that says what is wrong:
+
+- Every zip, right after it is assembled (the `check-zip` execution of
+  `assembly/pom.xml`, declared by each assembling module after its assembly): no entry
+  may look like the name mapping (a name containing `yguard`, or ending in
+  `.log.xml.gz`), and a zip other than the yFiles one may have no entry whose name
+  contains `yfiles` or `yworks`, nor a launcher whose manifest mentions them. The
+  assembly's filter on dependencies matches leniently (see `assembly/bin/zip.xml`),
+  so a mistake in a descriptor or a dependency could otherwise put a plain library jar
+  into a zip unnoticed. For the same reason the yFiles zip's module depends on the
+  `yfiles` module only for the order of the reactor, with all of that module's own
+  dependencies excluded: the plain backend and library jars are in the dependency graph
+  of no assembling module.
+- The yFiles zip (the `check-yfiles-zip` execution of `assembly/yfiles-bin/pom.xml`):
+  its `lib/` holds the jars of the standard bin zip and exactly the two of
+  `release/yfiles/target/lib` besides, each byte for byte the obfuscated one and not
+  the input of the obfuscation in `release/yfiles/target/in`, so the licence check of
+  the `yfiles` module holds for the zip as well. Then the zip is unpacked and its Imager
+  launcher renders a small grammar of `junit/samples` with `-b yfiles`, headlessly; the
+  check fails unless the run succeeds and writes images without the Imager's warning
+  that the backend is not available. As a control, the standard Imager launcher, run
+  the same way in the same tree, must print that warning, so that the check does not go
+  blind when the warning's wording changes. `-Dyfiles.smoke.skip=true` skips the run.
+- The obfuscated jars themselves carry no non-distributable licence (the `check-license`
+  execution of `yfiles/pom.xml`, see above).
 
 ## In the release workflow
 
@@ -260,15 +300,15 @@ the runner's local Maven repository under the coordinates of `yfiles/pom.xml`
 (whose `yfiles.version` it reads), builds the backend from `yfiles/`
 with its tests (the license directory defaults to the `lib/` directory of that checkout; the
 tests open Simulator windows, so they run under Xvfb), and packages the release with
-the `yfiles` profile. No asset contains the obfuscated jars yet: the release consists
-of the standard zips and installers.
+the `yfiles` profile. The yFiles zip is attached to the release with the standard
+zips; the installers are still built from the standard bin zip.
 
 The checkout authenticates with the repository secret `YFILES_LIB_TOKEN`, a
 fine-grained personal access token of the licensed developer with read access to
 `yfiles-lib` only (Contents: read). Under the one-seat project license, nobody but
 that developer and this token may read the private repository. A new library version
 means a new jar and new license files there, and a new `yfiles.version` in both
-`yfiles/pom.xml` and `release/yfiles/pom.xml`.
+`yfiles/pom.xml` and `release/pom.xml`.
 
 The pull-request build (`maven.yml`) does not use the profile: secrets are not
 available to workflows run for pull requests from forks, and the standard build must

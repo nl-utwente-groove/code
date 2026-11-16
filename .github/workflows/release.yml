@@ -123,8 +123,9 @@ jobs:
       # backend whose tests did not run must not be released
       run: xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B -f yfiles/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION clean install
     - name: Build release
-      # the yfiles profile adds the obfuscation of the yFiles jars, which no
-      # asset contains yet
+      # the yfiles profile adds the obfuscation of the yFiles jars and the
+      # zip with them, groove-x_y_z-yfiles-bin.zip, which the zip glob of the
+      # next step attaches next to the plain zips
       run: cd release; mvn -B -Drevision=$VERSION -Pyfiles clean package
     - name: Deploy release
       uses: ncipollo/release-action@v1.21.0
