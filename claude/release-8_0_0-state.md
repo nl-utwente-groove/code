@@ -4,6 +4,17 @@ Handoff note for the release of GROOVE 8.0.0 from `yworks-migration` (merged int
 `master`). Written 2026-09-14, re-checked 2026-09-15, merged with `master` on 2026-09-20;
 the Maven module split (gh #887) is out of scope.
 
+**Amended 2026-11-16, after the yFiles restructuring** (`yfiles-restructure.md`): there is
+no add-on any more. Where this note speaks of the add-on, read the distribution with
+yFiles (the installers and `groove-x_y_z-yfiles-bin.zip`); the add-on section of
+`installing.md` and the manual's pointers to it are rewritten on the website branch
+`yfiles-distribution-docs` (ff3ffb7, off `release-8_0_0`, awaiting review). The website
+worktree named below no longer exists. Two additions to the checklist: the website's
+`main` has moved 27 commits ahead of `release-8_0_0` (manual updates for 7.6.0 to 7.8.0)
+and a trial merge conflicts in `manual.md`, `manual/MakeRefs.java` and further manual
+files, so item 7 needs that merge resolved first; and item 3's version is no longer
+7.5.4-SNAPSHOT.
+
 ## Branches and worktrees
 
 Originally all off the `yworks-migration` tip 103f6b74d; `master` has moved on since and
@@ -139,7 +150,7 @@ home in the manual) were skipped as planned.
    expression) the third did not show. One yFiles-rendered figure only if it shows a visible difference:
    with a stored layout the two backends differ cosmetically (fonts, arrow heads, label
    placement), so the candidate is an automatic layout such as hierarchic or organic of a
-   larger graph, rendered with `Imager -b yfiles` on a machine with the add-on installed.
+   larger graph, rendered with `Imager -b yfiles` of a distribution with yFiles.
    Untested expectation.
 5. `io.md` DONE (website commit after e26b4c2): settings resources (table row, paragraph
    on schemas and the `system.properties` rename), layout bullet freed of JGraph, `edgeids`

@@ -4,6 +4,14 @@ Proposal for the `manual/` directory of the Jekyll site (`nl-utwente-groove.gith
 Sources: `release/include/CHANGES.md` (8.0.0 section) and `CHANGES-8_0_0.md`, gh #896, and
 the 8.0.0 source tree. Nothing in the website repository was modified for this note.
 
+*Amended 2026-11-16:* the proposal predates yWorks' rejection of the yFiles add-on
+(`yfiles-restructure.md`). There is no add-on, extension directory, first-start offer or
+`View > yFiles add-on` menu any more: yFiles is part of the installers and of
+`groove-x_y_z-yfiles-bin.zip`, and absent from the other zips. Read the add-on items
+below (the row of section 2, the figure and screenshot remarks of section 4, questions 1,
+7 and 8) in that light; the corresponding website text is on the website branch
+`yfiles-distribution-docs`.
+
 ## 1. How far the manual lags, and how much work this is
 
 The manual documents 7.5.3 throughout: `manual.md` carries "7.5.3" in the *Checked against*

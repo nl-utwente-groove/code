@@ -263,8 +263,30 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
      `LICENSE-YFILES.txt`. **Not verified, and not verifiable short of a tag: the
      workflow itself.** Its first run is the pre-release of step 7, which also carries
      what step 3 left unverified on a Linux runner.
-6. **Website** (branch `release-8_0_0`): `installing.md` with two downloads and the
-   restriction stated, the yWorks attribution, the manual's mentions of the add-on.
+6. **Website**. Written 2026-11-16 in the website repository
+   (`nl-utwente-groove.github.io`), branch `yfiles-distribution-docs` off `release-8_0_0`,
+   one commit (ff3ffb7); **the wording awaits Arend's review**, like that of step 4, from
+   whose texts (`INSTALL-NOTE.md`, `LICENSE-YFILES.txt`) it is taken.
+   - `installing.md`: the add-on section is replaced by *With or without yFiles*
+     (explicit anchor `#yfiles`), naming the assets of either form and linking
+     `LICENSE-YFILES.txt` on `master` of this repository; the restriction is repeated in
+     the opening paragraph, under the installers and in a table of the three zips; the
+     Maven artifact is said to be without yFiles; the source paragraph says the calling
+     code is public and the library is not.
+   - The manual's three mentions (`basics.md` layout section, `introduction.md` tool
+     set, `io.md` Imager `-b`) follow and link the new anchor.
+   - The yWorks attribution needed nothing: it has been in `_includes/footer.html`, on
+     the website's `main`, since the acknowledgement of 2025.
+   - Verified: the site builds with Jekyll and the anchor, the table inside the list
+     item and the links are in the generated pages. Not verified: the pages in a
+     browser, and the link to `LICENSE-YFILES.txt`, which resolves only once `master`
+     here is pushed.
+   - Not done, for Arend to decide: the website's `LICENSE.md` (the Apache notice, linked
+     from no page) says nothing of yFiles.
+   - Found on the way: the website's `main` is 27 commits ahead of `release-8_0_0` (the
+     manual updates for 7.6.0 to 7.8.0), and a trial merge conflicts in `manual.md`,
+     `manual/MakeRefs.java` and further manual files. That merge is due before 8.0.0
+     and is no part of this step; recorded in `release-8_0_0-state.md`.
 7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
    be seen. Wait for their answer.
    **Reminder for that mail (Arend asked to be reminded, 2026-11-16):** put the question
