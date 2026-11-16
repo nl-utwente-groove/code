@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.test.algebra.user;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.annotation.IntSeq;
@@ -35,7 +36,8 @@ import nl.utwente.groove.util.AIGenerated;
 @UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeStack(String name, IntSeq items) implements UserContainer<UserTypeStack> {
+public record UserTypeStack(@NonNull String name, @NonNull IntSeq items)
+    implements UserContainer<UserTypeStack> {
     /** Returns the element that is next in line, which is the one added last. */
     @Override
     @UserOperation

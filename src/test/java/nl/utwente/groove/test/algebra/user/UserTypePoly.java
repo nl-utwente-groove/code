@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.test.algebra.user;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.annotation.IntSeq;
@@ -34,7 +35,7 @@ import nl.utwente.groove.util.AIGenerated;
 @UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypePoly(String name, IntSeq coeffs) implements UserNamed {
+public record UserTypePoly(@NonNull String name, IntSeq coeffs) implements UserNamed {
     /** Returns the degree of this polynomial, taking its coefficients as they are. */
     @UserOperation
     public int degree() {

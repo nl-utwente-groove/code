@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.test.algebra.user;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.annotation.IntSeq;
@@ -33,7 +34,8 @@ import nl.utwente.groove.util.AIGenerated;
 @UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeQueue(String name, IntSeq items) implements UserContainer<UserTypeQueue> {
+public record UserTypeQueue(@NonNull String name, @NonNull IntSeq items)
+    implements UserContainer<UserTypeQueue> {
     /** Returns the element that is next in line, which is the one added first. */
     @Override
     public int next() {
