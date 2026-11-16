@@ -222,14 +222,29 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
      runner (`xvfb-run` around the release build, the Imager check there), the `.msi`
      and the other installer types with `yfiles` (only the app image was built), and
      whether the renaming is deterministic.
-4. **Licence texts**: `LICENSE.txt`, the notice in the binaries, the installer's licence
-   page, the release-page text, `CHANGES.md`. Wording to be reviewed by Arend against the
-   SLA. Since step 3 the yFiles zip carries `release/yfiles/include/YFILES-ADDON.md` at
-   its root, which still describes the add-on, and an installer built with `yfiles`
-   shows `LICENSE.txt` and, as an `.rpm`, carries the tag `Apache-2.0`: all three are
-   wrong for a binary with yFiles and are settled here (the text of the September
-   edition, `YFILES-EDITION.md` at 4a0731433 as reworded in a7d316d7f, describes this
-   very distribution and is the obvious start for the notice).
+4. **Licence texts**. Drafted 2026-11-16, branch `yfiles-licence-texts` on top of step
+   3, three commits (the restrictions and their wiring; the texts a user reads; this
+   note). **The wording awaits Arend's review against the SLA**; the places are listed
+   under *Decided in step 4*.
+   - `release/yfiles/include/LICENSE-YFILES.txt` replaces `YFILES-ADDON.md`: the
+     restrictions of a binary with yFiles, in plain text, started from the September
+     edition's notice (`YFILES-EDITION.md` as reworded by Arend in a7d316d7f). The
+     yFiles zip carries it at its root, and the build fails if it does not.
+   - `LICENSE.txt` loses its paragraph on the add-on and says instead that it does not
+     cover the yFiles library, and that a distribution with the library has
+     `LICENSE-YFILES.txt` next to it.
+   - An installer built with `yfiles` shows the two files as one licence, taking the
+     second from the zip it packages and refusing a zip without it; its `.rpm` tag is
+     `Apache-2.0 AND LicenseRef-GROOVE-yFiles-academic-non-commercial`.
+   - `release/include/README.md` (in every zip), the two change logs and
+     `release/github/INSTALL-NOTE.md` (the release page) describe the two forms of the
+     release instead of the add-on.
+   - Verified: the reactor with the profile, with `LICENSE-YFILES.txt` at the root of
+     the yFiles zip only; the new check fails on a zip without the file; a yFiles `.msi`
+     builds and its licence page text holds both files, paragraph by paragraph. Not
+     verified: that `.msi` installed, the other installer types, and how the release
+     page renders the note. The texts say that the installers contain yFiles, which
+     becomes true with step 5.
 5. **CI**: what is left after step 3 is the `installers` job. The release job needs no
    change for its assets: its `*.zip` glob attaches the yFiles zip as it is, and its
    build step already runs under Xvfb for the test pass. The installers are built on
@@ -328,3 +343,41 @@ Taken in the session; none of these has been put to Arend yet.
 
 Open for Arend: nothing blocks step 4. The two decisions he may want to overrule are
 the default of the installer script and the absence of a `+doc` zip with yFiles.
+
+## Decided in step 4 (2026-11-16)
+
+Taken in the session, as a draft for review.
+
+- **The restrictions are one plain-text file, `LICENSE-YFILES.txt`.** It is named and
+  placed as a licence, next to `LICENSE.txt`, because it is one: the installer has the
+  user accept it. Plain text rather than Markdown because the `.msi` turns the licence
+  into RTF paragraph by paragraph, and Markdown headings and links would show as
+  markup there. It is the only copy; the zip, the installers and the zip check all
+  take it from `release/yfiles/include`.
+- **`LICENSE.txt` stays one file for source, plain zips and binaries with yFiles.** It
+  covers GROOVE and says what it does not cover; the restrictions come on top, in the
+  other file, only where the library is. A second variant of `LICENSE.txt` for the
+  binaries with yFiles was rejected: two texts to keep in step, and the Apache licence
+  of GROOVE's own part holds in both.
+- **The wording to review**, each against SLA §2.1(c), §2.1(d) and §2.4 and against
+  yWorks' "the same restriction to purely academic use":
+  1. `LICENSE-YFILES.txt`, restriction 1: "academic, non-commercial purposes only, such
+     as research, teaching and study. It may not be used by or on behalf of a
+     commercial institution, nor by anyone for a commercial purpose." September's text
+     said "non-commercial purposes only"; "academic" and the sentence on commercial
+     institutions are new, after §2.4 and yWorks' reply.
+  2. The same file, restrictions 2 and 3 (no extraction or reverse engineering; passing
+     on only unchanged and as a whole): September's wording, adapted from "edition" to
+     "distribution", and now naming the backend jar as obfuscated too.
+  3. The same file, last two paragraphs: where the unrestricted zip is, and that the
+     source is public without the library.
+  4. The new paragraph of `LICENSE.txt`.
+  5. The short forms: "With or without yFiles" in `release/include/README.md`, the
+     first section of `CHANGES-8_0_0.md` and the line in `CHANGES.md`, and the block of
+     the same title in `INSTALL-NOTE.md`, which also tells the reader of the release
+     page that the installers are for academic use only.
+  6. The `.rpm` licence tag.
+- **Left out**: nothing in the running application states the restriction (an About
+  box, a start-up line). The SLA asks nothing of the kind as far as the notes record,
+  and the installers have the user accept the text; raised here so that it is a
+  decision rather than an omission. The website's download page is step 6.
