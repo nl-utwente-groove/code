@@ -267,6 +267,13 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
    restriction stated, the yWorks attribution, the manual's mentions of the add-on.
 7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
    be seen. Wait for their answer.
+   **Reminder for that mail (Arend asked to be reminded, 2026-11-16):** put the question
+   to yWorks whether the content of the library's module descriptor
+   (`module-info.class` of the plain jar: the module name, its `requires` and `exports`)
+   may be given to an LLM session. The ruling of 2026-09-05 admits demo code and the
+   documentation only, and excludes class-file inspection; the session was given the
+   module name alone, and learned the rest from compiler errors. A session that
+   prepares the pre-release or the mail must bring this up.
 8. **Release 8.0.0** by `release-8_0_0-state.md`; only the core artifact goes to Maven
    Central.
 
@@ -297,7 +304,9 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
   documentation does not state and which may not be read from the jar. The backend
   reaches the packages as class-path code, which is how the unit's tests, Eclipse and
   the installed application run; a GROOVE on the module path with the backend on the
-  class path no longer works, and nothing runs that way.
+  class path no longer works, and nothing runs that way. *Superseded on 2026-11-16, see
+  "The backend as a named module" below:* something did run that way, the Eclipse launch
+  of the Simulator with yFiles, and the library jar turned out to be a named module.
 - **The `check-revision` guard of the unit's pom stays** (taken in the session,
   confirmed by Arend), against item 3 of the required shape: it keeps a command-line
   build from compiling against a stale core artifact, whatever the distribution.
@@ -309,6 +318,69 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
 
 All gates of step 2 passed on its tip (fast suite 985 tests, GUI suite 23 tests in 8
 classes, backend unit 73 tests with 6 Robot skips, both null checks).
+
+## The backend as a named module (2026-11-16)
+
+Branch `yfiles-backend-module` off `master`. It replaces the decision of step 2 to close
+the seam by not exporting it, and supersedes the stopgap branch `yfiles-eclipse-launch`
+(a class-path launch for Eclipse), which is to be dropped unmerged.
+
+What prompted it: after step 2 the Eclipse launch `GROOVE yFiles - Launch Simulator`,
+which has the core on the module path and the backend on the class path, died with an
+`IllegalAccessError` on `GraphBackend`. Arend did not want the core off the module path
+for the sake of the backend, and found that the library jar is a named module,
+`com.yworks.yfiles.complete` (he read the name from the jar himself; under its file name
+the jar could not even have been an automatic module, since the derived name
+`yfiles.for.java.swing` contains a keyword).
+
+What was built:
+
+- **The unit is the module `nl.utwente.groove.yfiles`**: it requires the core and the
+  library, provides `GraphBackend`, exports nothing. The core exports `gui.view`,
+  `gui.view.cell`, `gui.look` and `gui.layout` to that module only, which is item 3 of
+  *The required shape* after all, and a tighter seam than the unqualified exports
+  before step 2.
+- **The tests run on the module path**, as part of the module. They need six packages
+  the core does not export (`gui`, `gui.action`, `gui.display`, `gui.export`,
+  `gui.tree`, `io`); the unit's pom exports these for the tests only, at compilation
+  and in the Surefire `argLine`. The preferences isolation moved to the `argLine` too:
+  the session listener `TestIsolation` is declared in `META-INF/services`, which the
+  service loader ignores for a named module; it stays for class-path runs.
+- **The release build takes the descriptor out of the backend jar** before obfuscating
+  it. The binaries run on the class path as before.
+- **The Eclipse launch** is the old one with the backend project and the library jar
+  moved from the class path to the module path entries.
+- **`opens gui.layout to info.picocli` in the core**, a regression of step 2 found on
+  the way: the Imager and the Viewer have `LayoutHandler` of that package as the
+  converter of their layout option, which picocli instantiates reflectively. Since step
+  2 any modular run of the Imager failed, the core's own `ImagerTest` included (6
+  failures and an error), unnoticed because that test is a slow test outside the
+  default suite and the installed application runs on the class path.
+
+Verified: the core's fast suite (985 tests) and `ImagerTest`; the GUI tests (23 in 8
+classes); the unit as a module (73 tests, the 6 Robot tests skipping); both null checks;
+the Imager launched as a module with core, backend and library on the module path and
+no option at all, rendering with yFiles, and falling back to JGraph with its warning
+when backend and library are taken away; the release reactor with the `yfiles` profile,
+where the obfuscated backend jar has no descriptor and the tests on the obfuscated
+stack pass (67, 6 aborted by assumption).
+
+Not verified, and not verifiable from a session: **anything in Eclipse**. Open there:
+whether the launch file starts as rewritten; whether m2e, after Maven > Update Project
+on `groove-yfiles`, passes the `--add-exports` of the test compilation on to JDT (if
+not, the test sources show "not accessible" errors, and the exports have to be set on
+the project's module dependencies by hand, or moved to the plugin-level `compilerArgs`
+of the pom at the price of the backend's own code compiling with them too); and whether
+a JUnit run gets the VM arguments of the `argLine`. Also not known: what yGuard leaves
+of the library's own descriptor in the obfuscated library jar. It does not matter on
+the class path, but the jars of the distribution must not be assumed to work as
+modules.
+
+Rejected: unqualified exports again (the state before step 2; open to any class-path
+code); `--add-exports` in the launch (publishes the switches that reopen the seam, and
+runs the backend as no installation does); the tests on the class path with
+`useModulePath=false` (Eclipse compiles and runs the tests of a modular project as part
+of the module regardless, so Maven would test another configuration than Eclipse).
 
 ## Decided in step 3 (2026-11-16)
 
