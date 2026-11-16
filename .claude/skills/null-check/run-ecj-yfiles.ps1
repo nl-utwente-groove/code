@@ -47,9 +47,20 @@ if (-not $UseInstalledJar -and (Test-Path (Join-Path $classes 'nl\utwente\groove
 $log = Join-Path $unit 'target\ecj-problems.txt'
 Remove-Item $log -Force -ErrorAction SilentlyContinue
 Write-Host 'Checking yfiles\src\main\java and yfiles\src\test\java...'
+# The unit is a named module, but it is checked in the unnamed module, on the
+# class path: its module descriptor is left out. The null analysis does not
+# depend on it, and with it the test tree would need the same --add-exports as
+# in the pom, and ecj a readable descriptor for every jar on the module path
+# (see run-ecj.ps1). What the descriptor is there for, access between the
+# modules, the Maven build of the unit checks.
+$listFile = Join-Path $unit 'target\ecj-sources.txt'
+$sources = Get-ChildItem src\main\java, src\test\java -Recurse -Filter *.java |
+    Where-Object { $_.Name -ne 'module-info.java' } |
+    ForEach-Object { '"' + ($_.FullName -replace '\\', '/') + '"' }
+[IO.File]::WriteAllLines($listFile, $sources)
 java -jar $ecj -properties .settings/org.eclipse.jdt.core.prefs --release 21 -proc:none `
     -encoding UTF-8 -annotationpath $eea -d none -log $log `
-    -cp ($entries -join ';') src\main\java src\test\java
+    -cp ($entries -join ';') "@$listFile"
 $exit = $LASTEXITCODE
 
 # ecj has printed any problems itself; the log decides the outcome, since ecj

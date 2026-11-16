@@ -195,7 +195,19 @@
 						<configuration>
 							<target xmlns:unless="ant:unless">
 								<taskdef name="yguard" classname="com.yworks.yguard.YGuardTask" classpathref="maven.plugin.classpath" />
-								<macrodef name="obfuscate">
+								<!-- The backend jar without its module descriptor. The backend
+									     is a named module (yfiles/src/main/java/module-info.java),
+									     for development on the module path; its descriptor names
+									     the backend's package and provider class, which the
+									     obfuscation renames, so it would be false in the result.
+									     The binaries run on the class path, where no descriptor is
+									     read and the provider file in META-INF/services, which the
+									     obfuscation does rewrite, is what counts -->
+									<property name="backend.in" location="${project.build.directory}/in/classpath/${backend.jar}" />
+									<zip destfile="${backend.in}">
+										<zipfileset src="${project.build.directory}/in/${backend.jar}" excludes="module-info.class" />
+									</zip>
+									<macrodef name="obfuscate">
 									<!-- the directory of the obfuscated jars -->
 									<attribute name="out" />
 									<!-- the name mapping -->
@@ -210,7 +222,7 @@
 										<mkdir dir="@{out}" />
 										<yguard>
 											<inoutpair in="${project.build.directory}/in/${yfiles.jar}" out="@{out}/${yfiles.jar}" />
-											<inoutpair in="${project.build.directory}/in/${backend.jar}" out="@{out}/${backend.jar}" />
+											<inoutpair in="${backend.in}" out="@{out}/${backend.jar}" />
 											<extra-pairs />
 											<externalclasses path="@{external}" />
 											<rename logfile="@{log}" replaceClassNameStrings="true" annotationclass="com.yworks.yfiles.utils.Obfuscation">

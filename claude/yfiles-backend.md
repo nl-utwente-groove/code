@@ -30,6 +30,27 @@ engineering, permitted input sources, secret handling. In particular:
   and the Simulator tests then skip by assumption. Check with `quser` (`Disc` or `Active`)
   before relying on a display run.
 
+## The module
+
+The unit is the named module `nl.utwente.groove.yfiles`; `yfiles/README.md`, *The unit as a
+module*, is the reference. What a session trips over:
+
+- The tests run on the module path and see of the core only its exported packages plus
+  the `--add-exports` of the unit's pom, listed twice there (test compilation, Surefire
+  `argLine`). "package ... is not visible" in a test means: add it in both places. The
+  same message for the backend's own code means the backend reaches for something the
+  core does not give it; that is a design question, not a missing flag.
+- Never call `ServiceLoader` for `GraphBackend` from the unit: the module provides the
+  service and does not use it.
+- No gate runs an Eclipse `.launch` file. After a change to a `module-info`, to the
+  exports of the core or to the unit's dependencies, say that the launches are untested.
+- The Imager launched as a module with all three on the module path is the quick check
+  that the modules fit without any option; the unit's tests cannot show that, since they
+  run with the test-only exports.
+- The library's module name, `com.yworks.yfiles.complete`, was read from the jar by
+  Arend, not by a session. Its descriptor is not a permitted input (ground rules): what
+  the library exports is learned from compiler errors only.
+
 ## GUI tests
 
 `YFilesSimulatorTest` drives a real Simulator window. Two rules keep it free of timing races

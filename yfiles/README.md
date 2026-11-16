@@ -35,7 +35,7 @@ At compile time, the neutral seams of the main project: the `GraphBackend` servi
 interface, the canvas, controller, view-model and cell interfaces of `gui.view`, the look
 layer (`gui.look`), the graph types and the layout map. Nothing from `gui.jgraph`. At run
 time the direction reverses: the main project does not depend on this unit, the Simulator
-discovers it on the class path through `ServiceLoader`.
+discovers it through `ServiceLoader`.
 
 The dependency is on the GROOVE artifact `nl.utwente.groove:groove`, at the version given
 by the `revision` property of this pom, whose default is kept equal to the `revision` of
@@ -120,12 +120,52 @@ pom as well, so for those the comparison holds trivially.
    This re-installs the GROOVE artifact first (see above). Scripts building a release may
    pass `-Drevision=<version>` as the release reactor does.
 
+## The unit as a module
+
+The unit is the named module `nl.utwente.groove.yfiles` (`src/main/java/module-info.java`).
+It requires GROOVE and the yFiles library, which is itself a named module
+(`com.yworks.yfiles.complete`), provides the `GraphBackend` service, and exports nothing.
+GROOVE in turn exports the four packages of its view layer (`gui.view`, `gui.view.cell`,
+`gui.look`, `gui.layout`) to this module by name and to no other. Two ways of running
+follow from that, and one that does not work:
+
+- **All three on the module path**: GROOVE, this unit and the library. This is how the
+  unit's tests run under Maven and how the Eclipse launch `GROOVE yFiles - Launch
+  Simulator` in `launch/` runs, a launch of the `groove` project with this project and the
+  library jar among its module path entries. No option is needed: a launch of a main class
+  of GROOVE finds the backend through service binding.
+- **All three on the class path**: this is how the installed application runs, and the
+  test pass of the release build. No module descriptor is read; the provider file in
+  `META-INF/services` is what the service loader goes by. The release build removes the
+  descriptor from the backend jar before obfuscating it, since the obfuscation renames the
+  package and the class it names.
+- **GROOVE on the module path and this unit on the class path** fails with an
+  `IllegalAccessError` on `GraphBackend`: the view layer is not exported to class-path
+  code.
+
+Consequences for the tests, which are compiled and run as part of the module:
+
+- They drive a whole Simulator and use packages of GROOVE that it does not export
+  (`gui`, `gui.action`, `gui.display`, `gui.export`, `gui.tree`, `io`). The pom exports
+  these to the module for the tests only, with `--add-exports`, in two places that have
+  to agree: the test compilation and the Surefire `argLine`. The backend's own code is
+  compiled without them. A test that needs a further package fails to compile with
+  "package ... is not visible" until it is added in both places.
+- The in-memory preferences that keep a test run away from the developer's GROOVE
+  settings are set in the Surefire `argLine` as well; the launcher session listener
+  `TestIsolation` only works on the class path. A JUnit run from Eclipse needs the same
+  VM arguments as that `argLine`, unless m2e passes them on by itself; without them the
+  Simulator tests fail on their check of the isolation, before touching any preference.
+- A module that provides a service may not look it up: a test asks GROOVE for the
+  backends (`GraphBackend.available()`, `discover`) and does not call `ServiceLoader`.
+
 ## Contents
 
 - `nl.utwente.groove.gui.yfiles.YFilesBackend`: the `GraphBackend` service provider,
   declared in `META-INF/services`. The main build discovers backends through
-  `ServiceLoader` and ranks yFiles first whenever it is present, so putting this project
-  on the class path of a GROOVE launch is all that is needed to select it.
+  `ServiceLoader` and ranks yFiles first whenever it is present, so having this unit in
+  a GROOVE launch is all that is needed to select it. See *The unit as a module* below
+  for where in the launch it has to be.
 - `YFilesAspectCanvas` on the abstract `YFilesCanvas`: the read-only canvas for aspect
   graphs (host graphs, rules, types, states), a `GraphCanvas` composed over a yFiles
   `GraphComponent`. `YFilesCellStore` shows the neutral cells of the view model as tagged
@@ -196,9 +236,8 @@ the distribution:
   no `Class.forName` on a computed string, no class name that is stored or shown, and no
   resource looked up relative to a class. Names of enum constants are unaffected.
 
-The project runs on the class path (no `module-info`): the yFiles documentation does not
-state the jar's module name, and GROOVE's installed application runs from the class path
-as well.
+In the distribution the two jars run on the class path, and the backend jar has no module
+descriptor (see *The unit as a module*).
 
 ## Upgrading the library
 

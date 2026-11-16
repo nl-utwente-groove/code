@@ -132,7 +132,9 @@ public class YFilesSimulatorTest {
         assumeFalse(GraphicsEnvironment.isHeadless(), "no display");
         assertTrue(InMemoryPreferencesFactory.isInstalled(),
                    "Preferences not isolated: " + TestIsolation.class.getSimpleName()
-                       + " did not run, or java.util.prefs was used before it did");
+                       + " did not run (on the module path it cannot: pass the VM arguments"
+                       + " of the Surefire argLine in the unit's pom), or java.util.prefs was"
+                       + " used before it did");
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> EDT_ERRORS.add(e));
         SwingUtilities.invokeAndWait(() -> {
             var sim = new Simulator();

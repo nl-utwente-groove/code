@@ -178,7 +178,11 @@ Twente) has four consequences that shape this build:
   methods by which it overrides or implements something of the GROOVE core or the JDK.
   No name of the backend has to survive: the core finds the backend through the
   `ServiceLoader`, and yGuard rewrites the provider file in the backend jar to the new
-  name of the provider class.
+  name of the provider class. The backend is a named module during development (see
+  `yfiles/README.md`, *The unit as a module*); its module descriptor names the package
+  and the provider class by their original names, so the module takes it out of the
+  backend jar before the obfuscation (`target/in/classpath`). The binaries run on the
+  class path, where the provider file is what counts.
 - Only the licensed developer may develop against the plain library jar, and the
   release build may use it under the project license. It therefore exists in two
   places only: the local Maven repository of that developer, and the private

@@ -20,8 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ServiceLoader;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 
@@ -39,10 +37,12 @@ import nl.utwente.groove.util.AIGenerated;
 public class BackendDiscoveryTest {
     @Test
     void bothBackendsAreDiscovered() {
-        var names = ServiceLoader
-            .load(GraphBackend.class)
+        // through GROOVE's own discovery: this module is a provider of the service
+        // and not a user, so it may not call the service loader itself
+        var names = GraphBackend
+            .discover(BackendDiscoveryTest.class.getClassLoader())
             .stream()
-            .map(provider -> provider.get().getName())
+            .map(GraphBackend::getName)
             .toList();
         assertTrue(names.contains(GraphBackend.JGRAPH), "JGraph backend not found: " + names);
         assertTrue(names.contains(GraphBackend.YFILES), "yFiles backend not found: " + names);

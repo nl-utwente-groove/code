@@ -204,6 +204,41 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<!-- The unit is a named module (src/main/java/module-info.java),
+				     so its tests are compiled and run as part of that module and
+				     see of GROOVE what the module sees: the exported packages, and
+				     the view layer that GROOVE exports to this module by name. The
+				     tests drive a whole Simulator and need more than that; the
+				     packages they need are exported to the module for the tests
+				     only, here for their compilation and in the surefire argLine
+				     below for their run. The backend itself is compiled without
+				     these, so that it cannot come to depend on them. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.12.1</version>
+				<executions>
+					<execution>
+						<id>default-testCompile</id>
+						<configuration>
+							<compilerArgs>
+								<arg>--add-exports</arg>
+								<arg>nl.utwente.groove/nl.utwente.groove.gui=nl.utwente.groove.yfiles</arg>
+								<arg>--add-exports</arg>
+								<arg>nl.utwente.groove/nl.utwente.groove.gui.action=nl.utwente.groove.yfiles</arg>
+								<arg>--add-exports</arg>
+								<arg>nl.utwente.groove/nl.utwente.groove.gui.display=nl.utwente.groove.yfiles</arg>
+								<arg>--add-exports</arg>
+								<arg>nl.utwente.groove/nl.utwente.groove.gui.export=nl.utwente.groove.yfiles</arg>
+								<arg>--add-exports</arg>
+								<arg>nl.utwente.groove/nl.utwente.groove.gui.tree=nl.utwente.groove.yfiles</arg>
+								<arg>--add-exports</arg>
+								<arg>nl.utwente.groove/nl.utwente.groove.io=nl.utwente.groove.yfiles</arg>
+							</compilerArgs>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<!-- The test classes as a jar of their own (classifier tests), which
 				     the release build obfuscates together with the backend and the
 				     library in order to run these tests on the obfuscated stack
@@ -228,19 +263,22 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.2.5</version>
 				<configuration>
-					<!-- The isolation of the test JVM from the developer's GROOVE
-					     installation (in-memory preferences) is not set here but by the launcher
-					     session listener TestIsolation, which a run from Eclipse gets as
-					     well; a Maven run that went red on it would be the first sign
-					     that the listener is no longer picked up. The native access
-					     grant, being a JVM option, has no such alternative: it keeps
-					     JDK 24+ (JEP 472) from warning when FlatLaf loads its
-					     window-decoration library in the Simulator tests. Unlike the
-					     main project, this one has no module descriptor, so Surefire
-					     runs everything on the class path and the grant goes to the
-					     unnamed module (the main project's module form would only yield
-					     an "Unknown module" warning here). -->
-					<argLine>--enable-native-access=ALL-UNNAMED</argLine>
+					<!-- The unit is a named module, so Surefire runs its tests on the
+					     module path, as part of that module. Three things follow.
+					     The isolation of the test JVM from the developer's GROOVE
+					     installation (in-memory preferences) is set here: the
+					     launcher session listener TestIsolation, which does it for a
+					     run on the class path, is a service provider declared in
+					     META-INF/services, which the service loader does not read
+					     for a named module. The factory class is instantiated by
+					     java.prefs, hence the export of its package to that module.
+					     The packages of GROOVE that only the tests need are exported
+					     to this module, as for their compilation above. And the
+					     native access grant, which keeps JDK 24+ (JEP 472) from
+					     warning when FlatLaf loads its window-decoration library
+					     in the Simulator tests, names FlatLaf's module, as in the
+					     main project. -->
+					<argLine>--enable-native-access=com.formdev.flatlaf -Djava.util.prefs.PreferencesFactory=nl.utwente.groove.gui.yfiles.InMemoryPreferencesFactory --add-exports=nl.utwente.groove.yfiles/nl.utwente.groove.gui.yfiles=java.prefs --add-exports=nl.utwente.groove/nl.utwente.groove.gui=nl.utwente.groove.yfiles --add-exports=nl.utwente.groove/nl.utwente.groove.gui.action=nl.utwente.groove.yfiles --add-exports=nl.utwente.groove/nl.utwente.groove.gui.display=nl.utwente.groove.yfiles --add-exports=nl.utwente.groove/nl.utwente.groove.gui.export=nl.utwente.groove.yfiles --add-exports=nl.utwente.groove/nl.utwente.groove.gui.tree=nl.utwente.groove.yfiles --add-exports=nl.utwente.groove/nl.utwente.groove.io=nl.utwente.groove.yfiles</argLine>
 					<systemPropertyVariables>
 						<groove.test.robot>${groove.test.robot}</groove.test.robot>
 						<!-- the fixture grammars are read from the GROOVE checkout -->

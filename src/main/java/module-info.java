@@ -66,6 +66,16 @@ module nl.utwente.groove {
     exports nl.utwente.groove.util.parse;
     exports nl.utwente.groove.util.line;
     exports nl.utwente.groove.util.cache;
+    // -- graph-backend SPI: exported to the module of the yFiles backend only
+    //    (the unit in yfiles/, which is not part of this build), so that GROOVE
+    //    and that backend can both be on the module path. Not exported
+    //    generally: the view layer is no public interface, and to code on the
+    //    class path it is closed whenever GROOVE itself is a named module;
+    //    see claude/yfiles-restructure.md
+    exports nl.utwente.groove.gui.view to nl.utwente.groove.yfiles;
+    exports nl.utwente.groove.gui.view.cell to nl.utwente.groove.yfiles;
+    exports nl.utwente.groove.gui.look to nl.utwente.groove.yfiles;
+    exports nl.utwente.groove.gui.layout to nl.utwente.groove.yfiles;
 
     // service contributions; each provider is also declared in META-INF/services,
     // which takes over when GROOVE runs from the class path (as the installed

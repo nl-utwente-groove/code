@@ -37,6 +37,13 @@ import nl.utwente.groove.util.AIGenerated;
  * also for an ad-hoc {@code Run as > JUnit test} in Eclipse, which passes no VM arguments
  * of its own. A property that already has a value is left alone, so a runner can still
  * dictate one.
+ * <p>
+ * That holds for a run on the class path only, such as the test pass of the release build
+ * on the obfuscated jars. The unit is a named module, and for a run on the module path the
+ * service loader does not read {@code META-INF/services}: there the runner has to set the
+ * property, as the Surefire configuration of the unit's pom does, together with an export
+ * of this package to {@code java.prefs}. A run that got neither fails in the tests that
+ * check the isolation, before it touches any preference.
  * @author Arend Rensink
  * @version $Revision$
  */

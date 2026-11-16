@@ -104,9 +104,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/null-check/ru
 
 It checks the unit's whole source tree every time (15 main and 8 test sources, well under a
 minute) with the same ecj version, settings (`yfiles/.settings`, kept identical to the main
-project's) and external annotations, straight from source: the unit runs on the class path
-without `module-info` and has no generated sources, so none of the module handling above
-applies. The core comes from this checkout's `target\classes` when that is built, as in
+project's) and external annotations, straight from source: the unit is a named module, but the script leaves its
+`module-info.java` out and checks the sources in the unnamed module, on the class path,
+and there are no generated sources, so none of the module handling above applies (access
+between the modules is checked by the unit's Maven build, not here). The core comes from this checkout's `target\classes` when that is built, as in
 Eclipse's workspace resolution, and from the installed `nl.utwente.groove:groove` jar
 otherwise or with `-UseInstalledJar`; stale core classes show up as API errors, and ecj
 skips null analysis in any unit with an error. The dependency class path is cached in
