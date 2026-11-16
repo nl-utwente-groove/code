@@ -76,25 +76,22 @@ reported for slice 3 was counted over all files in `target/surefire-reports`, wh
 included stale reports of slow and GUI tests; the comparable figure there is 891.
 ecj null analysis on the touched files, with 3.42.0 (the harness version) and with
 3.44.0: no errors, no warnings; 3.44.0 over the whole test tree: the four task tags of
-the baseline only. The main tree as a whole was not rechecked with 3.44.0. No GUI
-tests: nothing under `gui/` is touched.
+the baseline only. No GUI tests: nothing under `gui/` is touched.
+
+After the merge of `null-check-ecj-3_44` (the harness at ecj 3.44.0, and with it
+`release-7` up to the design note of gh #944): the whole-project check gives the
+baseline of 14 problems, none of them in the code of gh #933. The merge brought no
+Java changes, so the tests were not rerun.
 
 ## Not done
 
 1. End-to-end grammar test, if wanted (a new `junit/rules` grammar needs a
    `RuleCompilationTest` golden).
 2. Web manual section (on the website-updates list).
-3. The gh #944 design note (branch `user-value-typing`) assumes that there is no
+3. The gh #944 design note (`claude/user-value-typing.md`) assumes that there is no
    subtyping among user types. That no longer holds: revise it before deciding on it.
 
 ## Hazards
-
-- On this branch the `null-check` harness still pins ecj 3.42.0, which does not report
-  what Eclipse (JDT 3.44 or later) does for a record component whose implicit accessor
-  implements a method of an annotated interface (see CLAUDE.md). Branch
-  `null-check-ecj-3_44`, off `release-7`, raises the pin to 3.44.0; until that is
-  merged in, also run ecj 3.44.0 by hand on such records
-  (`~/.m2/repository/org/eclipse/jdt/ecj/3.44.0`, same arguments as the script).
 
 - ecj skips null analysis of a file with a compile error: rerun after fixing one.
 - `Class.getDeclaredMethods` has no defined order; error messages that depend on which
