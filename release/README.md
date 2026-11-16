@@ -191,7 +191,9 @@ Twente) has four consequences that shape this build:
   accept. `LICENSE.txt` itself, which goes into every zip and heads the source, says
   that it does not cover the yFiles library and points to that file. The other texts a
   user meets say the same in their own words: `include/README.md` in the zips, the
-  change logs, and `github/INSTALL-NOTE.md` on the release page. A change to the
+  change logs, `github/INSTALL-NOTE.md` on the release page, and the notice below the
+  version in the About box of the application, which is the text of
+  `YFilesBackend.getLicenseNotice()` in the backend unit. A change to the
   restrictions has to reach all of them, and the download page of the website.
 - The license file the backend jar carries must itself be redistributable. The backend
   packages the distribution license (`yfiles.license.file`, see below) and never the
