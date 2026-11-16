@@ -25,8 +25,8 @@ import nl.utwente.groove.util.AIGenerated;
  * component of a {@link UserType} record or the last parameter of a
  * {@link UserOperation}.
  * There is one implementation per system sort: {@link IntSeq}, {@link RealSeq},
- * {@link BoolSeq} and {@link StringSeq}; and one for the values of a user type,
- * {@link UserSeq}, which is only allowed as a parameter. User code works with those
+ * {@link BoolSeq} and {@link StringSeq}; and one for the values of a user type
+ * or user interface, {@link UserSeq}, which is only allowed as a parameter. User code works with those
  * classes, which offer unboxed access; this interface serves code that has to treat
  * them alike.
  * Two sequences are equal if they are of the same class and hold equal elements

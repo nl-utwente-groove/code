@@ -18,8 +18,10 @@ package nl.utwente.groove.test.algebra;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -148,15 +150,21 @@ public class SequenceTailTest {
         assertEquals("ab", eval("concat(tagsAt(UserTypeTags(\"a\",\"b\"),0),\"b\")"));
     }
 
-    /** A position outside the sequence yields an error value, as does a value of another user type. */
+    /** A position outside the sequence yields an error value, as does a value of another user type
+     * if that type is not known when the call is parsed.
+     */
     @Test
     public void testAccessorErrors() throws FormatException {
         assertInstanceOf(ErrorValue.class, eval("coeffsAt(UserTypePoly(\"p\",1,2,3),3)"));
         assertInstanceOf(ErrorValue.class, eval("coeffsAt(UserTypePoly(\"p\",1,2,3),-1)"));
         assertInstanceOf(ErrorValue.class, eval("coeffsAt(UserTypePoly(\"p\"),0)"));
         // all user types have the same sort
-        assertInstanceOf(ErrorValue.class, eval("coeffsSize(UserTypeBag(1))"));
-        assertInstanceOf(ErrorValue.class, eval("coeffsAt(UserTypeBag(1),0)"));
+        var bag = new UserTypeBag(IntSeq.of(1));
+        assertInstanceOf(ErrorValue.class, apply("coeffsSize", bag));
+        assertInstanceOf(ErrorValue.class, apply("coeffsAt", bag, 0));
+        // but the type of a constant is known
+        assertThrows(FormatException.class, () -> eval("coeffsSize(UserTypeBag(1))"));
+        assertThrows(FormatException.class, () -> eval("coeffsAt(UserTypeBag(1),0)"));
         // the accessors are operators like any other, with their own arguments
         assertThrows(FormatException.class, () -> eval("coeffsAt(UserTypePoly(\"p\",1))"));
         assertThrows(FormatException.class, () -> eval("coeffsAt(UserTypePoly(\"p\",1),true)"));
@@ -176,13 +184,19 @@ public class SequenceTailTest {
 
     /**
      * All user types have the same sort, so a user value of another type than the elements of
-     * the sequence is only found when the operation is applied; the outcome is an error value.
+     * the sequence is in general only found when the operation is applied; the outcome is
+     * an error value. Where the type is known when the call is parsed, as for a constant,
+     * it is found then (gh #933).
      */
     @Test
-    public void testUserElementError() throws FormatException {
-        assertInstanceOf(ErrorValue.class, eval("countCoeffs(UserTypeBag(1))"));
-        assertInstanceOf(ErrorValue.class,
-                         eval("countCoeffs(UserTypePoly(\"p\",1),UserTypeBag(1))"));
+    public void testUserElementError() {
+        var poly = new UserTypePoly("p", IntSeq.of(1));
+        var bag = new UserTypeBag(IntSeq.of(1));
+        assertInstanceOf(ErrorValue.class, apply("countCoeffs", bag));
+        assertInstanceOf(ErrorValue.class, apply("countCoeffs", poly, bag));
+        assertThrows(FormatException.class, () -> eval("countCoeffs(UserTypeBag(1))"));
+        assertThrows(FormatException.class,
+                     () -> eval("countCoeffs(UserTypePoly(\"p\",1),UserTypeBag(1))"));
     }
 
     /**
@@ -225,6 +239,15 @@ public class SequenceTailTest {
         assertEquals(result, call.getSort(), text);
         assertEquals(List.of(args), call.getArgs().stream().map(Expression::getSort).toList(),
                      text);
+    }
+
+    /** Applies the user operator of a given name to given values,
+     * and returns the outcome, which may be an error value.
+     */
+    private Object apply(String opName, Object... args) {
+        var op = UserSignature.getOperators().get(opName);
+        assertNotNull(op);
+        return AlgebraFamily.DEFAULT.getOperation(op).applyStrict(Arrays.asList(args));
     }
 
     /** Parses and evaluates a closed expression in the default algebra family. */

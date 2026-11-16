@@ -19,10 +19,14 @@ package nl.utwente.groove.algebra;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.annotation.Seq;
+import nl.utwente.groove.annotation.UserDisplay;
 import nl.utwente.groove.annotation.UserType;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -114,6 +118,51 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
         }
         result.append(')');
         return result.toString();
+    }
+
+    /** Returns the custom display string of a given user value: the string that the
+     * {@link UserDisplay}-annotated method of its type returns for the value.
+     * The display string is for showing the value only; unlike the symbol
+     * (see {@link #toValidSymbol(Object)}) it need not determine the value
+     * and cannot be parsed back.
+     * @param value a value from this algebra, or an {@link ErrorValue}
+     * @return the display string; {@code null} if the type of the value has no display
+     * method, or the method throws an exception or returns {@code null} or the empty string
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public @Nullable String toDisplayString(Object value) {
+        var method = getDisplayMethod(value.getClass());
+        if (method == null) {
+            return null;
+        }
+        try {
+            // the display method is user code: anything can go wrong in it
+            var result = (String) method.invoke(value);
+            // an empty string would show no value at all
+            return result == null || result.isEmpty()
+                ? null
+                : result;
+        } catch (ReflectiveOperationException | RuntimeException exc) {
+            return null;
+        }
+    }
+
+    /** Returns the custom display string of the value of a given user constant.
+     * @param constant a constant of sort {@link Sort#USER}
+     * @return the display string; {@code null} if the constant has no valid value,
+     * or its value has no display string
+     * @see #toDisplayString(Object)
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public @Nullable String toDisplayString(Constant constant) {
+        assert constant.getSort() == Sort.USER;
+        try {
+            // the value is built by the record constructor, which is user code as well,
+            // and the user classes may have been unloaded since the constant was created
+            return toDisplayString(AlgebraFamily.DEFAULT.toValue(constant));
+        } catch (RuntimeException exc) {
+            return null;
+        }
     }
 
     @Override

@@ -7,7 +7,6 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -93,25 +92,26 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = annotation == null
             ? false
             : annotation.indeterminate();
-        this.seqAccessor = null;
     }
 
     /**
      * Constructs the operator for a generated accessor of a sequence-valued field
-     * of a user type. The operator takes a value of the user type as its first argument;
-     * its name is derived from the name of the field (see {@link SeqAccessor#getName(String)}).
-     * @param field the sequence-valued field
+     * of a user type or user interface. The operator takes a value of the user type
+     * as its first argument; its name is derived from the name of the field
+     * (see {@link SeqAccessor#getName(String)}).
+     * @param field the method that yields the sequence: the accessor method of the
+     * field of a user type, or the method that declares the field in a user interface
      * @param accessor the kind of accessor
      * @throws IllegalArgumentException if the type of the field is not a sequence type
      * of a system sort
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
-    Operator(RecordComponent field, SeqAccessor accessor) throws IllegalArgumentException {
-        var elementType = getSeqElementType(field.getType());
+    Operator(Method field, SeqAccessor accessor) throws IllegalArgumentException {
+        var elementType = getSeqElementType(field.getReturnType());
         if (elementType == null) {
             throw Exceptions
                 .illegalArg("Type %s of field '%s' is not a sequence type of a system sort",
-                            field.getType().getSimpleName(), field.getName());
+                            field.getReturnType().getSimpleName(), field.getName());
         }
         this.declaringSort = Sort.USER;
         this.inverse = false;
@@ -139,7 +139,6 @@ public class Operator implements Comparable<Operator> {
         this.arity = this.parameterSorts.size();
         this.symbol = null;
         this.kind = OpKind.CALL;
-        this.seqAccessor = accessor;
     }
 
     /**
@@ -150,9 +149,11 @@ public class Operator implements Comparable<Operator> {
      * which are passed on as a single sequence.
      * For the sequence types of the system sorts, the type returned is the
      * corresponding Java type (for instance {@code int} for {@link IntSeq});
-     * for a {@link UserSeq} it is the type argument.
+     * for a {@link UserSeq} it is the type argument, which is a user type or
+     * a user interface (the raw one, if it is generic).
      * @throws IllegalArgumentException if a parameter other than the last is of a sequence type,
-     * or if the last parameter is a sequence type without a known element type
+     * or if the last parameter is a sequence type without a known element type,
+     * or a {@link UserSeq} of a system sort
      * @see #hasTail()
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
@@ -178,9 +179,22 @@ public class Operator implements Comparable<Operator> {
             // of inner classes, which do not occur here
             Type[] genTypes = executable.getGenericParameterTypes();
             if (genTypes.length == parTypes.length
-                && genTypes[last] instanceof ParameterizedType parType
-                && parType.getActualTypeArguments()[0] instanceof Class<?> argType) {
-                return argType;
+                && genTypes[last] instanceof ParameterizedType parType) {
+                Type argType = parType.getActualTypeArguments()[0];
+                if (argType instanceof ParameterizedType genArgType) {
+                    // a generic user interface, of which only the raw type matters
+                    argType = genArgType.getRawType();
+                }
+                if (argType instanceof Class<?> result) {
+                    var sort = Sort.toSort(result);
+                    if (sort != null && sort != Sort.USER) {
+                        // the system sorts have sequence types of their own
+                        throw Exceptions
+                            .illegalArg("Sequence type %s is for user values, not for elements of type %s",
+                                        lastType.getSimpleName(), result.getSimpleName());
+                    }
+                    return result;
+                }
             }
             throw Exceptions
                 .illegalArg("Sequence type %s does not specify the type of its elements",
@@ -277,7 +291,6 @@ public class Operator implements Comparable<Operator> {
         this.indeterminate = false;
         this.constructor = false;
         this.tail = false;
-        this.seqAccessor = null;
     }
 
     /** Converts a reflected parameter type into a GROOVE sort. */
@@ -510,20 +523,6 @@ public class Operator implements Comparable<Operator> {
 
     /** Flag indicating if this operator is the constructor of a user type. */
     private final boolean constructor;
-
-    /**
-     * Returns the kind of accessor that this operator is for a sequence-valued field
-     * of a user type, or {@code null} if it is not such an accessor.
-     * An accessor is generated, rather than declared by a user operation;
-     * it is evaluated by applying the accessor to the value of the field.
-     */
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    public @Nullable SeqAccessor getSeqAccessor() {
-        return this.seqAccessor;
-    }
-
-    /** The kind of accessor that this operator is for a sequence-valued field, if any. */
-    private final @Nullable SeqAccessor seqAccessor;
 
     /**
      * The accessors that are generated for a sequence-valued field of a user type.

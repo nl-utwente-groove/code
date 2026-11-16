@@ -86,6 +86,8 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     USER_OPS("userOperations",
         "List of qualified names of classes containing user-defined data operations. "
             + "<p>Static methods annotated with @UserOperation can be used in rules. "
+            + "<p>A name of the form <tt>package.*</tt> stands for all classes of that package "
+            + "(not of its subpackages) that are a @UserType or declare a @UserOperation. "
             + "<p>The classes are loaded from GROOVE's own class path, the grammar directory "
             + "(the subdirectory <tt>classes</tt> and the jars in the subdirectory <tt>lib</tt>), "
             + "the grammar class path (see <tt>userClassPath</tt>) or the installation-level "

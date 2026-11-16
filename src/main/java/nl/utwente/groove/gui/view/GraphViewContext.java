@@ -68,6 +68,14 @@ public interface GraphViewContext<G extends Graph> {
      */
     boolean isInteractive();
 
+    /**
+     * Indicates if the displayed graphs are graph states, rather than
+     * resources of the grammar; {@code false} by default.
+     */
+    default boolean isForState() {
+        return false;
+    }
+
     // ---------- canvas lifecycle ----------
 
     /**

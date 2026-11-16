@@ -137,6 +137,15 @@ public abstract class GraphViewController<G extends Graph> {
     }
 
     /**
+     * Indicates if the graph view shows graph states, rather than resources of the grammar.
+     * A view without context does not: a state is only shown by a simulator.
+     */
+    public boolean isForState() {
+        var context = getContext();
+        return context != null && context.isForState();
+    }
+
+    /**
      * The grammar to which the displayed graph belongs.
      * May return {@code null} if there is no grammar.
      */

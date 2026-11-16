@@ -35,6 +35,7 @@ Status lines below are as of 2026-09-11.
 | [website-manual-8_0_0.md](website-manual-8_0_0.md) | gh #896 and the 8.0.0 release: what the web user manual (website repo, `manual/`) needs, change by change, plus the wrong statements and the broken reference-page generator. Proposal only, nothing written yet. |
 | [iso-refinement-state.md](iso-refinement-state.md) | Handoff state for branch `iso-refinement` (findings 2.4 and 2.3 of the exploration performance review): commits, A/B verdicts, harness location. Transient: delete when merged. |
 | [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
+| [user-value-typing.md](user-value-typing.md) | gh #944, typing of user values by their Java class. Design note of 2026-11-15, revised 2026-11-16 for the user interfaces of gh #933: what can be inferred without new syntax, how a user type or user interface can be declared in rules, type graphs and control, four slices, decisions open. Nothing implemented. |
 
 ## Archive
 

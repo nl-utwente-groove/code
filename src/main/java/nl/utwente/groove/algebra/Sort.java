@@ -35,6 +35,7 @@ import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.annotation.UserInterface;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
@@ -350,12 +351,15 @@ public enum Sort {
     }
 
     /** Returns the sort for a given Java type.
+     * A user type has sort {@link #USER}, and so has a user interface,
+     * which is a type for the values of the user types that implement it.
      * @return the sort for {@code javaType}, or {@code null} if {@code javaType} is not a sort name
      */
     public static @Nullable Sort toSort(Type javaType) {
         var result = sortTypeMap.get(javaType);
         if (result == null && javaType instanceof Class<?> claz
-            && claz.getAnnotation(UserType.class) != null) {
+            && (claz.getAnnotation(UserType.class) != null
+                || claz.getAnnotation(UserInterface.class) != null)) {
             return Sort.USER;
         }
         return result;

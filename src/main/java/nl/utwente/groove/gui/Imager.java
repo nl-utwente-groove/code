@@ -59,6 +59,8 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.cli.CmdLineException;
 import nl.utwente.groove.cli.ExistingFileHandler;
 import nl.utwente.groove.cli.GrooveCmdLineTool;
@@ -70,9 +72,13 @@ import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.export.CanvasExportable;
 import nl.utwente.groove.gui.export.CanvasExporters;
+import nl.utwente.groove.gui.layout.LayoutHandler;
+import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.gui.view.GraphBackend;
 import nl.utwente.groove.gui.view.ViewOptions;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
@@ -322,7 +328,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             assert grammar != null; // the resource model was created from a grammar
             controller.setGrammar(grammar);
             var canvas = controller.getCanvas();
-            canvas.showGraph(aspectGraph);
+            layout(controller, canvas.showGraph(aspectGraph));
             // Ugly hack to prevent clipping of the image. We set the
             // component size to twice its normal size. This does not
             // affect the final size of the exported figure, hence
@@ -335,6 +341,30 @@ public class Imager extends GrooveCmdLineTool<Object> {
         }
         };
         return result;
+    }
+
+    /** Lays out a graph to be imaged. If a layouter was specified (gh #941),
+     * the graph is laid out afresh with it, ignoring its stored layout.
+     * Otherwise only the nodes without stored position are laid out,
+     * with the default layouter of the graph; the positions they get from the
+     * model are random ones. A graph with a complete layout is then left as it is.
+     * The layout only exists in the image: the graph is not saved.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private void layout(AspectGraphViewController controller, AspectGraphViewModel model) {
+        var layouter = this.layouter;
+        if (layouter != null) {
+            controller.setLayouter(layouter);
+            controller.doLayout(true);
+        } else {
+            boolean unplaced = false;
+            for (var cell : model.getCells()) {
+                unplaced |= cell instanceof ViewVertex<?> vertex && vertex.isLayoutable();
+            }
+            if (unplaced) {
+                controller.doLayout(false);
+            }
+        }
     }
 
     /** Returns the location of the file(s) to be imaged. */
@@ -400,6 +430,11 @@ public class Imager extends GrooveCmdLineTool<Object> {
             + GraphBackend.YFILES + "'); if it is not available, "
             + "the default backend is used, with a warning")
     private String backend;
+
+    /** Prototype of the layouter with which the graphs are laid out afresh, if any. */
+    @Option(names = LayoutHandler.NAME, paramLabel = LayoutHandler.VAR,
+        description = LayoutHandler.USAGE, converter = LayoutHandler.class)
+    private @Nullable Layouter layouter;
 
     /**
      * Starts the imager with a list of options and file names.

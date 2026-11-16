@@ -27,21 +27,25 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Immutable sequence of values of one {@link UserType}.
+ * Immutable sequence of user values: either of one {@link UserType}, or of the user types
+ * that implement one {@link UserInterface}, in which case the sequence can hold values
+ * of different user types.
  * Unlike the sequences of system sorts, this one is only allowed as the last parameter
  * of a {@link UserOperation}, not as a component of a user type.
  * The sequence knows the type of its elements and checks it whenever one is added,
  * so that it cannot hold a value of another type, nor {@code null}.
  * Equality and hash code rely on those of the elements, and the hash code is computed
  * only once; this presupposes that the elements are immutable, as user types are.
- * @param <T> the user type of the elements
+ * Two sequences are only equal if they have the same element type, not just equal elements.
+ * @param <T> the user type or user interface of the elements; for a generic user
+ * interface {@code I}, the parameter is declared as {@code UserSeq<I<?>>}
  * @see Seq
  * @author Arend Rensink
  * @version $Revision$
  */
 @AIGenerated("Claude Fable 5.2, 2026-11")
 @NonNullByDefault
-public final class UserSeq<T extends Record> implements Seq<T> {
+public final class UserSeq<T> implements Seq<T> {
     /** Wraps a given array of non-{@code null} elements of the given type, without copying it. */
     private UserSeq(Class<T> type, T[] elems) {
         this.type = type;
@@ -133,7 +137,7 @@ public final class UserSeq<T extends Record> implements Seq<T> {
      * @throws IllegalArgumentException if one of the elements is not of the given type
      */
     @SafeVarargs
-    public static <T extends Record> UserSeq<T> of(Class<T> type, T... elems) {
+    public static <T> UserSeq<T> of(Class<T> type, T... elems) {
         return copyOf(type, Arrays.asList(elems));
     }
 
@@ -144,7 +148,7 @@ public final class UserSeq<T extends Record> implements Seq<T> {
      * @throws NullPointerException if one of the elements is {@code null}
      * @throws IllegalArgumentException if one of the elements is not of the given type
      */
-    public static <T extends Record> UserSeq<T> copyOf(Class<T> type, Collection<?> elems) {
+    public static <T> UserSeq<T> copyOf(Class<T> type, Collection<?> elems) {
         @SuppressWarnings("unchecked")
         T[] result = (T[]) Array.newInstance(type, elems.size());
         int i = 0;
@@ -160,7 +164,7 @@ public final class UserSeq<T extends Record> implements Seq<T> {
      * @throws NullPointerException if the object is {@code null}
      * @throws IllegalArgumentException if the object is not of the given type
      */
-    private static <T extends Record> T checked(Class<T> type, @Nullable Object elem) {
+    private static <T> T checked(Class<T> type, @Nullable Object elem) {
         Objects.requireNonNull(elem);
         if (!type.isInstance(elem)) {
             throw new IllegalArgumentException(String

@@ -130,25 +130,41 @@ public class Algebras {
                 result.add(help);
             }
         }
-        for (var e : UserSignature.getMethods().entrySet()) {
+        for (var e : UserSignature.getImplementations().entrySet()) {
             var name = e.getKey().getName();
             sigMap.put("Q" + name, name);
-            Help help = createUserHelp(e.getValue(), sigMap);
+            var impl = e.getValue();
+            var exec = impl.executable();
+            // a generated accessor of a sequence-valued field has no documentation
+            Help help = impl.accessor() == null
+                ? createUserHelp(exec, sigMap)
+                : null;
             if (help != null) {
-                help
-                    .addBody("<p style=\"margin-top:5;\"/>Declared in "
-                        + Help.source(e.getValue().getDeclaringClass().getCanonicalName()));
+                var sources = new StringBuilder("Declared in ");
+                sources.append(Help.source(exec.getDeclaringClass().getCanonicalName()));
+                // an operation of a user interface lists the user types that implement it
+                var receiver = impl.receiver();
+                if (receiver != null && receiver.isInterface()) {
+                    var userTypes = UserSignature.getUserTypes(receiver);
+                    for (int i = 0; i < userTypes.size(); i++) {
+                        sources.append(i == 0
+                            ? "; implemented by "
+                            : ", ");
+                        sources.append(Help.source(userTypes.get(i).getCanonicalName()));
+                    }
+                }
+                help.addBody("<p style=\"margin-top:5;\"/>" + sources);
                 // parameter documentation, for the operands rather than the
                 // Java parameters: a non-static operation has its receiving
                 // object as additional first operand
                 var parSorts = e.getKey().getParamSorts();
                 // the lines provided by the user are for the Java parameters;
                 // they may be too few or too many, which should not be fatal
-                var pars = e.getValue().getAnnotation(ToolTipPars.class);
+                var pars = exec.getAnnotation(ToolTipPars.class);
                 var userDocs = pars == null
                     ? new String[0]
                     : pars.value();
-                int receiverCount = parSorts.size() - e.getValue().getParameterCount();
+                int receiverCount = parSorts.size() - exec.getParameterCount();
                 for (int i = 0; i < parSorts.size(); i++) {
                     int userIx = i - receiverCount;
                     boolean isTail = e.getKey().hasTail() && i == parSorts.size() - 1;

@@ -20,6 +20,53 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Editor: Escape cancels edits (gh #819)
 - Removed: old Ecore layer
 
+Release 7.8.0, 16 November 2026
+-------------------------------
+- Resolved gh #939: the `userOperations` property accepts a name of the form
+  `package.*`, which stands for all classes of that package (not of its subpackages)
+  that are a `@UserType` or declare a `@UserOperation`; other classes in the package,
+  such as helpers, are left alone
+- Resolved gh #941: the Imager and the Viewer have an option `-l spring` or
+  `-l forest` that lays out every graph afresh before it is rendered or shown,
+  ignoring the layout stored with it; the graph files are not changed
+- The Imager lays out the nodes of a graph that have no stored position, as
+  the Viewer already did; they used to end up at random positions
+- Resolved gh #938: a `@UserType` record can have a display method, a public
+  `String` method without parameters that is annotated with `@UserDisplay`; the
+  state display of the Simulator shows a value of the type by the string that
+  method returns, with the constructor term in the tooltip of the node. The value
+  itself and the way it is written, saved and parsed do not change: editors, saved
+  graphs and transition labels show the constructor term as before
+- Resolved gh #933: user types can share fields and operations. A Java interface
+  annotated with `@UserInterface` declares operations by `@UserOperation` methods;
+  the user types that implement the interface share those operations, each
+  implementing them by a field or method of that name. Such an operation is applied
+  as implemented by the user type of its first argument. This is the only way for two
+  user types to have a field or operation of the same name; a name that is not
+  declared in a common user interface still belongs to one user type only.
+  A user interface declares a sequence-valued field `c` by a method `c()` that
+  returns the sequence, which stands for the operations `cAt` and `cSize`. User
+  interfaces can extend one another and can be used as parameter and result types
+  of user operations; they need not be listed in the `userOperations` property.
+  The name of a user interface, without its package, has to differ from those of the
+  other user interfaces and the user types of the grammar
+- The last parameter of a user operation can be a `UserSeq` of a user interface
+  (`UserSeq<I>`, or `UserSeq<I<?>>` if `I` is generic), which takes any number of
+  values of the user types that implement the interface. For this the type parameter
+  of `UserSeq` is no longer restricted to records; as a consequence, user classes
+  that use `UserSeq` and were compiled against release 7.7.0 or 7.7.1 have to be
+  recompiled
+- A call of a user operation is checked against the Java types of its implementation
+  when the grammar is loaded, as far as the type of an argument is known then: that of
+  a user constant or constructor call, and the result type of a call of a user
+  operation. A call that cannot succeed, such as an operation of one user type or
+  user interface applied to a value of a type that does not fit, is now an error in
+  the grammar; it used to load and yield an error value when evaluated, as it still
+  does if the type is not known (for a variable or field)
+- Resolved gh #932: in the term algebra, the integer operators `bigmax` and `bigmin`
+  built the wrong terms (a product, respectively a binary minimum, over all
+  arguments); they now build `bigmax` and `bigmin` terms, as the real operators did
+
 Release 7.7.1, 13 November 2026
 --------------------------------
 - Installer-only release; GROOVE itself is unchanged

@@ -60,6 +60,7 @@ import nl.utwente.groove.gui.view.AspectViewCellErrors;
 import nl.utwente.groove.gui.view.AspectViewVertex;
 import nl.utwente.groove.gui.view.EditableLabels;
 import nl.utwente.groove.gui.view.GraphViewMode;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
 
@@ -210,8 +211,27 @@ public class AspectVertexCell extends AViewVertex<AspectGraph> implements Aspect
                 result
                     .append("<br>" + AspectGraphViewModel.ROLE_DESCRIPTIONS.get(roleAspect.getKind()));
             }
+            appendUserValues(result);
         }
         return result;
+    }
+
+    /**
+     * Appends the user values of this vertex that the state display shows by
+     * their custom display strings to a node description, as they are shown
+     * without: the display strings do not show what the values really are.
+     * This only has an effect if the vertex is part of a state.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private void appendUserValues(StringBuilder result) {
+        if (getController().isForState()) {
+            for (AspectEdge edge : getEdges()) {
+                if (edge.hasUserDisplay()) {
+                    result.append("<br>");
+                    result.append(edge.toLine(true, getAspects()).toHTMLString());
+                }
+            }
+        }
     }
 
     @Override
