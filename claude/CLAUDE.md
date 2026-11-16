@@ -54,7 +54,7 @@ The `yfiles.license.dir` property names the directory of the yFiles licence file
 
 ### Eclipse
 
-Development also happens in Eclipse; ready-made launch configurations live in `launch/` (Eclipse picks them up automatically): `GROOVE - all JUnit tests`, `GROOVE - maven test`, `GROOVE - build local maven artefact`, `GROOVE - generate javadoc`, `GROOVE - build local release (all)`.
+Development also happens in Eclipse; ready-made launch configurations live in `launch/` (Eclipse picks them up automatically): `GROOVE - all JUnit tests` (everything under `nl.utwente.groove.test` except the GUI tests, slow tests included), `GROOVE - GUI JUnit tests` (the GUI tests of that tree, which open Simulator windows), `GROOVE - maven test`, `GROOVE - build local maven artefact`, `GROOVE - generate javadoc`, `GROOVE - build local release (all)`.
 
 ## Entry points
 
