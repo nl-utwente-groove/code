@@ -354,8 +354,8 @@ the Simulator tests skip by assumption. `-DskipTests` or `-Dyfiles.testpass.skip
 skips the test pass, and `-Dgroove.test.robot=true` adds the Robot-driven tests, as in the
 backend's build. The counts should be those of the backend's own build: headlessly, on
 2026-11-16, both ran 55 of the 73 tests, the Simulator class being skipped as a whole;
-on a display the backend's build runs all 73, 6 of them Robot tests that skip without
-the flag (the console launcher counts such skips as aborted).
+on a display both ran all 73, 6 of them Robot tests that skip without the flag (the
+console launcher counts such skips as aborted, next to 67 successful).
 
 # How to build a Maven artefact
 

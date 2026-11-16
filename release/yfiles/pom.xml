@@ -264,7 +264,7 @@
 									<delete dir="${test.dir}/lib" />
 									<delete dir="${test.dir}/reports" />
 									<delete dir="${test.dir}/classes" />
-								<delete file="${test.dir}/console.txt" />
+									<delete file="${test.dir}/console.txt" />
 									<!-- the names of the test classes, read from the tests
 									     jar itself, as a file of patterns, one per line -->
 									<unzip src="${tests.in}" dest="${test.dir}/classes">

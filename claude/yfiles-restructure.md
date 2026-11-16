@@ -198,20 +198,45 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
    the basis of the notice in the binaries: all of them are rewritten in step 4, with
    wording Arend reviews, rather than twice. The website notes
    (`website-manual-8_0_0.md`, `release-8_0_0-state.md`) are step 6.
-3. **Distribution**: obfuscated jars in `lib/` of `-yfiles-bin.zip` and of the
-   installers' app image; most of it is the edition build of 2026-09-09 (`yfiles-edition`
-   in the history, described under phase 5 of `yfiles-migration.md`). Checks: the unit's
-   tests on the obfuscated jars, no yFiles entry in the plain zip, the shipped
-   licence is the distribution one, the yGuard mapping in no artifact. The first of
-   these needs scripting now that the backend is renamed: the tests name its classes,
-   so they must go through the same yGuard pass (recipe under "Checking the result" in
-   `release/README.md`, done by hand in step 2). The installers' runtime needs no
-   module for the jars (`jdk.xml.dom` comes with the core's analysis, see
-   `build-installer.sh`), to be confirmed on the app image.
+3. **Distribution**. Built 2026-11-16, branch `yfiles-distribution`, three commits
+   (the zip; the tests on an obfuscated stack; the installer script). The reference is
+   the second chapter of `release/README.md`.
+   - *The zip*: `mvn -Pyfiles clean package` in `release/` builds, in one pass, the
+     plain zips exactly as without the profile and `groove-x_y_z-yfiles-bin.zip` next to
+     them (module `assembly/yfiles-bin`): the content of the plain bin zip, the two
+     obfuscated jars in `lib/`, launchers whose class path lists them, and
+     `release/yfiles/include` at the root. There is no `-yfiles-bin+doc.zip`.
+   - *Checks, all inside the reactor and all failing the build*: no zip holds anything
+     that looks like the yGuard mapping; a plain zip holds no entry named after yFiles
+     and no launcher whose manifest mentions it; the two jars in the yFiles zip are byte
+     for byte those of the obfuscation and not its inputs, so that the licence check of
+     step 2 carries over to the zip; the Imager of the unpacked yFiles zip renders with
+     `-b yfiles`; and the unit's tests run on an obfuscated stack (see *Decided in step
+     3* for what that does and does not show).
+   - *Installers*: `build-installer.sh <version> <type> yfiles` packages the yFiles zip,
+     as the same product under the same names. The bundled runtime needs no module for
+     the jars, confirmed on an app image.
+   - Verified on a display: the unit's own build and the test pass both run 73 tests,
+     the 6 Robot tests skipping; from clean, the whole reactor with the profile. Each
+     check was seen to fail on a sabotaged build. Not verified: anything on a Linux
+     runner (`xvfb-run` around the release build, the Imager check there), the `.msi`
+     and the other installer types with `yfiles` (only the app image was built), and
+     whether the renaming is deterministic.
 4. **Licence texts**: `LICENSE.txt`, the notice in the binaries, the installer's licence
    page, the release-page text, `CHANGES.md`. Wording to be reviewed by Arend against the
-   SLA.
-5. **CI**: what is left after step 1, chiefly the release job's assets.
+   SLA. Since step 3 the yFiles zip carries `release/yfiles/include/YFILES-ADDON.md` at
+   its root, which still describes the add-on, and an installer built with `yfiles`
+   shows `LICENSE.txt` and, as an `.rpm`, carries the tag `Apache-2.0`: all three are
+   wrong for a binary with yFiles and are settled here (the text of the September
+   edition, `YFILES-EDITION.md` at 4a0731433 as reworded in a7d316d7f, describes this
+   very distribution and is the obvious start for the notice).
+5. **CI**: what is left after step 3 is the `installers` job. The release job needs no
+   change for its assets: its `*.zip` glob attaches the yFiles zip as it is, and its
+   build step already runs under Xvfb for the test pass. The installers are built on
+   five runners that have neither the library nor the token; rather than obfuscating
+   five times, the job should download `groove-x_y_z-yfiles-bin.zip` from the release
+   that the release job has just created, put it in `release/target` and call the
+   script with `yfiles`. Until then the workflow builds plain installers.
 6. **Website** (branch `release-8_0_0`): `installing.md` with two downloads and the
    restriction stated, the yWorks attribution, the manual's mentions of the add-on.
 7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
@@ -256,6 +281,50 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
   describe the add-on, and step 3 leaves them alone as well, apart from what packaging
   the notice needs.
 
-Nothing in this note is open any more; step 3 starts from the state above. All gates
-of step 2 passed on its tip (fast suite 985 tests, GUI suite 23 tests in 8 classes,
-backend unit 73 tests with 6 Robot skips, both null checks).
+All gates of step 2 passed on its tip (fast suite 985 tests, GUI suite 23 tests in 8
+classes, backend unit 73 tests with 6 Robot skips, both null checks).
+
+## Decided in step 3 (2026-11-16)
+
+Taken in the session; none of these has been put to Arend yet.
+
+- **One pass, and the profile leaves the plain zips alone.** The September edition
+  switched the whole reactor under the profile (names, descriptors, and the launchers'
+  class path through a dependency on the backend) and needed a second pass without
+  `clean` to have both sets of zips. Now the profile only adds: the launchers of the
+  yFiles zip are copies of the plain ones, made in the `release/yfiles` module by
+  merging the two jar names into the `Class-Path` of their manifests. A plain zip is
+  the same whether or not the profile is active, which the build also checks.
+- **No assembling module has a plain yFiles jar in its dependency graph.** The yFiles
+  zip takes the two jars from the obfuscation's output directory; its module depends on
+  the obfuscation module for the reactor order only, with every dependency of that
+  module excluded. The assembly plugin's dependency filter is lenient (the
+  `runnable-1.0.pom` episode of September), and the cost of a mistake here is a plain
+  library jar in a public zip.
+- **The tests run on a second obfuscation, not on the released jars.** The tests name
+  the backend's classes, so they have to be renamed with it, in a pass of their own
+  with the test classes as a third jar; the yGuard configuration is one macro called by
+  both passes, so the tested configuration cannot drift from the released one. The
+  test classes keep their names, and with them the backend's package keeps its name in
+  that pass only. What this shows is that the configuration yields a working stack;
+  what runs the released jars themselves is the Imager check on the yFiles zip.
+  Rejected: obfuscating the tests against the released jars with yGuard's mapping
+  input, which would test the very jars but rests on yGuard features nobody here has
+  tried, and collides with the kept names of the test classes. The unit installs its
+  test classes as a `tests` artifact for this, so that tests and backend come from the
+  same build; nothing of the unit is deployed.
+- **The Imager check has a negative control.** The Imager falls back to JGraph with a
+  warning when the backend is missing, and still exits 0, so the check has to look for
+  the warning's text. A plain launcher run in the same tree must print it; if the
+  wording changes, the control fails instead of the check going blind.
+- **The installer script takes `yfiles` as an argument and defaults to the plain zip.**
+  The decision of step 2 stands, one set of installers with yFiles; the default is
+  plain because that is what builds without the library, and because the workflow's
+  `installers` job keeps working until step 5 switches it. A forgotten argument yields
+  an installer without yFiles, which is harmless; the opposite default would fail for
+  everyone without a licence.
+- **No `-yfiles-bin+doc.zip`.** The javadoc is for developers, who can take the plain
+  one.
+
+Open for Arend: nothing blocks step 4. The two decisions he may want to overrule are
+the default of the installer script and the absence of a `+doc` zip with yFiles.
