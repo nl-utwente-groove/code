@@ -51,6 +51,8 @@ import nl.utwente.groove.util.AIGenerated;
  * operation, and it may extend other user interfaces; an operation belongs to the
  * topmost interface that declares it. A user interface need not be listed among the
  * user classes of a grammar: it is found through the user types that implement it.
+ * Its simple name has to differ from those of the other user interfaces and of the
+ * user types of the grammar, also of those in another package.
  * @author Arend Rensink
  * @version $Revision$
  */

@@ -458,6 +458,34 @@ public class UserSignatureTest {
         checkMessages(List.of(plain), "User operation '%s.size' is not static".formatted(plain));
     }
 
+    /** Tests that the simple name of a user interface is unique among the user types
+     * and user interfaces, whatever their packages (gh #944).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testInterfaceNameErrors() {
+        var other = PACKAGE_NAME.extend("other");
+        var named = PACKAGE_NAME.extend("UserNamed");
+        var otherNamed = other.extend("UserNamed");
+        var counter = PACKAGE_NAME.extend("UserTypeCounter");
+        var otherCounter = other.extend("UserTypeCounter");
+        // each is correct on its own
+        assertTrue(UserSignature.checkUserClass(List.of(otherNamed)).getErrors().get().isEmpty());
+        assertTrue(UserSignature.checkUserClass(List.of(otherCounter)).getErrors().get().isEmpty());
+        // two user interfaces: the one that comes second is reported
+        checkMessages(List.of(named, otherNamed),
+                      "User interface '%s' has the same simple name as user interface '%s'"
+                          .formatted(otherNamed, named));
+        checkMessages(List.of(otherNamed, named),
+                      "User interface '%s' has the same simple name as user interface '%s'"
+                          .formatted(named, otherNamed));
+        // a user interface and a user type, in either order
+        var message = "User interface '%s' has the same simple name as user type '%s'"
+            .formatted(otherCounter, counter);
+        checkMessages(List.of(counter, otherCounter), message);
+        checkMessages(List.of(otherCounter, counter), message);
+    }
+
     /** Tests the operators with a variable argument tail, which stem from a sequence type
      * as the last field of a user type or as the last parameter of a user operation.
      */

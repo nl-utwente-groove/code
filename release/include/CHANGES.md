@@ -30,7 +30,9 @@ Release 7.7.2, unreleased
   A user interface declares a sequence-valued field `c` by a method `c()` that
   returns the sequence, which stands for the operations `cAt` and `cSize`. User
   interfaces can extend one another and can be used as parameter and result types
-  of user operations; they need not be listed in the `userOperations` property
+  of user operations; they need not be listed in the `userOperations` property.
+  The name of a user interface, without its package, has to differ from those of the
+  other user interfaces and the user types of the grammar
 - The last parameter of a user operation can be a `UserSeq` of a user interface
   (`UserSeq<I>`, or `UserSeq<I<?>>` if `I` is generic), which takes any number of
   values of the user types that implement the interface. For this the type parameter

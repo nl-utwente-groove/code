@@ -33,6 +33,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -157,6 +158,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
             addUserInterfaces(all, claz);
             all.add(claz);
         }
+        checkTypeNames(result, all);
         var seqFields = new LinkedHashMap<String,@Nullable Method>();
         for (var claz : all) {
             parseUserClass(result, claz, all, seqFields);
@@ -170,6 +172,42 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                               name,
                               e.getValue().executable().getDeclaringClass().getCanonicalName(),
                               seqField.getDeclaringClass().getCanonicalName(), name);
+            }
+        }
+    }
+
+    /** Tests that no user interface has the simple name of another user interface
+     * or of a user type, among a given set of user classes.
+     * User values are described by the simple names of their types, in messages
+     * and wherever a type is to be named in a grammar (gh #944).
+     * The simple names of user types are unique already, being those of their
+     * constructor operations, so two user types are not reported here.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private static void checkTypeNames(FallibleObject<?> result, Set<Class<?>> classes) {
+        // only looked up, never iterated
+        var named = new HashMap<String,Class<?>>();
+        for (var claz : classes) {
+            boolean isInterface = claz.getAnnotation(UserInterface.class) != null;
+            if (!isInterface && claz.getAnnotation(UserType.class) == null) {
+                continue;
+            }
+            var other = named.putIfAbsent(claz.getSimpleName(), claz);
+            if (other == null) {
+                continue;
+            }
+            boolean otherIsInterface = other.getAnnotation(UserInterface.class) != null;
+            if (isInterface) {
+                result
+                    .addError("User interface '%s' has the same simple name as user %s '%s'",
+                              claz.getCanonicalName(), otherIsInterface
+                                  ? "interface"
+                                  : "type",
+                              other.getCanonicalName());
+            } else if (otherIsInterface) {
+                result
+                    .addError("User interface '%s' has the same simple name as user type '%s'",
+                              other.getCanonicalName(), claz.getCanonicalName());
             }
         }
     }
