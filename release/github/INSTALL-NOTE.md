@@ -32,12 +32,12 @@ More detailed instructions can be found in `IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTA
 <details>
 <summary><b>With or without yFiles: academic use only, or unrestricted</b></summary>
 
-GROOVE shows graphs with the commercial library [yFiles for Java](https://www.yworks.com/products/yfiles-for-java) by yWorks GmbH, which is licensed to us for academic, non-commercial use only. That restriction carries over to every asset that contains the library:
+GROOVE displays graphs using the commercial library [yFiles for Java](https://www.yworks.com/products/yfiles-for-java) by yWorks GmbH, which is licensed to us for academic, non-commercial use only. That restriction carries over to every asset that contains the library:
 
 - The automatic installers and `groove-…-yfiles-bin.zip` contain yFiles. **You may use them for academic, non-commercial purposes only**, such as research, teaching and study. The precise restrictions are in `LICENSE-YFILES.txt` inside the zip; the installers show them for you to accept.
-- `groove-…-bin.zip` and `groove-…-bin+doc.zip` do not contain yFiles and carry no such restriction: they are under the Apache License 2.0 alone. They show graphs with the JGraph-based backend of earlier releases, which lacks the yFiles layout algorithms but is otherwise the same tool.
+- `groove-…-bin.zip` and `groove-…-bin+doc.zip` do not contain yFiles and carry no such restriction: they are under the Apache License 2.0 alone. They display graphs using the JGraph-based backend of earlier releases, which lacks the yFiles layout algorithms but is otherwise the same tool.
 
-If in doubt about whether your use qualifies, take one of the zips without yFiles.
+If in doubt about whether your use qualifies as "academic and non-commercial", use one of the zips without yFiles.
 
 </details>
 <details>

@@ -18,11 +18,11 @@ Graph visualisation backends and yFiles
   `groove-x_y_z-yfiles-bin.zip` contain the yFiles backend and the library, both
   in obfuscated form, and may be used for academic, non-commercial purposes
   only: `LICENSE-YFILES.txt` at their root states the restrictions, and the
-  installers show them with the licence. `groove-x_y_z-bin.zip` and
+  installers show them with the license. `groove-x_y_z-bin.zip` and
   `groove-x_y_z-bin+doc.zip` contain nothing of yFiles and are under the Apache
   License 2.0 alone; they show graphs with JGraph. The source of the yFiles
   backend is public with the rest of GROOVE (the unit in `yfiles/` of the
-  repository), without the library: building it needs a yFiles licence of one's
+  repository), without the library: building it needs a yFiles license of one's
   own.
 - Where both backends are present, the Simulator's View > Options menu offers the
   choice (`Graph backend`); yFiles is the default. A choice takes effect at the

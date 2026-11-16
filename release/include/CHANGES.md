@@ -7,16 +7,23 @@ Upcoming release (8.0.0)
 -------------------------------
 Major release; `CHANGES-8_0_0.md` expands on every item below
 
-- Graph views run on a swappable backend; the installers and `-yfiles-bin.zip` contain yFiles for Java and are for academic, non-commercial use only, `-bin.zip` is without it and unrestricted (gh #909)
-- Platform-native installers (`.msi`, `.dmg`, `.deb`, `.rpm`) with a bundled Java 25 runtime; the zips need Java 21+ and start without warnings on Java 24+
+- Graph views run on a swappable backend; the installers and `-yfiles-bin.zip` 
+  contain yFiles for Java and are for academic, non-commercial use only, 
+  `-bin.zip` is without it and unrestricted (gh #909)
+- Platform-native installers (`.msi`, `.dmg`, `.deb`, `.rpm`) with a bundled 
+  Java 25 runtime; the zips need Java 21+ and start without warnings on Java 24+
 - Generator `-x`; new exploration feature: traces as results
-- Ecore import/export revived (`.ecore` and type graphs, `.xmi` and host graphs), with an `ecore` settings resource
-- Indeterminate operations on quantified levels are rejected again, pending proper support (gh #911)
-- Recipes: an undefined in-argument makes the call inapplicable; deleted out-parameters render as `_`
+- Ecore import/export revived (`.ecore` and type graphs, `.xmi` and host graphs), 
+  with an `ecore` settings resource 
+- Indeterminate operations on quantified levels are rejected again, 
+  pending proper support (gh #911)
+- Recipes: an undefined in-argument makes the call inapplicable; deleted 
+  out-parameters render as `_`
 - Special transition labels are restricted to `%s` forms (gh #877)
 - Text exports are UTF-8 with LF line ends
 - macOS Cmd-Q runs the quit action
-- Editor: one undo step for create-and-label (gh #913), own clipboard, offset paste, line-style and bend fixes
+- Editor: one undo step for create-and-label (gh #913), own clipboard, 
+  offset paste, line-style and bend fixes
 - Editor: Escape cancels edits (gh #819)
 - Removed: old Ecore layer
 
