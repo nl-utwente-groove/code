@@ -28,7 +28,7 @@ if ($unknown) {
     exit 2
 }
 
-$ecjVersion = '3.42.0'
+$ecjVersion = '3.44.0'
 $ecj = Join-Path $env:USERPROFILE ".m2\repository\org\eclipse\jdt\ecj\$ecjVersion\ecj-$ecjVersion.jar"
 if (-not (Test-Path $ecj)) {
     Write-Host "Fetching ecj $ecjVersion..."
