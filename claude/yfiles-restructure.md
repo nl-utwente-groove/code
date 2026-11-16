@@ -245,13 +245,24 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
      verified: that `.msi` installed, the other installer types, and how the release
      page renders the note. The texts say that the installers contain yFiles, which
      becomes true with step 5.
-5. **CI**: what is left after step 3 is the `installers` job. The release job needs no
-   change for its assets: its `*.zip` glob attaches the yFiles zip as it is, and its
-   build step already runs under Xvfb for the test pass. The installers are built on
-   five runners that have neither the library nor the token; rather than obfuscating
-   five times, the job should download `groove-x_y_z-yfiles-bin.zip` from the release
-   that the release job has just created, put it in `release/target` and call the
-   script with `yfiles`. Until then the workflow builds plain installers.
+5. **CI**. Built 2026-11-16, branch `yfiles-installers-job` on top of step 4, one
+   commit and this note. What was left after step 3 was the `installers` job; the
+   release job needed no change for its assets (its `*.zip` glob attaches the yFiles
+   zip as it is, and its build step already runs under Xvfb for the test pass).
+   - The five runners of the job have neither the library nor the token. Each now
+     downloads `groove-x_y_z-yfiles-bin.zip` with `gh release download` from the
+     release that the release job has just published, into `release/target`, and calls
+     the script with `yfiles`. The job's own Maven builds of the core and of the
+     release reactor are gone: the script reads the zip and files of the checkout
+     only, and Maven remains for reading the version from the pom.
+   - Verified locally: `gh release download` exits 1 on a release without the asset
+     (tried on `release-7_8_0`); the script builds an app image with the two yFiles
+     jars and both licence files in a checkout in which nothing was built, from a
+     yFiles zip put into `release/target`; and, unplanned, it refused the zip that
+     step 4's sabotage run had left in the step-3 worktree, which has no
+     `LICENSE-YFILES.txt`. **Not verified, and not verifiable short of a tag: the
+     workflow itself.** Its first run is the pre-release of step 7, which also carries
+     what step 3 left unverified on a Linux runner.
 6. **Website** (branch `release-8_0_0`): `installing.md` with two downloads and the
    restriction stated, the yWorks attribution, the manual's mentions of the add-on.
 7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
@@ -341,8 +352,9 @@ Taken in the session; none of these has been put to Arend yet.
 - **No `-yfiles-bin+doc.zip`.** The javadoc is for developers, who can take the plain
   one.
 
-Open for Arend: nothing blocks step 4. The two decisions he may want to overrule are
-the default of the installer script and the absence of a `+doc` zip with yFiles.
+Put to Arend on 2026-11-16 and confirmed: the default of the installer script stays
+the plain zip, and there is no `+doc` zip with yFiles. The other decisions of this
+section were not put to him separately.
 
 ## Decided in step 4 (2026-11-16)
 
@@ -377,7 +389,32 @@ Taken in the session, as a draft for review.
      the same title in `INSTALL-NOTE.md`, which also tells the reader of the release
      page that the installers are for academic use only.
   6. The `.rpm` licence tag.
-- **Left out**: nothing in the running application states the restriction (an About
-  box, a start-up line). The SLA asks nothing of the kind as far as the notes record,
-  and the installers have the user accept the text; raised here so that it is a
-  decision rather than an omission. The website's download page is step 6.
+- **Left out of step 4, to be added** (Arend, 2026-11-16): nothing in the running
+  application states the restriction. The SLA asks nothing of the kind as far as the
+  notes record, and the installers have the user accept the text, but a user of the
+  yFiles zip meets it only as a file at the zip's root. Arend's decision: the About
+  box names yFiles and the restriction when the yFiles backend is present. A branch
+  of its own, touching `gui/`; **not built yet**. The website's download page is
+  step 6.
+
+## Decided in step 5 (2026-11-16)
+
+Put to Arend before building.
+
+- **The installers take the yFiles zip from the release, not from a workflow
+  artifact.** An installer then holds the very file published next to it, and a rerun
+  of the `installers` job alone finds it as long as the release exists. An artifact
+  passed between the jobs would be a second copy of the zip, kept for 90 days, and one
+  more step in the release job.
+- **No fallback to plain installers.** A release without the yFiles zip fails the job.
+  A fallback would publish installers that the release page and `LICENSE.txt` of step
+  4 describe wrongly, and would hide a release job that stopped building the zip.
+- **The job no longer builds GROOVE.** The jars of the installers used to be compiled
+  on each runner by JDK 25 (for Java 21); they are now those of the release job, built
+  once by JDK 21. The bundled runtime is still the JDK 25 of the runner, which is what
+  the choice of that JDK was for.
+
+Consequence to remember: the release is public, with its zips, for the minutes in
+which the installers are built, and stays without installers if their job fails. That
+was so before; what is new is that the job depends on the published release rather
+than on its own build.
