@@ -31,6 +31,12 @@ Release 7.7.2, unreleased
   returns the sequence, which stands for the operations `cAt` and `cSize`. User
   interfaces can extend one another and can be used as parameter and result types
   of user operations; they need not be listed in the `userOperations` property
+- The last parameter of a user operation can be a `UserSeq` of a user interface
+  (`UserSeq<I>`, or `UserSeq<I<?>>` if `I` is generic), which takes any number of
+  values of the user types that implement the interface. For this the type parameter
+  of `UserSeq` is no longer restricted to records; as a consequence, user classes
+  that use `UserSeq` and were compiled against release 7.7.0 or 7.7.1 have to be
+  recompiled
 - A call of a user operation is checked against the Java types of its implementation
   when the grammar is loaded, as far as the type of an argument is known then: that of
   a user constant or constructor call, and the result type of a call of a user

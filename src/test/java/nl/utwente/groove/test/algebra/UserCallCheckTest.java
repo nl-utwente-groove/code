@@ -62,7 +62,7 @@ public class UserCallCheckTest {
         UserSignature
             .setUserClass(Stream
                 .of("UserTypeStack", "UserTypeQueue", "UserTypeCounter", "UserTypePoly",
-                    "UserOpsSeq")
+                    "UserOpsSeq", "UserOpsInterfaceSeq")
                 .map(PACKAGE_NAME::extend)
                 .toList());
     }
@@ -96,6 +96,11 @@ public class UserCallCheckTest {
         // a static operation, with a tail of user values
         assertEquals(3, eval("countCoeffs(UserTypePoly(\"p\",1),UserTypePoly(\"q\",2,3))"));
         assertEquals(0, eval("countCoeffs()"));
+        // a tail of the values of a user interface takes those of all types that implement it
+        assertEquals("c,s,q", eval("names(UserTypeCounter(\"c\",5),UserTypeStack(\"s\",1),"
+            + "UserTypeQueue(\"q\"))"));
+        assertEquals(3, eval("countItems(UserTypeStack(\"s\",1,2),UserTypeQueue(\"q\",1))"));
+        assertEquals(1, eval("countItems(push(UserTypeQueue(\"q\"),1))"));
     }
 
     /** A call is rejected if the class of the receiver does not implement the operator. */
@@ -146,6 +151,10 @@ public class UserCallCheckTest {
         assertRejected("countCoeffs(UserTypePoly(\"p\",1),x,UserTypeCounter(\"c\",1))",
                        "Parameter 2 of user operation 'countCoeffs' should have type UserTypePoly "
                            + "rather than UserTypeCounter");
+        // a tail of the values of a user interface
+        assertRejected("countItems(UserTypeStack(\"s\"),UserTypeCounter(\"c\",1))",
+                       "Parameter 1 of user operation 'countItems' should have type " + CONTAINER
+                           + " rather than UserTypeCounter");
     }
 
     /** The class of a call is that of the outcome of the implementation for its receiver,
@@ -202,6 +211,8 @@ public class UserCallCheckTest {
         parse("sameItems(x,y)");
         parse("sameItems(UserTypeStack(\"s\"),y)");
         parse("countCoeffs(x,y)");
+        parse("names(x,y)");
+        parse("countItems(x,push(y,1))");
         // a variable receiver leaves the interface, which the argument implements
         parse("sameItems(x,UserTypeQueue(\"q\"))");
         // a field, whose sort is derived from the operator

@@ -239,6 +239,24 @@ public class SeqTest {
         assertArrayEquals(new Point[] {new Point(1, 2)}, copied.toArray());
     }
 
+    /** A sequence of the values of an interface holds values of the types that implement it. */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testUserSeqOfInterface() {
+        var shapes = UserSeq.of(Shape.class, new Point(1, 2), new Other(3));
+        assertEquals(Shape.class, shapes.type());
+        assertEquals(new Other(3), shapes.get(1));
+        assertEqual(shapes, UserSeq.copyOf(Shape.class, List.of(new Point(1, 2), new Other(3))));
+        assertEqual(UserSeq.of(Shape.class, new Point(1, 2), new Other(3), new Point(0, 0)),
+                    shapes.append(new Point(0, 0)));
+        assertArrayEquals(new Shape[] {new Point(1, 2), new Other(3)}, shapes.toArray());
+        // the element type is part of the sequence, not just the elements
+        assertNotEquals(UserSeq.of(Shape.class, new Point(1, 2)),
+                        UserSeq.of(Point.class, new Point(1, 2)));
+        assertThrows(IllegalArgumentException.class,
+                     () -> UserSeq.copyOf(Shape.class, List.of(new Point(1, 2), "text")));
+    }
+
     /** A sequence of user values rejects {@code null} and values of another type. */
     @Test
     public void testUserSeqElementCheck() {
@@ -252,13 +270,18 @@ public class SeqTest {
                      () -> UserSeq.copyOf(Point.class, List.of("text")));
     }
 
+    /** Common interface of the element types for the tests of {@link UserSeq}. */
+    private interface Shape {
+        // no members
+    }
+
     /** Element type for the tests of {@link UserSeq}. */
-    private record Point(int x, int y) {
+    private record Point(int x, int y) implements Shape {
         // no members
     }
 
     /** Second element type for the tests of {@link UserSeq}. */
-    private record Other(int x) {
+    private record Other(int x) implements Shape {
         // no members
     }
 

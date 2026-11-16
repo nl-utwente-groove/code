@@ -49,4 +49,16 @@ public class UserOpsSeqErrors {
     static public int untyped(UserSeq values) {
         return values.size();
     }
+
+    /** A sequence of user values whose element type is a type variable. */
+    @UserOperation
+    static public <T extends UserNamed> int generic(UserSeq<T> values) {
+        return values.size();
+    }
+
+    /** A sequence of user values with a system sort as element type. */
+    @UserOperation
+    static public int strings(UserSeq<String> values) {
+        return values.size();
+    }
 }

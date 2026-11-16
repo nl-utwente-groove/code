@@ -368,6 +368,37 @@ public class UserSignatureTest {
                        + "only for UserTypeCounter");
     }
 
+    /** Tests a sequence of the values of a user interface as the last parameter
+     * of a user operation: the arguments can be of different user types (gh #933).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testInterfaceSequenceTail() {
+        // the user interface has to be among the user classes, listed or discovered
+        loadFail("UserOpsInterfaceSeq");
+        load("UserNamed", "UserContainer", "UserOpsInterfaceSeq");
+        load("UserTypeStack", "UserTypeQueue", "UserTypeCounter", "UserOpsInterfaceSeq");
+        var ops = UserSignature.getOperators();
+        for (var name : List.of("names", "countItems")) {
+            var op = ops.get(name);
+            assertNotNull(name, op);
+            check(op, false, name.equals("names")
+                ? Sort.STRING
+                : Sort.INT, Sort.USER);
+            assertTrue(name, op.hasTail());
+        }
+        var stack = new UserTypeStack("s", IntSeq.of(1, 2, 3));
+        var queue = new UserTypeQueue("q", IntSeq.of(1, 2));
+        var counter = new UserTypeCounter("c", 5);
+        assertEquals("c,s,q", apply("names", counter, stack, queue));
+        assertEquals("", apply("names"));
+        assertEquals(5, apply("countItems", stack, queue));
+        assertEquals(0, apply("countItems"));
+        // a counter is named, but is no container
+        assertTrue(apply("countItems", stack, counter) instanceof ErrorValue);
+        assertTrue(apply("names", "text") instanceof ErrorValue);
+    }
+
     /** Tests the errors in sharing names through user interfaces (gh #933). */
     @Test
     @AIGenerated("Claude Opus 5.5, 2026-11")
@@ -521,7 +552,9 @@ public class UserSignatureTest {
         checkErrors("UserOpsSeqErrors",
                     "notLast': Sequence type IntSeq is only allowed for the last parameter",
                     "result': Return type IntSeq is a sequence type",
-                    "untyped': Sequence type UserSeq does not specify the type of its elements");
+                    "untyped': Sequence type UserSeq does not specify the type of its elements",
+                    "generic': Sequence type UserSeq does not specify the type of its elements",
+                    "strings': Sequence type UserSeq is for user values, not for elements of type String");
     }
 
     /** Tests the accessors that are generated for a sequence-valued field of a user type:

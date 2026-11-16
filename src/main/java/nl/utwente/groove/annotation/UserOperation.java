@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * record class or {@link UserInterface}-annotated interface.
  * A collection return type is not allowed: an operation yields a single value.
  * The last parameter may instead be a sequence (an {@link IntSeq}, {@link RealSeq},
- * {@link BoolSeq} or {@link StringSeq}, or a {@link UserSeq} of a user type), in which
+ * {@link BoolSeq} or {@link StringSeq}, or a {@link UserSeq} of a user type or user interface), in which
  * case the operation is called with the elements of the sequence as trailing arguments,
  * any number of them.
  * @author Arend Rensink

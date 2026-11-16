@@ -149,9 +149,11 @@ public class Operator implements Comparable<Operator> {
      * which are passed on as a single sequence.
      * For the sequence types of the system sorts, the type returned is the
      * corresponding Java type (for instance {@code int} for {@link IntSeq});
-     * for a {@link UserSeq} it is the type argument.
+     * for a {@link UserSeq} it is the type argument, which is a user type or
+     * a user interface (the raw one, if it is generic).
      * @throws IllegalArgumentException if a parameter other than the last is of a sequence type,
-     * or if the last parameter is a sequence type without a known element type
+     * or if the last parameter is a sequence type without a known element type,
+     * or a {@link UserSeq} of a system sort
      * @see #hasTail()
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
@@ -177,9 +179,22 @@ public class Operator implements Comparable<Operator> {
             // of inner classes, which do not occur here
             Type[] genTypes = executable.getGenericParameterTypes();
             if (genTypes.length == parTypes.length
-                && genTypes[last] instanceof ParameterizedType parType
-                && parType.getActualTypeArguments()[0] instanceof Class<?> argType) {
-                return argType;
+                && genTypes[last] instanceof ParameterizedType parType) {
+                Type argType = parType.getActualTypeArguments()[0];
+                if (argType instanceof ParameterizedType genArgType) {
+                    // a generic user interface, of which only the raw type matters
+                    argType = genArgType.getRawType();
+                }
+                if (argType instanceof Class<?> result) {
+                    var sort = Sort.toSort(result);
+                    if (sort != null && sort != Sort.USER) {
+                        // the system sorts have sequence types of their own
+                        throw Exceptions
+                            .illegalArg("Sequence type %s is for user values, not for elements of type %s",
+                                        lastType.getSimpleName(), result.getSimpleName());
+                    }
+                    return result;
+                }
             }
             throw Exceptions
                 .illegalArg("Sequence type %s does not specify the type of its elements",

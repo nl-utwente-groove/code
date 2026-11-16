@@ -532,7 +532,7 @@ public enum AlgebraFamily implements DocumentedEnum {
                 } else {
                     var elemType = Operator.getTailType(executable);
                     assert elemType != null; // the operator has a tail
-                    seq = UserSeq.copyOf(elemType.asSubclass(Record.class), tail);
+                    seq = UserSeq.copyOf(elemType, tail);
                 }
                 result[fixed] = seq;
             } catch (ClassCastException exc) {

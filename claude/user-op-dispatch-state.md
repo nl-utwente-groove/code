@@ -3,6 +3,10 @@
 Branch `user-op-dispatch`, off `release-7` (7.7.2-SNAPSHOT) and merged with it on
 2026-11-16. Transient: delete when merged.
 
+On top of it, branch `user-seq-of-interface` (2026-11-16, two commits): the nullness
+errors that Eclipse reported on the record fixtures, and `UserSeq` of a user interface.
+The main checkout held `user-op-dispatch` for review at the time, hence the new branch.
+
 ## Goal
 
 Let several user types have fields and operations of the same name, with discipline:
@@ -45,7 +49,16 @@ compile-time check with its hook in `ExprTree.toCallExprs`.
   another; an operation belongs to the topmost interface that declares it
   (`findInterfaceOp`).
 - **`Sort.toSort` maps a user interface to `user`**, so it can be a parameter or result
-  type. A `UserSeq` tail still needs a record as element type (`T extends Record`).
+  type.
+- **A `UserSeq` tail can have a user interface as element type** (Arend, 2026-11-16:
+  a user expects the supertype to work there). `UserSeq<T>` lost its bound
+  `T extends Record`, since a Java bound cannot say "record or interface"; that a
+  `UserSeq` is not one of a system sort is now checked in `Operator.getTailType`,
+  which also takes the raw type of `UserSeq<I<?>>` for a generic interface. A type
+  variable as element type is still rejected. The price: the erased signatures of
+  `UserSeq` changed (`get` returned `Record`, now `Object`), so user classes compiled
+  against 7.7.0 or 7.7.1 that use `UserSeq` fail to link until recompiled; this is in
+  CHANGES.
 - **The compile-time check works with upper bounds.** `getUserClass` yields the return
   type of the implementing method, which may be an interface; `isCompatible` accepts
   an argument unless no loaded user type can be both what is required and what the
@@ -57,10 +70,13 @@ compile-time check with its hook in `ExprTree.toCallExprs`.
 
 ## Gates (2026-11-16)
 
-Default suite 918 run, 0 failures, 2 skipped (`GrammarsTest`, which skips in a
-worktree). ecj null analysis on the 28 touched files: no errors; the two warnings it
-found in `UserSignature` were fixed and the files rechecked clean. The algebra and
-rule application tests were rerun after those fixes, not the whole suite. No GUI
+On `user-seq-of-interface`: default suite 894 run, 0 failures, 2 skipped (`GrammarsTest`,
+which skips in a worktree), counted over the reports written by that run. The 918
+reported for slice 3 was counted over all files in `target/surefire-reports`, which
+included stale reports of slow and GUI tests; the comparable figure there is 891.
+ecj null analysis on the touched files, with 3.42.0 (the harness version) and with
+3.44.0: no errors, no warnings; 3.44.0 over the whole test tree: the four task tags of
+the baseline only. The main tree as a whole was not rechecked with 3.44.0. No GUI
 tests: nothing under `gui/` is touched.
 
 ## Not done
@@ -68,11 +84,16 @@ tests: nothing under `gui/` is touched.
 1. End-to-end grammar test, if wanted (a new `junit/rules` grammar needs a
    `RuleCompilationTest` golden).
 2. Web manual section (on the website-updates list).
-3. `UserSeq` of a user interface as tail type: needs the bound of `UserSeq` relaxed.
-4. The gh #944 design note (branch `user-value-typing`) assumes that there is no
+3. The gh #944 design note (branch `user-value-typing`) assumes that there is no
    subtyping among user types. That no longer holds: revise it before deciding on it.
 
 ## Hazards
+
+- The `null-check` harness pins ecj 3.42.0; Eclipse runs a newer JDT. From 3.44 on, a
+  record component whose implicit accessor implements a method of an annotated
+  interface needs an explicit `@NonNull` (see CLAUDE.md), which 3.42.0 does not
+  report. Until the pin is raised, also run ecj 3.44.0 by hand on such records
+  (`~/.m2/repository/org/eclipse/jdt/ecj/3.44.0`, same arguments as the script).
 
 - ecj skips null analysis of a file with a compile error: rerun after fixing one.
 - `Class.getDeclaredMethods` has no defined order; error messages that depend on which
