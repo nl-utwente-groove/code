@@ -28,6 +28,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Test;
@@ -41,8 +43,9 @@ import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.test.algebra.user.UserContainer;
+import nl.utwente.groove.test.algebra.user.UserNamed;
 import nl.utwente.groove.test.algebra.user.UserTypeCounter;
-import nl.utwente.groove.test.algebra.user.UserTypeDuplicateOps;
 import nl.utwente.groove.test.algebra.user.UserTypeIntString;
 import nl.utwente.groove.test.algebra.user.UserTypeQueue;
 import nl.utwente.groove.test.algebra.user.UserTypeStack;
@@ -216,121 +219,212 @@ public class UserSignatureTest {
         checkParDocs(docMap, "whole", "the share, in %");
     }
 
-    /** Tests operations of the same name in two user types, for the accessor of a record
-     * component as well as for an annotated method: with the same signature they are
-     * implementations of one operator (gh #933), with another one they are an error;
-     * and that loading the classes regardless keeps the operation of the first class
-     * as a whole, rather than replacing its method by that of the second (gh #934).
+    /** Tests fields and operations of the same name in two user types that implement
+     * no user interface declaring that name: they are duplicates, for the accessor of
+     * a record component as well as for an annotated method (gh #933); and loading
+     * the classes regardless keeps the operation of the first class as a whole, rather
+     * than replacing its method by that of the second (gh #934).
      */
     @Test
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    public void testSameNameAcrossClasses() {
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    public void testSameNameWithoutInterface() {
         // each of the classes is correct on its own
         load("UserTypeIntString");
         load("UserTypeDuplicateOps");
         var first = PACKAGE_NAME.extend("UserTypeIntString");
         var second = PACKAGE_NAME.extend("UserTypeDuplicateOps");
         var names = List.of(first, second);
-        var errors = UserSignature.checkUserClass(names).getErrors().get();
-        assertEquals(1, errors.size(), errors.toString());
-        var expected
-            = "User operation 'intField' has signature (user) -> int in '%s' but (user) -> real in '%s'"
-                .formatted(first, second);
-        assertEquals(expected, errors.iterator().next().toString());
+        checkMessages(names,
+                      "Duplicate user operation 'intField' in '%s' and '%s'%s"
+                          .formatted(first, second, NO_INTERFACE_HINT),
+                      "Duplicate user operation 'charAt' in '%s' and '%s'%s"
+                          .formatted(first, second, NO_INTERFACE_HINT));
         UserSignature.setUserClass(names);
         var intField = UserSignature.getOperators().get("intField");
         assertNotNull(intField);
         assertEquals(Sort.INT, intField.getResultSort());
         assertSame(UserTypeIntString.class, getImpl(intField).receiver());
-        checkReceivers("charAt", UserTypeIntString.class, UserTypeDuplicateOps.class);
+        var charAt = UserSignature.getOperators().get("charAt");
+        assertNotNull(charAt);
+        assertSame(UserTypeIntString.class, getImpl(charAt).receiver());
     }
 
-    /** Tests that the fields and operations of user types may share their names, as
-     * implementations of one operator, and that applying the operator selects the
-     * implementation by the type of its first argument (gh #933).
+    /** Tests that user types share the names of their fields and operations by
+     * implementing a user interface that declares them: each name is that of a single
+     * operator of the interface, also if the interfaces are not among the listed
+     * classes, and a sequence-valued field of an interface yields the generated
+     * accessors rather than an operator of its own name (gh #933).
      */
     @Test
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    public void testDispatch() {
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    public void testInterfaceOperators() {
         load("UserTypeStack", "UserTypeQueue", "UserTypeCounter");
-        // the implementations are in the order of the classes
-        checkReceivers("name", UserTypeStack.class, UserTypeQueue.class, UserTypeCounter.class);
-        checkReceivers("next", UserTypeStack.class, UserTypeQueue.class);
-        checkReceivers("push", UserTypeStack.class, UserTypeQueue.class);
-        checkReceivers("sameItems", UserTypeStack.class, UserTypeQueue.class);
-        checkReceivers("itemsAt", UserTypeStack.class, UserTypeQueue.class);
-        // a generated accessor may be implemented by a declared operation elsewhere
-        checkReceivers("itemsSize", UserTypeStack.class, UserTypeQueue.class,
-                       UserTypeCounter.class);
-        checkReceivers("count", UserTypeCounter.class);
+        var ops = UserSignature.getOperators();
+        assertEquals(Set
+            .of("name", "next", "push", "sameItems", "isEmpty", "itemsAt", "itemsSize", "count",
+                "UserTypeStack", "UserTypeQueue", "UserTypeCounter"),
+                     ops.keySet());
+        // one operator per name, which is that of the interface
+        for (var name : List
+            .of("name", "next", "push", "sameItems", "isEmpty", "itemsAt", "itemsSize")) {
+            assertEquals(1,
+                         UserSignature
+                             .getImplementations()
+                             .keySet()
+                             .stream()
+                             .filter(op -> op.getName().equals(name))
+                             .count(),
+                         "Operators named " + name);
+        }
+        checkReceiver("name", UserNamed.class);
+        for (var name : List.of("next", "push", "sameItems", "isEmpty", "itemsAt", "itemsSize")) {
+            checkReceiver(name, UserContainer.class);
+        }
+        checkReceiver("count", UserTypeCounter.class);
         // a constructor has no receiver
-        var constructor = UserSignature.getOperators().get("UserTypeStack");
-        assertNotNull(constructor);
-        assertNull(getImpl(constructor).receiver());
+        checkReceiver("UserTypeStack", null);
+        // the sequence-valued field of the interface
+        assertNull(ops.get("items"));
+        var itemsAt = ops.get("itemsAt");
+        assertNotNull(itemsAt);
+        check(itemsAt, false, Sort.INT, Sort.USER, Sort.INT);
+        assertEquals(Operator.SeqAccessor.AT, getImpl(itemsAt).accessor());
+        assertSame(UserContainer.class, getImpl(itemsAt).executable().getDeclaringClass());
+        var itemsSize = ops.get("itemsSize");
+        assertNotNull(itemsSize);
+        check(itemsSize, false, Sort.INT, Sort.USER);
+        assertEquals(Operator.SeqAccessor.SIZE, getImpl(itemsSize).accessor());
+        // the signatures of the operations of the interface
+        var push = ops.get("push");
+        assertNotNull(push);
+        check(push, false, Sort.USER, Sort.USER, Sort.INT);
+        var sameItems = ops.get("sameItems");
+        assertNotNull(sameItems);
+        check(sameItems, false, Sort.BOOL, Sort.USER, Sort.USER);
+        var isEmpty = ops.get("isEmpty");
+        assertNotNull(isEmpty);
+        check(isEmpty, false, Sort.BOOL, Sort.USER);
+        // the user types that implement the interfaces
+        assertEquals(List.of(UserTypeStack.class, UserTypeQueue.class),
+                     UserSignature.getUserTypes(UserContainer.class));
+        assertEquals(List.of(UserTypeStack.class, UserTypeQueue.class, UserTypeCounter.class),
+                     UserSignature.getUserTypes(UserNamed.class));
 
+        // an operator is documented once, naming the user types that implement it
+        var docMap = Algebras.getOpDocMap();
+        var pushTip = getTip(docMap, "push");
+        assertTrue(pushTip, pushTip.contains("UserContainer"));
+        assertTrue(pushTip, pushTip.contains("UserTypeStack"));
+        assertTrue(pushTip, pushTip.contains("UserTypeQueue"));
+        // a default method is documented like an abstract one
+        var isEmptyTip = getTip(docMap, "isEmpty");
+        assertTrue(isEmptyTip, isEmptyTip.contains("UserTypeQueue"));
+        assertFalse(isEmptyTip, isEmptyTip.contains("UserTypeCounter"));
+    }
+
+    /** Tests that applying an operator of a user interface invokes the implementation
+     * of the user type of the first argument, and that it yields an error value
+     * for a value of a type that does not implement the interface (gh #933).
+     */
+    @Test
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    public void testInterfaceDispatch() {
+        load("UserTypeStack", "UserTypeQueue", "UserTypeCounter");
         var stack = new UserTypeStack("s", IntSeq.of(1, 2, 3));
         var queue = new UserTypeQueue("q", IntSeq.of(1, 2, 3));
         var counter = new UserTypeCounter("c", 5);
         assertEquals("s", apply("name", stack));
         assertEquals("q", apply("name", queue));
         assertEquals("c", apply("name", counter));
+        assertEquals(5, apply("count", counter));
+        // the same items, but another element next in line
         assertEquals(3, apply("next", stack));
         assertEquals(1, apply("next", queue));
+        // the generated accessors of the sequence-valued field of the interface
         assertEquals(2, apply("itemsAt", stack, 1));
+        assertEquals(1, apply("itemsAt", queue, 0));
+        assertEquals(3, apply("itemsSize", stack));
         assertEquals(3, apply("itemsSize", queue));
-        assertEquals(5, apply("itemsSize", counter));
+        // a default method of the interface
+        assertEquals(false, apply("isEmpty", stack));
+        assertEquals(true, apply("isEmpty", new UserTypeQueue("e", IntSeq.of())));
         // a user value as result is of the type of the implementation
         assertEquals(stack.push(4), apply("push", stack, 4));
         assertEquals(queue.push(4), apply("push", queue, 4));
         // and so is a user value among the other arguments
         assertEquals(true, apply("sameItems", stack, new UserTypeStack("t", IntSeq.of(1, 2, 3))));
         assertEquals(false, apply("sameItems", queue, queue.push(4)));
+        // the bridge method of the stack does not take a queue
         assertTrue(apply("sameItems", stack, queue) instanceof ErrorValue);
-        // an operator has no outcome for a type without an implementation,
-        // also if there is only one implementation
+        // an operator has no outcome for a type that does not implement its interface
         checkError(apply("next", counter),
                    "User operation 'next' is not implemented for a value of type UserTypeCounter, "
-                       + "only for UserTypeStack, UserTypeQueue");
+                       + "only for UserContainer (implemented by UserTypeStack, UserTypeQueue)");
+        checkError(apply("itemsSize", counter),
+                   "User operation 'itemsSize' is not implemented for a value of type UserTypeCounter, "
+                       + "only for UserContainer (implemented by UserTypeStack, UserTypeQueue)");
         checkError(apply("count", stack),
                    "User operation 'count' is not implemented for a value of type UserTypeStack, "
                        + "only for UserTypeCounter");
-
-        // an operator is documented once, naming the classes that implement it
-        var docMap = Algebras.getOpDocMap();
-        var pushTip = getTip(docMap, "push");
-        assertTrue(pushTip, pushTip.contains("UserTypeStack"));
-        assertTrue(pushTip, pushTip.contains("UserTypeQueue"));
-        // generated accessors are not documented, a declared operation of that name is
-        var sizeTip = getTip(docMap, "itemsSize");
-        assertTrue(sizeTip, sizeTip.contains("UserTypeCounter"));
     }
 
-    /** Tests the operations of the same name that cannot be implementations of one
-     * operator: those outside user types, and those with distinct signatures (gh #933).
-     */
+    /** Tests the errors in sharing names through user interfaces (gh #933). */
     @Test
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    public void testDispatchErrors() {
-        // a static operation does not share its name, whatever the order of the classes
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    public void testInterfaceErrors() {
+        var named = PACKAGE_NAME.extend("UserNamed");
+        var container = PACKAGE_NAME.extend("UserContainer");
         var stack = PACKAGE_NAME.extend("UserTypeStack");
+        // a static operation does not share its name, whatever the order of the classes
         var clash = PACKAGE_NAME.extend("UserOpsStaticClash");
-        checkErrors(List.of(stack, clash),
-                    "Duplicate user operation 'push' in '%s' and '%s'".formatted(stack, clash));
-        checkErrors(List.of(clash, stack),
-                    "Duplicate user operation 'push' in '%s' and '%s'".formatted(clash, stack));
-        // each of the following classes is correct on its own
-        load("UserTypePoly");
-        load("UserTypeSignatureClash");
-        var poly = PACKAGE_NAME.extend("UserTypePoly");
-        var other = PACKAGE_NAME.extend("UserTypeSignatureClash");
-        var sources = " in '%s' but %s in '%s'";
-        checkErrors(List.of(poly, other),
-                    "User operation 'name' has signature (user) -> string"
-                        + sources.formatted(poly, "(user) -> int", other),
-                    "User operation 'append' has signature (user,int) -> user"
-                        + sources.formatted(poly, "(user,int...) -> user", other),
-                    "User operation 'degree' has signature (user) -> int"
-                        + sources.formatted(poly, "(user) -> int, indeterminate", other));
+        checkMessages(List.of(stack, clash),
+                      "Duplicate user operation 'push' in '%s' and '%s'".formatted(container,
+                                                                                   clash));
+        checkMessages(List.of(clash, stack),
+                      "Duplicate user operation 'push' in '%s' and '%s'".formatted(clash,
+                                                                                   container));
+        // an operation of its own with the name of a generated accessor of an interface
+        load("UserTypeAccessorClash");
+        var accessorClash = PACKAGE_NAME.extend("UserTypeAccessorClash");
+        checkMessages(List.of(stack, accessorClash),
+                      "Duplicate user operation 'itemsSize' in '%s' (generated for sequence-valued field 'items') and '%s'%s"
+                          .formatted(container, accessorClash, NO_INTERFACE_HINT));
+        // a user interface that is not an interface
+        var notInterface = PACKAGE_NAME.extend("UserInterfaceNotInterface");
+        checkMessages(List.of(notInterface),
+                      "User interface '%s' is not an interface".formatted(notInterface));
+        // an overload of the name of an interface operation, beside the implementation
+        var overload = PACKAGE_NAME.extend("UserTypeNameOverload");
+        checkMessages(List.of(overload),
+                      "User operation '%s.name' has the name of operation '%s.name' but does not implement it"
+                          .formatted(overload, named));
+        // two methods that can both implement an interface operation
+        var twice = PACKAGE_NAME.extend("UserTypeNameTwice");
+        var comparable = PACKAGE_NAME.extend("UserComparable");
+        checkMessages(List.of(twice),
+                      "Duplicate user operation '%s.sameAs': operation '%s.sameAs' is implemented more than once"
+                          .formatted(twice, comparable));
+        // an implementation that differs in being indeterminate
+        var indeterminate = PACKAGE_NAME.extend("UserTypeSignatureClash");
+        checkMessages(List.of(indeterminate),
+                      "User operation '%s.name' differs from operation '%s.name', which it implements, in being indeterminate"
+                          .formatted(indeterminate, named));
+        // unrelated user interfaces declaring the same operation, each correct on its own
+        var titled = PACKAGE_NAME.extend("UserTitled");
+        load("UserNamed");
+        load("UserTitled");
+        checkMessages(List.of(named, titled),
+                      "Duplicate user operation 'name' in '%s' and '%s'".formatted(named, titled));
+        // sequence-valued fields of an interface that are not sequences of a system sort
+        var seqErrors = PACKAGE_NAME.extend("UserInterfaceSeqErrors");
+        checkMessages(List.of(seqErrors),
+                      "Field '%s.polys' is a sequence of user values, which is only allowed as an operation parameter"
+                          .formatted(seqErrors),
+                      "Type of field '%s.raw' is not a sequence of a system sort"
+                          .formatted(seqErrors));
+        // a non-static operation of an interface that is not a user interface
+        var plain = PACKAGE_NAME.extend("UserOpsPlainInterface");
+        checkMessages(List.of(plain), "User operation '%s.size' is not static".formatted(plain));
     }
 
     /** Tests the operators with a variable argument tail, which stem from a sequence type
@@ -520,27 +614,37 @@ public class UserSignatureTest {
         }
     }
 
-    /** Returns the implementation of a given user operator, which must be the only one. */
-    private UserSignature.Impl getImpl(Operator op) {
-        var impls = UserSignature.getImplementations().get(op);
-        assertNotNull(impls);
-        assertEquals(1, impls.size(), "Implementations of " + op.getName());
-        return impls.get(0);
+    /** Tests that a given list of user classes has precisely the given error messages,
+     * in whatever order.
+     */
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    private void checkMessages(List<QualName> classNames, String... messages) {
+        var errors = UserSignature.checkUserClass(classNames).getErrors().get();
+        var actual = errors.stream().map(Object::toString).collect(Collectors.toSet());
+        assertEquals(Set.of(messages), actual);
+        assertEquals(messages.length, errors.size(), errors.toString());
     }
 
-    /** Tests that the user operator of a given name has implementations
-     * with the given receivers, in that order.
-     */
-    private void checkReceivers(String opName, Class<?>... receivers) {
-        var op = UserSignature.getOperators().get(opName);
-        assertNotNull(op);
-        var impls = UserSignature.getImplementations().get(op);
-        assertNotNull(impls);
-        assertEquals(receivers.length, impls.size(), "Implementations of " + opName);
-        for (int i = 0; i < receivers.length; i++) {
-            assertSame("Receiver " + i + " of " + opName, receivers[i], impls.get(i).receiver());
-        }
+    /** Returns the implementation of a given user operator. */
+    private UserSignature.Impl getImpl(Operator op) {
+        var impl = UserSignature.getImplementations().get(op);
+        assertNotNull(impl);
+        return impl;
     }
+
+    /** Tests that the user operator of a given name has an implementation
+     * with a given receiver.
+     */
+    @AIGenerated("Claude Opus 5.5, 2026-11")
+    private void checkReceiver(String opName, Class<?> receiver) {
+        var op = UserSignature.getOperators().get(opName);
+        assertNotNull(opName, op);
+        assertSame("Receiver of " + opName, receiver, getImpl(op).receiver());
+    }
+
+    /** Suffix of the message on a duplicate operation of two user types or interfaces. */
+    static private final String NO_INTERFACE_HINT
+        = "; user types can only share the name of an operation of a user interface that they implement";
 
     /** Applies the user operator of a given name to given arguments,
      * and returns the outcome, which may be an error value.

@@ -22,9 +22,10 @@ import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Class with a static operation that has the name and signature of an operation
- * of the user type {@link UserTypeStack}. Only the operations of user types
- * themselves can share a name, so this is a duplicate (gh #933).
+ * Class with a static operation that has the name of an operation of the user
+ * interface {@link UserContainer}, implemented by {@link UserTypeStack}. Only the
+ * user types that implement a user interface share the names of its operations,
+ * so this is a duplicate (gh #933).
  * @author Arend Rensink
  * @version $Revision$
  */

@@ -7,7 +7,6 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -97,20 +96,22 @@ public class Operator implements Comparable<Operator> {
 
     /**
      * Constructs the operator for a generated accessor of a sequence-valued field
-     * of a user type. The operator takes a value of the user type as its first argument;
-     * its name is derived from the name of the field (see {@link SeqAccessor#getName(String)}).
-     * @param field the sequence-valued field
+     * of a user type or user interface. The operator takes a value of the user type
+     * as its first argument; its name is derived from the name of the field
+     * (see {@link SeqAccessor#getName(String)}).
+     * @param field the method that yields the sequence: the accessor method of the
+     * field of a user type, or the method that declares the field in a user interface
      * @param accessor the kind of accessor
      * @throws IllegalArgumentException if the type of the field is not a sequence type
      * of a system sort
      */
     @AIGenerated("Claude Fable 5.2, 2026-11")
-    Operator(RecordComponent field, SeqAccessor accessor) throws IllegalArgumentException {
-        var elementType = getSeqElementType(field.getType());
+    Operator(Method field, SeqAccessor accessor) throws IllegalArgumentException {
+        var elementType = getSeqElementType(field.getReturnType());
         if (elementType == null) {
             throw Exceptions
                 .illegalArg("Type %s of field '%s' is not a sequence type of a system sort",
-                            field.getType().getSimpleName(), field.getName());
+                            field.getReturnType().getSimpleName(), field.getName());
         }
         this.declaringSort = Sort.USER;
         this.inverse = false;
@@ -507,20 +508,6 @@ public class Operator implements Comparable<Operator> {
 
     /** Flag indicating if this operator is the constructor of a user type. */
     private final boolean constructor;
-
-    /**
-     * Indicates if this operator has the same signature as another, so that
-     * the two can be implementations of one user operator: the same number of parameters,
-     * the same parameter sorts, the same result sort, and agreement on having a
-     * variable argument tail and on being indeterminate.
-     * @see UserSignature.Impl
-     */
-    @AIGenerated("Claude Fable 5.2, 2026-11")
-    boolean hasSameSignature(Operator other) {
-        return this.arity == other.arity && this.parameterSorts.equals(other.parameterSorts)
-            && this.returnSort == other.returnSort && this.tail == other.tail
-            && this.indeterminate == other.indeterminate;
-    }
 
     /**
      * The accessors that are generated for a sequence-valued field of a user type.

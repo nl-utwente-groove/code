@@ -325,9 +325,9 @@ public enum AlgebraFamily implements DocumentedEnum {
      */
     private Map<Operator,Operation> computeUserOperations() {
         Map<Operator,Operation> result = new HashMap<>();
-        for (var impls : UserSignature.getImplementations().entrySet()) {
-            var op = impls.getKey();
-            var operation = new UserOperation(op, impls.getValue());
+        for (var impl : UserSignature.getImplementations().entrySet()) {
+            var op = impl.getKey();
+            var operation = new UserOperation(op, impl.getValue());
             result.put(op, operation);
         }
         return result;
@@ -390,18 +390,19 @@ public enum AlgebraFamily implements DocumentedEnum {
 
     /** Implementation of a user-defined operator. */
     private class UserOperation extends Operation {
-        UserOperation(Operator op, List<Impl> impls) {
+        UserOperation(Operator op, Impl impl) {
             super(AlgebraFamily.this, op);
-            assert !impls.isEmpty();
-            this.impls = impls.toArray(new Impl[0]);
+            this.impl = impl;
         }
 
-        /** Invokes the implementation of this operation that applies to the given
-         * list of arguments.
+        /** Invokes the implementation of this operation on the given list of arguments.
+         * For an operation of a user interface, this is the method of the interface,
+         * so that the user type of the first argument determines what is executed (gh #933).
          */
         @Override
         protected Object invoke(List<Object> args) throws ReflectiveOperationException {
-            var impl = getImpl(args);
+            var impl = this.impl;
+            checkReceiver(args);
             var accessor = impl.accessor();
             if (accessor != null) {
                 return accessSeq((Method) impl.executable(), accessor, args);
@@ -424,44 +425,30 @@ public enum AlgebraFamily implements DocumentedEnum {
         }
 
         /**
-         * Returns the implementation that applies to a given list of arguments.
-         * This is the only implementation if that has no receiver, and otherwise
-         * the one whose receiver is the type of the first argument (gh #933).
-         * The match is exact, as user types are records and so have no subtypes;
-         * the implementations are few, and are searched without relying on
-         * the (identity-based) hash codes of the types.
-         * @throws IllegalArgumentException if there is no implementation for
-         * the type of the first argument, which makes the outcome of the operation
-         * an error value
+         * Checks that the first of a given list of arguments is a value that the
+         * implementation of this operation applies to, if that is an instance method:
+         * a value of the user type that has the method, or of a user type that
+         * implements the user interface that has it.
+         * @throws IllegalArgumentException if the first argument is not such a value,
+         * which makes the outcome of the operation an error value
          */
         @AIGenerated("Claude Fable 5.2, 2026-11")
-        private Impl getImpl(List<Object> args) throws IllegalArgumentException {
-            var impls = this.impls;
-            if (impls[0].receiver() == null) {
-                // a constructor or static method, which is the only implementation
-                return impls[0];
+        private void checkReceiver(List<Object> args) throws IllegalArgumentException {
+            var receiver = this.impl.receiver();
+            if (receiver == null) {
+                // a constructor or static method
+                return;
             }
             if (args.isEmpty()) {
                 throw Exceptions.illegalArg("Too few arguments for %s: %s", getOperator(), args);
             }
             var type = args.get(0).getClass();
-            for (var impl : impls) {
-                if (impl.receiver() == type) {
-                    return impl;
-                }
+            if (!receiver.isAssignableFrom(type)) {
+                throw Exceptions
+                    .illegalArg("User operation '%s' is not implemented for a value of type %s, only for %s",
+                                getOperator().getName(), type.getSimpleName(),
+                                UserSignature.describeType(receiver));
             }
-            var receivers = new StringBuilder();
-            for (var impl : impls) {
-                var receiver = impl.receiver();
-                assert receiver != null; // only a sole implementation is without receiver
-                if (!receivers.isEmpty()) {
-                    receivers.append(", ");
-                }
-                receivers.append(receiver.getSimpleName());
-            }
-            throw Exceptions
-                .illegalArg("User operation '%s' is not implemented for a value of type %s, only for %s",
-                            getOperator().getName(), type.getSimpleName(), receivers);
         }
 
         /**
@@ -555,7 +542,7 @@ public enum AlgebraFamily implements DocumentedEnum {
             return result;
         }
 
-        /** The implementations of this operation, of which there is at least one. */
-        private final Impl[] impls;
+        /** The implementation of this operation. */
+        private final Impl impl;
     }
 }

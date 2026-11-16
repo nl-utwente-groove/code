@@ -276,10 +276,10 @@ public class UserClassPathTest {
         // the class in use is the one of the application loader
         var one = UserSignature.getOperators().get("one");
         assertNotNull(one);
-        var impls = UserSignature.getImplementations().get(one);
-        assertNotNull(impls);
+        var impl = UserSignature.getImplementations().get(one);
+        assertNotNull(impl);
         assertSame(UserOps.class.getClassLoader(),
-                   impls.get(0).executable().getDeclaringClass().getClassLoader());
+                   impl.executable().getDeclaringClass().getClassLoader());
     }
 
     /** Tests that a package wildcard in the grammar properties (gh #939) stands for
@@ -325,10 +325,10 @@ public class UserClassPathTest {
         assertEquals(0, count(check.getErrors()), check.getErrors().toString());
         assertWild();
         var declarers = UserSignature
-            .getMethods()
+            .getImplementations()
             .values()
             .stream()
-            .map(m -> m.getDeclaringClass().getSimpleName())
+            .map(i -> i.executable().getDeclaringClass().getSimpleName())
             .distinct()
             .toList();
         assertEquals(List.of("Alpha", "Point"), declarers);

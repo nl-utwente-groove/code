@@ -19,37 +19,35 @@ package nl.utwente.groove.test.algebra.user;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.annotation.IntSeq;
-import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
  * User type that shares the names of its fields and operations with
- * {@link UserTypeStack}, with the same signatures: a named queue of numbers,
- * with the head as first element (gh #933).
- * Where the signature has a user value other than the receiving object,
- * the types differ: each of the two has its own type there.
+ * {@link UserTypeStack}, by implementing the user interface {@link UserContainer}:
+ * a named queue of numbers, with the head as first element (gh #933).
+ * Unlike those of {@link UserTypeStack}, the implementing methods are not annotated.
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeQueue(String name, IntSeq items) {
+public record UserTypeQueue(String name, IntSeq items) implements UserContainer<UserTypeQueue> {
     /** Returns the element that is next in line, which is the one added first. */
-    @UserOperation
+    @Override
     public int next() {
         return items().get(0);
     }
 
     /** Returns this queue extended by a given element. */
-    @UserOperation
+    @Override
     public UserTypeQueue push(int item) {
         return new UserTypeQueue(name(), items().append(item));
     }
 
     /** Tests if this queue holds the same elements as another. */
-    @UserOperation
+    @Override
     public boolean sameItems(UserTypeQueue other) {
         return items().equals(other.items());
     }

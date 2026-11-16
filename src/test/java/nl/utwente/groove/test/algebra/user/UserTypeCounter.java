@@ -23,19 +23,16 @@ import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User type without a sequence-valued field, which declares an operation that has
- * the name and signature of a generated accessor of {@link UserTypeStack} and
- * {@link UserTypeQueue}: a named number of items that are not kept (gh #933).
+ * User type that shares the name of a field with {@link UserTypeStack} and
+ * {@link UserTypeQueue} through the user interface {@link UserNamed}, but is
+ * no {@link UserContainer}: a named number of items that are not kept (gh #933).
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeCounter(String name, int count) {
-    /** Returns the number of items, like the accessor generated for a sequence of them. */
-    @UserOperation
-    public int itemsSize() {
-        return count();
-    }
+public record UserTypeCounter(@UserOperation String name, int count) implements UserNamed {
+    // the annotation of the field ends up on its accessor method,
+    // which is still the one implementation of UserNamed.name()
 }

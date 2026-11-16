@@ -23,9 +23,9 @@ import nl.utwente.groove.util.AIGenerated;
 /**
  * User type that is correct on its own, and whose record component and annotated
  * method both carry a name that also occurs in {@link UserTypeIntString} (gh #934).
- * The method has the signature of its namesake, and so is a further implementation
- * of the same operator (gh #933). The component deliberately has another sort than
- * its namesake, which makes it an error, and lets a test tell which of the two
+ * As the two types implement no user interface that declares the names, both are
+ * duplicates, whatever the signatures (gh #933). The component deliberately has
+ * another sort than its namesake, which lets a test tell which of the two
  * accessors is in place.
  * @author Arend Rensink
  * @version $Revision$

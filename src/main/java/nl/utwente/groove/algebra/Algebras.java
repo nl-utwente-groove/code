@@ -133,26 +133,25 @@ public class Algebras {
         for (var e : UserSignature.getImplementations().entrySet()) {
             var name = e.getKey().getName();
             sigMap.put("Q" + name, name);
-            // an operator is documented once, by the first of its implementations
-            // that has documentation, and lists all classes that implement it
-            Help help = null;
-            Executable exec = null;
-            for (var impl : e.getValue()) {
-                exec = impl.executable();
-                help = createUserHelp(exec, sigMap);
-                if (help != null) {
-                    break;
-                }
-            }
-            if (help != null && exec != null) {
-                var sources = new StringBuilder();
-                for (var impl : e.getValue()) {
-                    sources.append(sources.isEmpty()
-                        ? "Declared in "
-                        : ", ");
-                    sources
-                        .append(Help
-                            .source(impl.executable().getDeclaringClass().getCanonicalName()));
+            var impl = e.getValue();
+            var exec = impl.executable();
+            // a generated accessor of a sequence-valued field has no documentation
+            Help help = impl.accessor() == null
+                ? createUserHelp(exec, sigMap)
+                : null;
+            if (help != null) {
+                var sources = new StringBuilder("Declared in ");
+                sources.append(Help.source(exec.getDeclaringClass().getCanonicalName()));
+                // an operation of a user interface lists the user types that implement it
+                var receiver = impl.receiver();
+                if (receiver != null && receiver.isInterface()) {
+                    var userTypes = UserSignature.getUserTypes(receiver);
+                    for (int i = 0; i < userTypes.size(); i++) {
+                        sources.append(i == 0
+                            ? "; implemented by "
+                            : ", ");
+                        sources.append(Help.source(userTypes.get(i).getCanonicalName()));
+                    }
                 }
                 help.addBody("<p style=\"margin-top:5;\"/>" + sources);
                 // parameter documentation, for the operands rather than the

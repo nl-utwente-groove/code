@@ -25,28 +25,33 @@ import nl.utwente.groove.util.AIGenerated;
 
 /**
  * User type that shares the names of its fields and operations with
- * {@link UserTypeQueue}, with the same signatures: a named stack of numbers,
- * with the top as last element (gh #933).
+ * {@link UserTypeQueue}, by implementing the user interface {@link UserContainer}:
+ * a named stack of numbers, with the top as last element (gh #933).
+ * The implementing methods carry the {@link UserOperation} annotation,
+ * which they need not.
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeStack(String name, IntSeq items) {
+public record UserTypeStack(String name, IntSeq items) implements UserContainer<UserTypeStack> {
     /** Returns the element that is next in line, which is the one added last. */
+    @Override
     @UserOperation
     public int next() {
         return items().get(items().size() - 1);
     }
 
     /** Returns this stack extended by a given element. */
+    @Override
     @UserOperation
     public UserTypeStack push(int item) {
         return new UserTypeStack(name(), items().append(item));
     }
 
     /** Tests if this stack holds the same elements as another. */
+    @Override
     @UserOperation
     public boolean sameItems(UserTypeStack other) {
         return items().equals(other.items());

@@ -43,6 +43,11 @@ import java.lang.annotation.Target;
  * </ul>
  * Methods of the record annotated with {@link UserOperation} are operations as well.
  * <p>
+ * The names of these operations are unique among all user classes of a grammar,
+ * with one exception: user types that implement a {@link UserInterface}-annotated
+ * interface share the operations declared there, which they implement by a component
+ * or method of that name.
+ * <p>
  * A value of the type is written, saved and shown as a call of the constructor operation
  * with constant arguments. A method of the record annotated with {@link UserDisplay}
  * yields a shorter string by which the state display shows the value instead.

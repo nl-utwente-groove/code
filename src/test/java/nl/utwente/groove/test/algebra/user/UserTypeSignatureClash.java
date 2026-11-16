@@ -18,32 +18,24 @@ package nl.utwente.groove.test.algebra.user;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.annotation.IntSeq;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * User type that is correct on its own, but whose field and operations cannot be
- * implementations of the equally named operators of {@link UserTypePoly}, as each
- * of them has another signature there (gh #933): another result sort, a variable
- * argument tail where there is a single argument, and an indeterminate outcome.
+ * Erroneous user type: it implements {@link UserNamed#name()} by a method that
+ * is annotated as indeterminate, whereas the operation of the interface is not (gh #933).
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
 @NonNullByDefault
-@AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypeSignatureClash(int name) {
-    /** Returns this value, whatever the coefficients. */
-    @UserOperation
-    public UserTypeSignatureClash append(IntSeq coeffs) {
-        return this;
-    }
-
-    /** Returns the wrapped number. */
+@AIGenerated("Claude Opus 5.5, 2026-11")
+public record UserTypeSignatureClash(String label) implements UserNamed {
+    /** Returns the label as name. */
+    @Override
     @UserOperation(indeterminate = true)
-    public int degree() {
-        return name();
+    public String name() {
+        return label();
     }
 }

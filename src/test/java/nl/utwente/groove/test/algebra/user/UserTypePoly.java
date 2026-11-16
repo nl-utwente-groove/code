@@ -26,13 +26,15 @@ import nl.utwente.groove.util.AIGenerated;
 /**
  * User type with a sequence-valued last field: a named polynomial,
  * given by its coefficients in the order of increasing degree.
+ * Its name is that of the user interface {@link UserNamed}, so that it can be
+ * loaded together with the other user types that have a name (gh #933).
  * @author Arend Rensink
  * @version $Revision$
  */
 @UserType
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.2, 2026-11")
-public record UserTypePoly(String name, IntSeq coeffs) {
+public record UserTypePoly(String name, IntSeq coeffs) implements UserNamed {
     /** Returns the degree of this polynomial, taking its coefficients as they are. */
     @UserOperation
     public int degree() {
