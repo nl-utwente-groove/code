@@ -184,8 +184,9 @@ yGuard over the jar of this unit together with the library, see `release/README.
 every name of the library and of this unit is renamed, and the provider file in
 `META-INF/services`, by which the GROOVE core finds the backend, is rewritten to the new
 name of the provider class. The two obfuscated jars go into `lib/` of
-`groove-x_y_z-yfiles-bin.zip`; the installers do not contain them yet. Two things in
-this project serve the distribution:
+`groove-x_y_z-yfiles-bin.zip`, from which the installer script can build the
+installers; the release workflow does not do so yet. Two things in this project serve
+the distribution:
 
 - The distribution licence file is a resource at the root of the jar, where the library
   finds it.

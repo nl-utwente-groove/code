@@ -108,7 +108,7 @@ To try this locally without any packaging tools, build the release as described 
 
     bash jpackage/build-installer.sh x.y.z app-image
 
-which produces the raw application directory (no installer) under `jpackage/target/dist`. On Windows this must be Git Bash: in PowerShell, `bash` resolves to WSL's `C:\Windows\System32\bash.exe`, and the script then runs under Linux with the Linux jpackage, which knows no `msi` ("Invalid or unsupported type: [msi]"). Either run the script from a Git Bash window, or name Git Bash: `& "C:\Program Files\Git\bin\bash.exe" release/jpackage/build-installer.sh x.y.z msi`.
+which produces the raw application directory (no installer) under `jpackage/target/dist`. A third argument `yfiles` (as in `bash jpackage/build-installer.sh x.y.z app-image yfiles`) packages `groove-x_y_z-yfiles-bin.zip` instead of the plain bin zip, so that the installer contains the obfuscated yFiles jars; the release has to have been built with the `yfiles` profile. It is the same product either way, with the same name, identifiers, upgrade UUID and file names: there is to be one set of installers, with yFiles, and the plain form remains for builds without the licensed library and, until it is switched, for the release workflow. The bundled runtime needs no extra module for the yFiles jars: the one they need beyond the core, `jdk.xml.dom`, already comes out of the analysis of the core jar, which was confirmed on 2026-11-16 by rendering with `-b yfiles` through the Imager launcher of such an app image. The licence text the installers show is still that of `LICENSE.txt`. On Windows this must be Git Bash: in PowerShell, `bash` resolves to WSL's `C:\Windows\System32\bash.exe`, and the script then runs under Linux with the Linux jpackage, which knows no `msi` ("Invalid or unsupported type: [msi]"). Either run the script from a Git Bash window, or name Git Bash: `& "C:\Program Files\Git\bin\bash.exe" release/jpackage/build-installer.sh x.y.z msi`.
 
 ### Building the Windows installer locally
 
@@ -166,8 +166,9 @@ yWorks did not approve the separate add-on of the 99.0.x test releases (see
 `claude/yfiles-restructure.md`). The release reactor's `yfiles` profile obfuscates the
 two and assembles `groove-x_y_z-yfiles-bin.zip` from them: the content of the plain
 `groove-x_y_z-bin.zip`, plus the two obfuscated jars in `lib/`, launchers in `bin/` whose
-class path lists them, and the yFiles notice at the root. The installers do not contain
-them yet. The yFiles license (an academic project license held by the University of
+class path lists them, and the yFiles notice at the root. The installer script packages
+that zip when asked to (see Installers above); the release workflow still builds the
+installers from the plain one. The yFiles license (an academic project license held by the University of
 Twente) has four consequences that shape this build:
 
 - The library may be redistributed only in obfuscated form, and yWorks require the same

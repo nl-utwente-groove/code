@@ -6,29 +6,45 @@
 # - the release zip has been built:
 #     mvn -B clean install -Drevision=<version>       (repository root)
 #     cd release && mvn -B clean package -Drevision=<version>
+#   and, for the yfiles argument below, with -Pyfiles in the second command
+#   (see release/README.md)
 # - a JDK (>= 21) providing jpackage and jdeps, located through JAVA_HOME if
 #   set, otherwise through the PATH
 # - for the Windows .msi type: the WiX toolset (preinstalled on the GitHub
 #   windows runners), and perl, which Git Bash ships with
 #
 # Usage:
-#   build-installer.sh <version> [<type>]
+#   build-installer.sh <version> [<type> [yfiles]]
 #
 #   <version>  the GROOVE version, e.g. 7.5.4; must match the -Drevision value
 #              of the release build
 #   <type>     jpackage --type: msi, dmg, pkg, deb, rpm or app-image;
-#              defaults to msi (Windows), dmg (macOS) or deb (Linux).
+#              defaults to msi (Windows), dmg (macOS) or deb (Linux); give it
+#              as an empty string to take the default and still pass yfiles.
 #              app-image produces the raw application directory without an
 #              installer, which is useful for local testing since it needs no
 #              packaging tools.
+#   yfiles     package groove-<version>-yfiles-bin.zip, the zip with the
+#              obfuscated yFiles jars (built by the release reactor with
+#              -Pyfiles), instead of the plain bin zip. The installer is the
+#              same product either way, under the same name, identifiers and
+#              upgrade UUID: there is one set of installers, which is to
+#              contain yFiles. The plain form serves builds without the
+#              licensed library.
 #
 # The installer is placed in release/jpackage/target/dist, named
 # groove-<version>-<os>-<arch>.<ext>.
 
 set -euo pipefail
 
-VERSION=${1:?usage: build-installer.sh <version> [<type>]}
+USAGE="usage: build-installer.sh <version> [<type> [yfiles]]"
+VERSION=${1:?$USAGE}
 TYPE=${2:-}
+EDITION=${3:-}
+if [[ -n $EDITION && $EDITION != yfiles ]]; then
+    echo "$USAGE" >&2
+    exit 1
+fi
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 RELEASE_DIR=$(dirname "$SCRIPT_DIR")
@@ -69,9 +85,11 @@ JDEPS=${JAVA_BIN}jdeps
 # ----------------------------------------------------------------- input tree
 # The bin release zip already has the right shape for jpackage: thin launcher
 # jars in bin/ whose manifests put ../lib/* on the classpath, next to the
-# top-level documentation files. The whole tree becomes the app content.
+# top-level documentation files. The whole tree becomes the app content. The
+# yFiles zip has the same shape, with the two obfuscated jars in lib/ and the
+# launchers' class path listing them.
 VERSION_UNDERSCORED=${VERSION//./_}
-ZIP=$RELEASE_DIR/target/groove-$VERSION_UNDERSCORED-bin.zip
+ZIP=$RELEASE_DIR/target/groove-$VERSION_UNDERSCORED-${EDITION:+$EDITION-}bin.zip
 if [[ ! -f $ZIP ]]; then
     echo "error: $ZIP not found; build the release first (see header of this script)" >&2
     exit 1
@@ -117,10 +135,13 @@ if [[ -z ${MODULES:-} ]]; then
     echo "warning: jdeps failed to compute the module list; falling back to java.se" >&2
     MODULES=java.se
 fi
-# The yFiles jars (see README.md), where they are on the class path, run in
-# this same runtime; they need jdk.xml.dom, which the core jar's analysis
-# already yields, so no module is added for them here. Should that change, the
-# yFiles backend would fail at start-up with a NoClassDefFoundError.
+# The yFiles jars of the yFiles zip (see README.md) run in this same runtime;
+# they need jdk.xml.dom, which the core jar's analysis already yields, so no
+# module is added for them here (confirmed on 2026-11-16: the Imager of an
+# app image of the yFiles zip rendered with -b yfiles on the module set
+# computed here). Should that change, the yFiles backend would fail at
+# start-up with a NoClassDefFoundError, and the Imager would fall back to
+# JGraph with a warning.
 MODULES=$(printf '%s\n' ${MODULES//,/ } $EXTRA_MODULES | sort -u | paste -sd, -)
 echo "bundled runtime modules: $MODULES"
 
@@ -295,7 +316,8 @@ if [[ $TYPE != app-image ]]; then
         linux)
             args+=(--linux-menu-group Development)
             if [[ $TYPE == rpm ]]; then
-                # the rpm License tag; without it jpackage writes "Unknown"
+                # the rpm License tag; without it jpackage writes "Unknown".
+                # With yfiles, the tag is settled with the licence texts
                 args+=(--linux-rpm-license-type Apache-2.0)
             fi
             ;;
