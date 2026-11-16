@@ -321,7 +321,7 @@ classes, backend unit 73 tests with 6 Robot skips, both null checks).
 
 ## The backend as a named module (2026-11-16)
 
-Branch `yfiles-backend-module` off `master`. It replaces the decision of step 2 to close
+Branch `yfiles-backend-module` off `master`, merged on 2026-11-16. It replaces the decision of step 2 to close
 the seam by not exporting it, and supersedes the stopgap branch `yfiles-eclipse-launch`
 (a class-path launch for Eclipse), which is to be dropped unmerged.
 
@@ -513,3 +513,9 @@ Arend's decision under *Decided in step 4*; branch `yfiles-about-notice` off `ma
   too, since the backend cannot tell.
 - One more copy of the restriction to keep in step: `release/README.md` lists it with
   the others.
+
+Merged into `master` on 2026-11-16, after the backend module (see *The backend as a named
+module*). Checked on the merged result: the unit has 74 tests and the one on the notice
+passes on the module path; in the test pass of the release build it also passes on the
+obfuscated jars (68 tests, 6 more aborted by assumption), which settles what the commit of
+the notice left untried, that the method and its text survive the obfuscation.
