@@ -1,0 +1,308 @@
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>nl.utwente.groove</groupId>
+	<artifactId>groove-yfiles</artifactId>
+	<version>${revision}</version>
+
+	<!-- The yFiles graph-visualisation backend of GROOVE (gh #909): an optionally
+	     compiled unit, deliberately NOT a module of the main reactor. It depends on
+	     the GROOVE artifact and on the licensed yFiles library, which is available
+	     only from a developer's local Maven repository; the main build
+	     (git clone && mvn package) never needs it.
+
+	     The source of the unit is public, as yWorks allow; the library and its
+	     licence files are not, and are never part of this repository. See
+	     README.md in this directory. -->
+
+	<properties>
+		<!-- the GROOVE version this backend is built against. The default MUST equal
+		     the revision property of the main pom, one directory up: with equal
+		     versions, Eclipse resolves the dependency from the open groove project
+		     (m2e workspace resolution) and a command-line build finds the installed
+		     artifact. Update both in the same commit when bumping the version
+		     (release checklist); scripts may override with -Drevision. -->
+		<revision>7.8.1-SNAPSHOT</revision>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>21</maven.compiler.release>
+		<yfiles.version>3.6.0.1</yfiles.version>
+		<junit.version>5.14.4</junit.version>
+		<!-- The yFiles licence file that goes to the root of the class path, where
+		     the library loads it from: the directory holding it, and its name. yWorks
+		     issues two files, which its guide (Deployment, Licensing) keeps strictly
+		     apart: the development licence com.yworks.yfiles.java.developmentlicense.xml,
+		     whose watermark on every canvas names it as such, and the distribution
+		     licence com.yworks.yfiles.java.license.xml, the only one that may be
+		     deployed (its watermark is worded differently).
+		     Neither is in this repository. The default below is where the licensed
+		     developer and the workflows have them: the lib/ directory of the private
+		     repository nl-utwente-groove/yfiles-lib, cloned next to the clone of this
+		     repository (so not next to a worktree of it: pass the directory with -D
+		     there). Anyone else building this unit points the properties at a licence
+		     of their own. The build takes the distribution licence unless told
+		     otherwise, since what it packages is what a release ships; the resource
+		     include below copies that one file only, so the other never ends up in
+		     the jar, and the licence check below fails the build if it is missing.
+		     Override either property in your settings.xml or with -D. -->
+		<yfiles.license.dir>${project.basedir}/../../yfiles-lib/lib</yfiles.license.dir>
+		<yfiles.license.file>com.yworks.yfiles.java.license.xml</yfiles.license.file>
+		<!-- The GROOVE checkout that the freshness guard below installs from and
+		     whose fixture grammars the tests load: the one this unit is part of. -->
+		<groove.dir>${project.basedir}/..</groove.dir>
+		<!-- A command-line build refreshes the installed GROOVE artifact from that
+		     checkout, so that this backend is never compiled or tested against a
+		     stale core. Pass -Dgroove.install.skip=true to skip that (e.g. when the
+		     artifact was just installed). Eclipse skips it always and compiles
+		     against the open groove project instead.
+
+		     NOTE this refreshes but cannot bootstrap: Maven resolves the dependency
+		     graph of the module before the first phase of the lifecycle runs, so a
+		     build with no groove:${revision} in the local repository at all fails to
+		     resolve before the guard below is ever reached. Install the artifact by
+		     hand once per machine and per version bump; see README.md, Building. -->
+		<groove.install.skip>false</groove.install.skip>
+		<!-- The tests driving the Simulator with a Robot take over the mouse; they
+		     run only when asked for with -Dgroove.test.robot=true. -->
+		<groove.test.robot>false</groove.test.robot>
+	</properties>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>
+		GROOVE: yFiles graph-visualisation backend (optional, licensed).
+	</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>nl.utwente.groove</groupId>
+			<artifactId>groove</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<!-- installed locally from the licensed distribution, see README.md -->
+			<groupId>com.yworks.yfiles</groupId>
+			<artifactId>yfiles-for-java-swing</artifactId>
+			<version>${yfiles.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- compiled against for the launcher session listener that isolates the
+			     test JVM (nl.utwente.groove.gui.yfiles.TestIsolation); every runner
+			     puts this artifact on the class path anyway. The version is the
+			     platform version belonging to ${junit.version}, and must be bumped
+			     with it. -->
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<version>1.14.4</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<!-- the jar declares the GROOVE version it is built against, by
+				     which the extension loader of GROOVE recognises a jar built for
+				     another version and skips it (nl.utwente.groove.util.Extensions) -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.4.2</version>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<GROOVE-Version>${revision}</GROOVE-Version>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<!-- the drift guard: the revision property above must equal that of
+						     the GROOVE checkout, since the dependency below is resolved at
+						     that version and this backend is built for one GROOVE version.
+						     Drift is otherwise silent: an artifact of the stale version may
+						     well still be in the local repository, in which case the build
+						     succeeds against it while the freshness guard below dutifully
+						     installs the current one next to it. Callers that dictate the
+						     version read it from that same checkout and pass it with
+						     -Drevision (the workflows and the release recipes), so for them the comparison holds trivially; it is the
+						     plain command-line build, which the default governs, that is
+						     caught. A checkout that is not there at all is no error: the
+						     property then stays unset and the check passes. -->
+						<id>check-revision</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<loadfile property="groove.revision" srcFile="${groove.dir}/pom.xml" failonerror="false" quiet="true">
+									<filterchain>
+										<tokenfilter>
+											<containsregex pattern="^\s*&lt;revision&gt;(.*)&lt;/revision&gt;\s*$" replace="\1"/>
+										</tokenfilter>
+										<striplinebreaks/>
+									</filterchain>
+								</loadfile>
+								<fail message="The revision of this pom (${revision}) differs from that of the GROOVE checkout at ${groove.dir} (${groove.revision}); the two must be kept equal, see README.md, Building. Update the revision property of this pom, or pass -Drevision=${groove.revision} to build against that version regardless.">
+									<condition>
+										<and>
+											<isset property="groove.revision"/>
+											<not>
+												<equals arg1="${revision}" arg2="${groove.revision}"/>
+											</not>
+										</and>
+									</condition>
+								</fail>
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- the licence check: the licence file named by the properties
+						     above must exist, since the resource include below copies
+						     it to the root of the jar and a jar without it fails only at
+						     run time, with the library's licence error -->
+						<id>check-license</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<fail message="The yFiles licence file ${yfiles.license.dir}/${yfiles.license.file} is missing. The build copies it to the root of the jar, where the library loads it from; point yfiles.license.dir and yfiles.license.file at the distribution licence, or at the development licence for a build with the development watermark, see README.md, Building.">
+									<condition>
+										<not>
+											<available file="${yfiles.license.dir}/${yfiles.license.file}" type="file"/>
+										</not>
+									</condition>
+								</fail>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<!-- the freshness guard: re-install the GROOVE artifact from the
+						     GROOVE checkout before anything of this project is compiled.
+						     Runs after the dependency graph has been resolved, so it keeps
+						     an installed artifact current but cannot supply a missing one
+						     (see the groove.install.skip property above) -->
+						<id>install-groove</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<skip>${groove.install.skip}</skip>
+							<executable>mvn</executable>
+							<workingDirectory>${groove.dir}</workingDirectory>
+							<arguments>
+								<argument>-q</argument>
+								<argument>install</argument>
+								<argument>-DskipTests</argument>
+								<argument>-Dmaven.javadoc.skip=true</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.2.5</version>
+				<configuration>
+					<!-- The isolation of the test JVM from the developer's GROOVE
+					     installation (in-memory preferences, an extension directory of
+					     its own, no add-on question) is not set here but by the launcher
+					     session listener TestIsolation, which a run from Eclipse gets as
+					     well; a Maven run that went red on it would be the first sign
+					     that the listener is no longer picked up. The native access
+					     grant, being a JVM option, has no such alternative: it keeps
+					     JDK 24+ (JEP 472) from warning when FlatLaf loads its
+					     window-decoration library in the Simulator tests. Unlike the
+					     main project, this one has no module descriptor, so Surefire
+					     runs everything on the class path and the grant goes to the
+					     unnamed module (the main project's module form would only yield
+					     an "Unknown module" warning here). -->
+					<argLine>--enable-native-access=ALL-UNNAMED</argLine>
+					<systemPropertyVariables>
+						<groove.test.robot>${groove.test.robot}</groove.test.robot>
+						<!-- the fixture grammars are read from the GROOVE checkout -->
+						<groove.dir>${groove.dir}</groove.dir>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<!-- tells m2e to leave the freshness guard and the drift guard alone:
+					     in Eclipse the groove project itself is on the build path, so
+					     neither the installed artifact nor its version is what the
+					     compilation sees -->
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>exec-maven-plugin</artifactId>
+										<versionRange>[3.0.0,)</versionRange>
+										<goals>
+											<goal>exec</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-antrun-plugin</artifactId>
+										<versionRange>[3.0.0,)</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<!-- the licence file named above is copied to the root of the class
+				     path, and nothing else from its directory; its absence fails the
+				     build in the validate phase (the licence check above) -->
+				<directory>${yfiles.license.dir}</directory>
+				<includes>
+					<include>${yfiles.license.file}</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+</project>

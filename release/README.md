@@ -18,7 +18,7 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 1. Update the version and date in the GROOVE source:
 
     - The version number is the `revision` property in the main `pom.xml`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`, where `x`, `y` and `z` are natural numbers without leading zeros and `x` is below 100 (every Maven build checks this form, and the release workflow additionally rejects the suffix). The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate updating the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix. (The `GROOVE_VERSION` resource file is generated from this property by resource filtering; do not edit it.)
-    - The `revision` property of the `pom.xml` of the private `yfiles-lib` repository (the optional yFiles backend) should be updated along with it, to keep the two equal. This is development hygiene rather than a condition for the release: every build of the backend, by hand or in a workflow, is passed the version of the main pom with `-Drevision`, so the add-on gets the right version either way. The default in that pom governs Eclipse, where equal versions are what make m2e resolve the dependency from the open `groove` project instead of an installed artifact; a command-line build of the backend fails if the two have drifted apart.
+    - The `revision` property of `yfiles/pom.xml` (the optional yFiles backend) is updated in the same commit, to keep the two equal. This is development hygiene rather than a condition for the release: every build of the backend, by hand or in a workflow, is passed the version of the main pom with `-Drevision`, so the add-on gets the right version either way. The default in that pom governs Eclipse, where equal versions are what make m2e resolve the dependency from the open `groove` project instead of an installed artifact; a command-line build of the backend fails if the two have drifted apart.
     - The remaining files in `src/main/resources/nl/utwente/groove/resource/version`:
         - `GROOVE_BUILD`: the build date, in format `YYYYMMDD`. Update to the build date.
         - [Optional] `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
@@ -88,7 +88,7 @@ If something goes wrong on github and you have to repeat the last step, you firs
 
 For a test deployment, use a version number starting at 99, such as `99.0.0`: the `release` job marks any such version as a pre-release automatically, and a pre-release is not shown as the latest release of the repository. Consider increasin the patch or minor number for every further pre-release (`99.0.1`, `99.1.0`, ...): the Windows installer derives its product code from the version, so it refuses to install over an existing installation of the same version ("Another version of this product is already installed"), whereas a different version replaces it.
 
-A pre-release is typically tagged on a branch, since testing the workflow before merging is the point of it. The yFiles add-on then has to come from the matching state of the private repository, which is not its default branch. The `release` job and `backend.yml` both choose that state by the rule of `release/github/choose-backend.sh`: the candidates are the branches of this repository whose tip is an ancestor of the commit built — the branch tagged or pushed and everything it was branched off — and the add-on is built from the nearest of those that `yfiles-lib` also has, falling back to `main`. Tagging a throwaway branch off `yworks-migration` therefore selects `yfiles-lib`'s `yworks-migration`, whereas a `yfiles-lib` branch named after the branch tagged, if there is one, wins over it as the nearer match. A release tagged on `master` matches nothing there, the private default branch being `main`, and is built from `main` as before.
+A pre-release is typically tagged on a branch, since testing the workflow before merging is the point of it. The yFiles backend is built from the tagged commit itself (the unit in `yfiles/`); the library it is built against comes from the private repository `yfiles-lib`, and if the branch goes with a change there, as for an upgrade of the library, from the matching state of that repository, which is not its default branch. The `release` job and `backend.yml` both choose that state by the rule of `release/github/choose-backend.sh`: the candidates are the branches of this repository whose tip is an ancestor of the commit built — the branch tagged or pushed and everything it was branched off — and the library is taken from the nearest of those that `yfiles-lib` also has, falling back to `main`. Tagging a throwaway branch off a branch `yfiles-upgrade` therefore selects `yfiles-lib`'s `yfiles-upgrade`, whereas a `yfiles-lib` branch named after the branch tagged, if there is one, wins over it as the nearer match. A release tagged on `master` matches nothing there, the private default branch being `main`, and is built from `main` as before.
 
 The tagged branch must be pushed, since the rule resolves against the remote branches of this repository; so it should also be removed again to avoid clutter. Remove it locally from Eclipse by
 
@@ -144,7 +144,7 @@ The `.msi` shows the licence in a narrow box on its first page. jpackage convert
 
 The installers are not code-signed, so Windows and macOS block them at first, and rpm-based package managers may ask before installing the `.rpm` (`zypper` does, `dnf` normally does not; `apt` and `dpkg` never check local `.deb` files). The release page therefore explains how to get past that, in two places, both kept in `github`:
 
-- `INSTALL-NOTE.md` opens the body of the release page. The `release` job builds the body with `github/release-notes.sh`, which appends this release's section of `include/CHANGES.md` (its first section) in a collapsed block, so that the note stays close to the asset list below it; a later step of the job appends an invisible HTML comment naming the `yfiles-lib` commit of the add-on (see "Building" below). Run `bash github/release-notes.sh` to preview the body. To save the preview to a file from Windows PowerShell, keep the redirection inside bash, as in `bash -c "github/release-notes.sh > body.md"`: PowerShell 5.1's `>` writes UTF-16, which GitHub does not render as Markdown (in a gist, for instance).
+- `INSTALL-NOTE.md` opens the body of the release page. The `release` job builds the body with `github/release-notes.sh`, which appends this release's section of `include/CHANGES.md` (its first section) in a collapsed block, so that the note stays close to the asset list below it; a later step of the job appends an invisible HTML comment naming the `yfiles-lib` commit the add-on's library was taken from (see "Building" below). Run `bash github/release-notes.sh` to preview the body. To save the preview to a file from Windows PowerShell, keep the redirection inside bash, as in `bash -c "github/release-notes.sh > body.md"`: PowerShell 5.1's `>` writes UTF-16, which GitHub does not render as Markdown (in a gist, for instance).
 - `IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTALLER.txt` is attached to the release as an asset, with step-by-step instructions. Its name is the message, for those who read nothing but the asset list.
 
 Unlike the contents of `include`, neither file ends up in the zips or the installers.
@@ -159,9 +159,11 @@ Unlike the contents of `include`, neither file ends up in the zips or the instal
 # How to build the yFiles add-on
 
 The yFiles add-on is a small second artifact of the same release: the optional yFiles
-graph-visualisation backend (the root project of the private repository
-`nl-utwente-groove/yfiles-lib`, see its README) and the commercial yFiles
-library it runs on, zipped up as `groove-x_y_z-yfiles-addon.zip`. The standard zips
+graph-visualisation backend (the unit in `yfiles/` of this repository, see its
+README) and the commercial yFiles library it runs on, zipped up as
+`groove-x_y_z-yfiles-addon.zip`. (yWorks did not approve the add-on as a form of
+distribution, so it never got further than the 99.0.x test releases and is to be replaced; see
+`claude/yfiles-restructure.md`. This section describes the build as it is.) The standard zips
 and installers do not contain it; a user unzips it into GROOVE's extension directory
 (`%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application Support/GROOVE/extensions`
 on macOS, `$XDG_DATA_HOME/groove/extensions`, normally `~/.local/share/groove/extensions`,
@@ -205,14 +207,14 @@ therefore needs its own add-on.
 ## Building
 
 Prerequisites, once: a clone of the private repository `nl-utwente-groove/yfiles-lib`
-next to this one, and the library installed in the local Maven repository from the jar
-in its `lib/` directory, both as described in the `README.md` there; yGuard itself comes
-from Maven Central like any plugin.
+next to this one, which holds the library jar and its license files, and the library
+installed in the local Maven repository from that jar, as described in
+`yfiles/README.md`; yGuard itself comes from Maven Central like any plugin.
 
 1. Build and install the core artifact and generate the javadoc as for the standard
    release, then build and install the backend against it:
 
-    `mvn -f ../yfiles-lib/pom.xml -Dgroove.install.skip=true -Drevision=x.y.z clean install`
+    `mvn -f yfiles/pom.xml -Dgroove.install.skip=true -Drevision=x.y.z clean install`
 
     (from the repository root; this runs the backend's tests, which open a
     Simulator window briefly).
@@ -241,9 +243,9 @@ timestamp and memory-usage comments (checked 2026-09-24 on Windows; that a Linux
 runner renames the same way is expected, not checked). Such a trace needs the mapping
 only for its `com.yworks` frames, which carry no line numbers; the backend's own frames
 keep their names and lines. To regenerate the mapping of release x.y.z, repeat the two
-steps above from the release tag with the inputs of that release: the same library jar
-(the `lib/` directory of `yfiles-lib` keeps its history), the same `yguard.version`,
-and the `yfiles-lib` commit the release was built from. The release workflow checks
+steps above from the release tag with the inputs of that release: the same
+`yguard.version` and the same library jar, that of the `yfiles-lib` commit the release
+was built with (its `lib/` directory keeps its history). The release workflow checks
 that repository out by branch name, which does not fix the commit, so it records the
 commit at the end of the release notes, as an HTML comment that the release page does
 not show: `gh release view release-x_y_z --json body` prints it.
@@ -264,12 +266,10 @@ repository holds three files in its `lib/` directory: `yfiles-for-java-swing.jar
 jar from the `lib` directory of the licensed distribution, and the two license files
 yWorks issued with it, of which the backend's build packages the distribution license
 (`yfiles.license.file` in its `pom.xml`, by default `com.yworks.yfiles.java.license.xml`)
-and never the development license; the rest of that repository is
-the source of the backend itself, its root project, which the yFiles license
-does not allow to be public. The workflow installs the jar into
-the runner's local Maven repository under the coordinates of that repository's
-`pom.xml` (whose `yfiles.version` it reads), builds the backend from that
-checkout with its tests (the license directory defaults to its `lib/` directory; the
+and never the development license. The workflow installs the jar into
+the runner's local Maven repository under the coordinates of `yfiles/pom.xml`
+(whose `yfiles.version` it reads), builds the backend from `yfiles/`
+with its tests (the license directory defaults to the `lib/` directory of that checkout; the
 tests open Simulator windows, so they run under Xvfb), and packages the release with
 the `yfiles` profile; the add-on zip is then attached to the github release by the
 same step as the standard zips.
@@ -279,7 +279,7 @@ fine-grained personal access token of the licensed developer with read access to
 `yfiles-lib` only (Contents: read). Under the one-seat project license, nobody but
 that developer and this token may read the private repository. A new library version
 means a new jar and new license files there, and a new `yfiles.version` in both
-the `pom.xml` of that repository and `release/yfiles/pom.xml` (here).
+`yfiles/pom.xml` and `release/yfiles/pom.xml`.
 
 The pull-request build (`maven.yml`) does not use the profile: secrets are not
 available to workflows run for pull requests from forks, and the standard build must
@@ -296,8 +296,8 @@ standard release,
 
 exercises the obfuscated library headlessly through the extension loader (without the
 add-on, the Imager warns that the backend is not available and renders with JGraph).
-The backend's own tests can be run against the obfuscated jars as described in
-the `README.md` of the `yfiles-lib` repository.
+The backend's own tests can be run against the obfuscated jars by the recipe in
+`claude/yfiles-migration.md` (phase 5, "Verification").
 
 # How to build a Maven artefact
 

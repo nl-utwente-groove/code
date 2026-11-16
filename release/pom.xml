@@ -65,7 +65,7 @@
 	<profiles>
 		<profile>
 			<!-- The yFiles add-on: the yFiles backend (the groove-yfiles artifact
-			     built from the private yfiles-lib repository) and the yFiles
+			     built from the unit in yfiles/) and the yFiles
 			     library, the latter obfuscated as its
 			     license requires, zipped up for the user's extension directory
 			     (see README.md). The standard zips are not affected. Activate with

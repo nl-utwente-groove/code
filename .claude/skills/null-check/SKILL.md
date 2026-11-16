@@ -92,3 +92,25 @@ null bug in that file. `-All` compiles modularly and has no such error. Conseque
 - Remember the null-annotation idioms in claude/CLAUDE.md (annotate consistently across an
   inheritance web; `Map<K,@Nullable V>` for null-checked lookups; `@Nullable` late-init fields
   with asserting accessors).
+
+## The yFiles backend
+
+The unit in `yfiles/` is not part of the main build, so neither mode above sees it. It has
+a script of its own, which needs the licensed yFiles library in the local Maven repository:
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/null-check/run-ecj-yfiles.ps1
+```
+
+It checks the unit's whole source tree every time (15 main and 8 test sources, well under a
+minute) with the same ecj version, settings (`yfiles/.settings`, kept identical to the main
+project's) and external annotations, straight from source: the unit runs on the class path
+without `module-info` and has no generated sources, so none of the module handling above
+applies. The core comes from this checkout's `target\classes` when that is built, as in
+Eclipse's workspace resolution, and from the installed `nl.utwente.groove:groove` jar
+otherwise or with `-UseInstalledJar`; stale core classes show up as API errors, and ecj
+skips null analysis in any unit with an error. The dependency class path is cached in
+`yfiles\target\ecj-classpath.txt` (`-Refresh` rebuilds it). The script prints `No problems.`
+and exits with 0, or lists the problems (also in `yfiles\target\ecj-problems.txt`) and exits
+with 1, warnings included: **zero problems is the bar**, there is no baseline. A clean run is
+no proof; see `claude/yfiles-backend.md`, *Null analysis*.

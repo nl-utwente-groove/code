@@ -1,22 +1,19 @@
 name: Test the yFiles backend
 run-name: Testing the yFiles backend after push of ${{ github.ref_name }}
 
-# Builds and tests the yFiles graph backend, whose source lives in the private
-# repository nl-utwente-groove/yfiles-lib, against every push of this
-# repository, so that a change to the interfaces the backend implements is
-# noticed without anyone remembering to run the backend's tests by hand. The
-# private repository has the mirror-image workflow (test.yml), which tests a
-# push there against this repository.
+# Builds and tests the yFiles graph backend, the unit in yfiles/, on every
+# push of this repository, so that a change to the interfaces the backend
+# implements is noticed without anyone remembering to run the backend's tests
+# by hand. The ordinary build (maven.yml) cannot do that: the backend compiles
+# against the licensed yFiles library, which is not in this repository.
 #
-# The backend is taken from the branch of the private repository that
+# The library and its licence file are taken from the private repository
+# nl-utwente-groove/yfiles-lib, at the branch that
 # release/github/choose-backend.sh chooses, as in release.yml: the nearest of
 # the branches the pushed commit descends from that the private repository
-# also has, and main if there is none. A backend branch that follows an
-# interface change on a branch of this repository must therefore carry that
-# branch's name; a throwaway branch off it, as for a test release, then
-# resolves to it as well. When the two sides of such a change are pushed one
-# after the other, the first run is red until the second push exists; that is
-# accurate, since the pushed branch alone would break the other repository.
+# also has, and main if there is none. A branch of the private repository
+# that goes with a branch of this one, as for an upgrade of the library, must
+# therefore carry that branch's name.
 #
 # The private repository is read with the same token as in release.yml. A
 # pull request from a fork has no secrets, so the job skips there. The tests
@@ -63,15 +60,15 @@ jobs:
         path: 'code'
         fetch-depth: 0
         filter: 'blob:none'
-    - name: Choose the backend branch
+    - name: Choose the library branch
       if: steps.token.outputs.run == 'true'
       env:
         TOKEN: ${{ secrets.YFILES_LIB_TOKEN }}
       run: |
         REF=$(bash release/github/choose-backend.sh "$GITHUB_SHA")
-        echo "Testing nl-utwente-groove/yfiles-lib at $REF"
+        echo "Taking the yFiles library from nl-utwente-groove/yfiles-lib at $REF"
         echo "YFILES_REF=$REF" >> "$GITHUB_ENV"
-    - name: Check out yFiles backend
+    - name: Check out yFiles library
       if: steps.token.outputs.run == 'true'
       uses: actions/checkout@v7
       with:
@@ -101,17 +98,17 @@ jobs:
       # depends on; the version is the backend pom's yfiles.version
       if: steps.token.outputs.run == 'true'
       run: |
-        YFILES_VERSION=$(mvn -B -q -f ../yfiles-lib/pom.xml help:evaluate -Dexpression=yfiles.version -DforceStdout)
+        YFILES_VERSION=$(mvn -B -q -f yfiles/pom.xml help:evaluate -Dexpression=yfiles.version -DforceStdout)
         mvn -B -q install:install-file -Dfile=../yfiles-lib/lib/yfiles-for-java-swing.jar -DgroupId=com.yworks.yfiles -DartifactId=yfiles-for-java-swing -Dversion=$YFILES_VERSION -Dpackaging=jar
     - name: Test the backend
       # the core was just installed, so the freshness guard is skipped; the
-      # fixture grammars and the license directory are found through the
-      # backend pom's defaults for the sibling layout of the two checkouts
+      # license directory is found through the backend pom's default for the
+      # sibling layout of the two checkouts
       if: steps.token.outputs.run == 'true'
-      run: xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B -f ../yfiles-lib/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION clean test
+      run: xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B -f yfiles/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION clean test
     - name: Keep the test reports of a failed run
       if: failure() && steps.token.outputs.run == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: surefire-reports
-        path: yfiles-lib/target/surefire-reports
+        path: code/yfiles/target/surefire-reports
