@@ -1,8 +1,8 @@
 # This is a bash script to run all maven commands for
 # - building the main maven artifact
 # - zipping up the release artifacts
-# - optionally, with the argument "yfiles", also building the yFiles add-on
-#   (see README.md; needs the licensed yFiles library in the local Maven
+# - optionally, with the argument "yfiles", also building the obfuscated
+#   yFiles jars (see README.md; needs the licensed yFiles library in the local Maven
 #   repository and a clone of the private yfiles-lib repository, which holds
 #   the runtime license file, next to this repository)
 # Run from the code repository main directory using launch/maven.sh
@@ -41,8 +41,8 @@ fi
 # zip up the release artifacts
 cd release; mvn -Drevision=$GROOVE_VERSION clean package
 
-# zip up the yFiles add-on next to them (no clean: that would delete the
-# standard zips, which land in the same target directory)
+# obfuscate the yFiles jars (no clean: that would delete the standard zips
+# of the step before)
 if [[ $EDITION == yfiles ]]; then
     mvn -Drevision=$GROOVE_VERSION -Pyfiles package
 fi

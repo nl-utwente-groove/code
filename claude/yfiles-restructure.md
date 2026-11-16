@@ -173,13 +173,41 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
    licence only, and a same-named branch `yfiles-backend-return` there removes everything
    else from it (to be merged after this one is on `master`). The licence directory
    defaults to the clone of the private repository next to the main checkout.
-2. **Remove the add-on machinery** (item 3 above), and with it the `GROOVE-Version`
-   manifest entry of the unit's jar and the extension-directory isolation of its tests.
+2. **Remove the add-on machinery** (item 3 above). Built 2026-11-16, branch
+   `remove-addon-machinery`, two commits (the core; the unit and the release build):
+   - *Core*: `util.Extensions`, `util.AddOn`, `gui.AddOnInstaller` and their tests are
+     gone, with the View-menu submenu, the first-run question and the two system
+     properties of the test configurations. `GraphBackend` discovers its providers
+     through the plain `ServiceLoader`; `BackendChooser` offers the backends of the
+     session. `module-info` no longer exports `gui.view`, `gui.view.cell`, `gui.look`
+     and `gui.layout` (see *Decided in step 2*) nor requires `java.net.http`, whose only
+     user was the download.
+   - *Backend unit and release build*: the `GROOVE-Version` manifest entry and the
+     extension-directory isolation of the unit's tests are gone, as are `addon.xml`, the
+     msi cleanup fragment and its splice. The module `release/yfiles` (artifact
+     `yfiles-obfuscated`) now only obfuscates, into `release/yfiles/target/lib`, and
+     checks the licence in the result; **no zip or installer contains the jars until
+     step 3**. The `check-revision` guard of the unit's pom stays, against item 3 of the
+     required shape: it guards a build against a stale core artifact, which has nothing
+     to do with the add-on.
+   - *yGuard renames the backend's own classes and members*, see *Decided in step 2*.
+
+   Left for later steps, deliberately: the user-facing texts that still describe the
+   add-on (`release/include/README.md`, `CHANGES.md`, `CHANGES-8_0_0.md`,
+   `release/github/INSTALL-NOTE.md`) and the orphaned `release/yfiles/include/YFILES-ADDON.md`,
+   the basis of the notice in the binaries: all of them are rewritten in step 4, with
+   wording Arend reviews, rather than twice. The website notes
+   (`website-manual-8_0_0.md`, `release-8_0_0-state.md`) are step 6.
 3. **Distribution**: obfuscated jars in `lib/` of `-yfiles-bin.zip` and of the
    installers' app image; most of it is the edition build of 2026-09-09 (`yfiles-edition`
    in the history, described under phase 5 of `yfiles-migration.md`). Checks: the unit's
-   tests against the obfuscated jars, no yFiles entry in the plain zip, the shipped
-   licence is the distribution one, the yGuard mapping in no artifact.
+   tests on the obfuscated jars, no yFiles entry in the plain zip, the shipped
+   licence is the distribution one, the yGuard mapping in no artifact. The first of
+   these needs scripting now that the backend is renamed: the tests name its classes,
+   so they must go through the same yGuard pass (recipe under "Checking the result" in
+   `release/README.md`, done by hand in step 2). The installers' runtime needs no
+   module for the jars (`jdk.xml.dom` comes with the core's analysis, see
+   `build-installer.sh`), to be confirmed on the app image.
 4. **Licence texts**: `LICENSE.txt`, the notice in the binaries, the installer's licence
    page, the release-page text, `CHANGES.md`. Wording to be reviewed by Arend against the
    SLA.
@@ -191,11 +219,31 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
 8. **Release 8.0.0** by `release-8_0_0-state.md`; only the core artifact goes to Maven
    Central.
 
-## Open
+## Decided in step 2 (2026-11-16)
 
-- Whether yGuard renames the classes of the backend unit as well (item 2 of the required
-  shape). The core jar stays readable either way.
-- Whether there is a second, yFiles-free set of installers. One installer with yFiles as
-  an option is not a way out: the installer file would contain the library and so be the
-  restricted artifact whatever the user ticks.
-- How step 2 closes the seam, see the second correction above.
+- **yGuard renames the classes and members of the backend unit as well** (Arend). The
+  `keep` section of `release/yfiles/pom.xml` holds no name any more; yGuard itself
+  keeps what the backend overrides or implements of the core and the JDK, which it
+  finds on the external class path. The provider file `META-INF/services/...GraphBackend`
+  keeps its name (an interface of the core) and gets its content rewritten by an
+  `adjust` element with `replaceContentPolicy="strict"` and
+  `replaceContentSeparator="."`. Line numbers are kept and the source file is the
+  constant `y`, so a stack trace through the backend can be translated with the
+  regenerated mapping. Verified: the obfuscated backend jar has no class under `nl/`
+  and its provider file names an obfuscated class; `Imager -b yfiles` renders headlessly
+  with the two jars added to the class path of the unzipped standard release; the
+  unit's 73 tests pass on the obfuscated stack (6 Robot skips) when obfuscated in the
+  same pass. Not rechecked: that the renaming is still deterministic. Consequence for
+  code in the unit: nothing may depend on one of its class names at run time
+  (`yfiles/README.md`, Distribution).
+- **One set of installers, with yFiles** (Arend): no yFiles-free installers and no
+  choice inside an installer, which would not help anyway since the installer file
+  would contain the library and so be the restricted artifact whatever the user ticks.
+  The plain `-bin.zip` serves everyone else.
+- **The seam is closed by not exporting it** (taken in the session, to be confirmed by
+  Arend): the four packages are no longer exported at all. The alternative, qualified
+  exports to a named backend module, needs a module name for the library jar, which its
+  documentation does not state and which may not be read from the jar. The backend
+  reaches the packages as class-path code, which is how the unit's tests, Eclipse and
+  the installed application run; a GROOVE on the module path with the backend on the
+  class path no longer works, and nothing runs that way.

@@ -91,8 +91,7 @@ INPUT=$WORK/input/groove-$VERSION_UNDERSCORED
 # charsets, zip filesystems, accessibility support) or through service
 # loading: jdk.crypto.ec holds the elliptic-curve provider on Java 21 (merged
 # into java.base from 22, where the module remains as an empty stub), which
-# jdeps cannot see; without it TLS handshakes with github fail, and so does
-# the download of the yFiles add-on (gh #909).
+# jdeps cannot see; without it TLS handshakes with github fail.
 EXTRA_MODULES="java.instrument java.management java.naming java.scripting java.sql jdk.accessibility jdk.charsets jdk.crypto.ec jdk.unsupported jdk.zipfs"
 MAIN_JAR=$INPUT/lib/groove-$VERSION.jar
 # The analysis runs on the core jar's classes WITHOUT its module descriptor.
@@ -118,10 +117,10 @@ if [[ -z ${MODULES:-} ]]; then
     echo "warning: jdeps failed to compute the module list; falling back to java.se" >&2
     MODULES=java.se
 fi
-# The yFiles add-on (see README.md) is loaded from the user's extension
-# directory into this same runtime; its jars need jdk.xml.dom, which the core
-# jar's analysis already yields, so no module is added for it here. Should
-# that change, the add-on would fail at start-up with a NoClassDefFoundError.
+# The yFiles jars (see README.md), where they are on the class path, run in
+# this same runtime; they need jdk.xml.dom, which the core jar's analysis
+# already yields, so no module is added for them here. Should that change, the
+# yFiles backend would fail at start-up with a NoClassDefFoundError.
 MODULES=$(printf '%s\n' ${MODULES//,/ } $EXTRA_MODULES | sort -u | paste -sd, -)
 echo "bundled runtime modules: $MODULES"
 
@@ -153,8 +152,7 @@ make_launcher Imager true
 make_launcher Viewer false
 
 # ----------------------------------------------------------------- msi resources
-# Uninstalling the MSI also removes the yFiles add-on from the user's extension
-# directory (see README.md), it asks the user to close a running GROOVE before
+# The MSI asks the user to close a running GROOVE before
 # it touches anything (see wix/files-in-use.wxf), it warns before replacing another
 # installed version, another build of the same version included, for which
 # every build gets its own product code (see wix/replace-warning.wxf), and the
@@ -163,7 +161,7 @@ make_launcher Viewer false
 # resource directory in place of the bundled one, so this extracts the bundled one from the running
 # JDK and splices the fragments in wix/ into it, each with a reference that
 # pulls it into the installer. A checked-in copy of main.wxs would go stale
-# with every JDK upgrade; the three anchor lines used here have been the same
+# with every JDK upgrade; the two anchor lines used here have been the same
 # from JDK 21 to 26, and the splice fails loudly should they change.
 msi_resources() {
     local java_home=${JAVA_HOME:-$("${JAVA_BIN}java" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.home = //p')}
@@ -173,21 +171,17 @@ msi_resources() {
         --include 'regex:/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs' \
         "$(native_path "$java_home/lib/modules")"
     mv "$MSI_RESOURCES/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs" "$MSI_RESOURCES/main.wxs"
-    sed -i -e '/<ComponentGroupRef Id="Files"\/>/a\      <ComponentGroupRef Id="GrooveAddOnCleanup"/>' \
-        -e '/<UIRef Id="JpUI"\/>/a\    <PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' \
+    sed -i -e '/<UIRef Id="JpUI"\/>/a\    <PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' \
         -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveLaunchSimulatorUI"/>' \
         -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveReplaceWarningUI"/>' \
         -e 's/Id="\$(var\.JpProductCode)"/Id="*"/' \
-        -e "/<\/Product>/r $SCRIPT_DIR/wix/addon-cleanup.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/files-in-use.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/launch-simulator.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/replace-warning.wxf" "$MSI_RESOURCES/main.wxs"
     # text read in by r is not subject to the other commands of the same run;
     # WiX takes forward slashes in paths, which keeps sed's replacement simple
     sed -i "s|@GROOVE_ICONS_DIR@|$(cygpath -m "$SCRIPT_DIR/icons")|" "$MSI_RESOURCES/main.wxs"
-    if ! grep -q '<ComponentGroupRef Id="GrooveAddOnCleanup"/>' "$MSI_RESOURCES/main.wxs" \
-        || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs" \
-        || ! grep -q '<PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' "$MSI_RESOURCES/main.wxs" \
+    if ! grep -q '<PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q 'xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<util:CloseApplication Id="GrooveCloseSimulator"' "$MSI_RESOURCES/main.wxs" \

@@ -22,23 +22,16 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.platform.launcher.LauncherSession;
 import org.junit.platform.launcher.LauncherSessionListener;
 
-import nl.utwente.groove.gui.AddOnInstaller;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.Extensions;
 
 /**
  * Cuts the test JVM off from the GROOVE installation of whoever runs the tests: the
- * preferences are kept in memory (see {@link InMemoryPreferencesFactory}), the extension
- * directory is one inside the build directory rather than the user's, and the add-on
- * question is suppressed. Without this, a test run reads and writes the developer's real
- * preferences, an installed yFiles add-on is a second copy of this backend on the class
- * path (and reports itself on the console when its version does not match), and the
- * first-run question can block a test.
+ * preferences are kept in memory (see {@link InMemoryPreferencesFactory}). Without this,
+ * a test run reads and writes the developer's real preferences.
  * <p>
- * Each of these is governed by a system property that is read once, at the first use of
- * what it governs: {@link Preferences} caches its factory, {@link Extensions} its scan.
- * Setting them from a test class is therefore too late as soon as another test class ran
- * first. Hence this listener, which the JUnit platform picks up through
+ * This is governed by a system property that is read once, at the first use of what it
+ * governs: {@link Preferences} caches its factory. Setting it from a test class is
+ * therefore too late as soon as another test class ran first. Hence this listener, which the JUnit platform picks up through
  * {@link java.util.ServiceLoader} (see {@code META-INF/services}) and calls when it opens
  * the launcher session, before any test class is loaded -- whichever runner is used, so
  * also for an ad-hoc {@code Run as > JUnit test} in Eclipse, which passes no VM arguments
@@ -55,8 +48,6 @@ public class TestIsolation implements LauncherSessionListener {
     @NonNullByDefault({})
     public void launcherSessionOpened(LauncherSession session) {
         setIfUnset(PREFS_FACTORY_PROPERTY, InMemoryPreferencesFactory.class.getName());
-        setIfUnset(Extensions.DIR_PROPERTY, EXTENSIONS_DIR);
-        setIfUnset(AddOnInstaller.PROMPT_PROPERTY, "false");
     }
 
     /** Sets a system property, unless it has a value already. */
@@ -68,10 +59,4 @@ public class TestIsolation implements LauncherSessionListener {
 
     /** System property from which {@link Preferences} takes its factory. */
     private static final String PREFS_FACTORY_PROPERTY = "java.util.prefs.PreferencesFactory";
-    /**
-     * The extension directory of a test run, relative to the working directory, which is
-     * the project directory for Surefire as well as for an Eclipse launch. The directory
-     * need not exist: an absent one is an empty one to {@link Extensions}.
-     */
-    private static final String EXTENSIONS_DIR = "target/test-extensions";
 }

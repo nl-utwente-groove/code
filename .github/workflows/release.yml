@@ -57,8 +57,8 @@ jobs:
         echo "YFILES_REF=$REF" >> "$GITHUB_ENV"
     - name: Check out yFiles library
       # The licensed yFiles library and its runtime license file live in a
-      # private repository (see release/README.md, "How to build the yFiles
-      # add-on"); the token is a fine-grained PAT with read access to that
+      # private repository (see release/README.md, "How to build the
+      # obfuscated yFiles jars"); the token is a fine-grained PAT with read access to that
       # repository only. Only this workflow and backend.yml use the library:
       # the ordinary build of pull requests (maven.yml) never sees it.
       uses: actions/checkout@v7
@@ -119,11 +119,12 @@ jobs:
     - name: Build yFiles backend
       # the unit in yfiles/, against the GROOVE artifact just installed; the
       # license directory is found through the backend pom's default for the
-      # sibling layout of the two checkouts. The tests are not skipped: an
-      # add-on whose tests did not run must not be released
+      # sibling layout of the two checkouts. The tests are not skipped: a
+      # backend whose tests did not run must not be released
       run: xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B -f yfiles/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION clean install
     - name: Build release
-      # the yfiles profile adds the add-on zip to the standard zips
+      # the yfiles profile adds the obfuscation of the yFiles jars, which no
+      # asset contains yet
       run: cd release; mvn -B -Drevision=$VERSION -Pyfiles clean package
     - name: Deploy release
       uses: ncipollo/release-action@v1.21.0

@@ -9,7 +9,7 @@ The github release, as meant here, consists of two dedicated zip-files (as well 
 
 Both of these contain a top-level README.md that explains their structure and how to install the tool.
 
-In addition, the release workflow builds self-contained installers (with a bundled Java runtime, so users need no Java installation) for Windows (`.msi`), macOS (`.dmg`, both Intel and Apple silicon) and Linux (`.deb` and `.rpm`); see the Installers section below. A release built with the `yfiles` profile also yields the yFiles add-on, `groove-x_y_z-yfiles-addon.zip`; see the second chapter.
+In addition, the release workflow builds self-contained installers (with a bundled Java runtime, so users need no Java installation) for Windows (`.msi`), macOS (`.dmg`, both Intel and Apple silicon) and Linux (`.deb` and `.rpm`); see the Installers section below. A release built with the `yfiles` profile also obfuscates the yFiles backend and library for distribution; see the second chapter.
 
 ## Preparation
 
@@ -18,7 +18,7 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 1. Update the version and date in the GROOVE source:
 
     - The version number is the `revision` property in the main `pom.xml`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`, where `x`, `y` and `z` are natural numbers without leading zeros and `x` is below 100 (every Maven build checks this form, and the release workflow additionally rejects the suffix). The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate updating the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix. (The `GROOVE_VERSION` resource file is generated from this property by resource filtering; do not edit it.)
-    - The `revision` property of `yfiles/pom.xml` (the optional yFiles backend) is updated in the same commit, to keep the two equal. This is development hygiene rather than a condition for the release: every build of the backend, by hand or in a workflow, is passed the version of the main pom with `-Drevision`, so the add-on gets the right version either way. The default in that pom governs Eclipse, where equal versions are what make m2e resolve the dependency from the open `groove` project instead of an installed artifact; a command-line build of the backend fails if the two have drifted apart.
+    - The `revision` property of `yfiles/pom.xml` (the optional yFiles backend) is updated in the same commit, to keep the two equal. This is development hygiene rather than a condition for the release: every build of the backend, by hand or in a workflow, is passed the version of the main pom with `-Drevision`, so the backend gets the right version either way. The default in that pom governs Eclipse, where equal versions are what make m2e resolve the dependency from the open `groove` project instead of an installed artifact; a command-line build of the backend fails if the two have drifted apart.
     - The remaining files in `src/main/resources/nl/utwente/groove/resource/version`:
         - `GROOVE_BUILD`: the build date, in format `YYYYMMDD`. Update to the build date.
         - [Optional] `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
@@ -126,17 +126,17 @@ which produces the raw application directory (no installer) under `jpackage/targ
     The log should end in `installer built: .../jpackage/target/dist/groove-x_y_z-windows-x64.msi`. A failed splice check ("cannot splice the installer additions into jpackage's main.wxs") means the `main.wxs` of this JDK differs in structure from the one the fragments in `jpackage/wix` were written against.
 5. Install it by double-clicking; the installation is per user and needs no elevation. Things to look at: with another version installed, the first page says that it will be replaced; the licence page shows paragraphs, not ragged lines; the last page offers to start the Simulator; with the Simulator running, a second run of the same `.msi` first shows the Cancel/Retry/Ignore box. The installation lands in `%LOCALAPPDATA%\GROOVE`, with the launchers' JVM options in `app\<launcher>.cfg`.
 6. Check the running JVM from outside, since a GUI launcher has no console. A JDK's `jcmd -l` lists the Java processes with their main jar, which is how to tell the JVM from the windowless launcher process next to it (attaching to the latter fails with "Access is denied"); then `jcmd <pid> VM.flags` shows the options in effect, `-XX:+UseCompactObjectHeaders` among them. The bundled runtime has no `jcmd`; use the one of the JDK that built the installer.
-7. Uninstall through Settings > Apps. This also removes the yFiles add-on from the extension directory, see below.
+7. Uninstall through Settings > Apps.
 
-Uninstalling the `.msi` also removes the yFiles add-on (see the second chapter) from the user's extension directory, so that the library does not outlive the GROOVE version it was built for; the old version of an upgrade counts as uninstalled, and the new version then offers the add-on again at its first start. The other installers do not do this: a `.dmg` has no uninstall step at all. jpackage's own WiX sources know nothing about the add-on, but take a custom `main.wxs` from a resource directory in place of the bundled one, so the script extracts the bundled one from the running JDK and splices the removal (`jpackage/wix/addon-cleanup.wxf`) into it at build time. A checked-in copy of `main.wxs` would go stale with every JDK upgrade; the splice instead fails the build if the structure of `main.wxs` changes. Only the add-on directory and, if they are empty afterwards, the directories above it are removed; other extensions the user put there stay, as does the record in the Java preferences that the first-run question was asked, so a reinstallation of the same version does not repeat that question.
+The `.msi` does a few things that jpackage's own WiX sources know nothing about, described in the paragraphs below. jpackage takes a custom `main.wxs` from a resource directory in place of the bundled one, so the script extracts the bundled one from the running JDK and splices the fragments of `jpackage/wix` into it at build time. A checked-in copy of `main.wxs` would go stale with every JDK upgrade; the splice instead fails the build if the structure of `main.wxs` changes.
 
-Installing the `.msi` while GROOVE is running (typically an upgrade, but a repair or an uninstall as well) first asks the user to close it; the script splices `jpackage/wix/files-in-use.wxf` into `main.wxs` the same way. The fragment adds a WiX `CloseApplication` row per launcher executable that does nothing but prompt, and schedules the check before `RemoveExistingProducts`, so that nothing has been touched yet. The prompt is Windows Installer's Cancel/Retry/Ignore box: Retry looks again, Cancel ends the installation with the installed version intact (silently, when there is no wizard to return to, as in an uninstall), Ignore continues regardless. Since the check matches process names only, the rows are conditioned on a GROOVE being installed, so that a fresh installation cannot trip over some other product's `Viewer.exe`. A silent installation gets no box and continues.
+Installing the `.msi` while GROOVE is running (typically an upgrade, but a repair or an uninstall as well) first asks the user to close it; the fragment for this is `jpackage/wix/files-in-use.wxf`. The fragment adds a WiX `CloseApplication` row per launcher executable that does nothing but prompt, and schedules the check before `RemoveExistingProducts`, so that nothing has been touched yet. The prompt is Windows Installer's Cancel/Retry/Ignore box: Retry looks again, Cancel ends the installation with the installed version intact (silently, when there is no wizard to return to, as in an uninstall), Ignore continues regardless. Since the check matches process names only, the rows are conditioned on a GROOVE being installed, so that a fresh installation cannot trip over some other product's `Viewer.exe`. A silent installation gets no box and continues.
 
 Windows Installer's own handling of files in use does not work for GROOVE, which testing established the hard way. Its Restart Manager check (in InstallValidate) does find the processes exactly, but by default its dialog offers to close them, which cannot close the windowless launcher process that each jpackage launcher start leaves next to the JVM, so the dialog reports failure and returns until both processes are gone; and it would end the Simulator's session rather than close its window, which most likely leaves no chance to save grammars. Setting `MSIRESTARTMANAGERCONTROL` to `Disable` falls back to the older FilesInUse dialog, whose check matches loaded DLLs by name: it takes minutes and lists every application that loads the same runtime DLLs as the bundled Java runtime (browsers, mail clients, IDEs), so Retry never succeeds. `DisableShutdown`, which the fragment still sets for the Ignore case, only reports that a reboot will be required — twice in an upgrade, since the removal of the old version runs from the old version's own installer — and then blocks silently on the class-path jars, which the JVM opens without delete sharing, so that they can neither be replaced nor moved aside (the reboot-time replacement also needs privileges a per-user installation lacks); once GROOVE exited, the file copy failed outright (error 1304) and rolled back. Because jpackage schedules `RemoveExistingProducts` before costing, outside the installation transaction (it does so for downgrades, see JDK-8248264), that rollback leaves no GROOVE installed at all, only the files the JVM had held; the prompt up front is what keeps an installation from getting there.
 
-Installing the `.msi` over another version of GROOVE first shows a page saying that the installed version, older or newer, will be replaced, with Continue and Cancel; it is spliced into `main.wxs` the same way (`jpackage/wix/replace-warning.wxf`). jpackage itself allows both upgrades and downgrades, and removes the other version without mentioning it. The page is shown before the licence page, when jpackage's own detection of related products has found one. That detection yields product codes; the page names the version being replaced by reading `DisplayVersion` from the uninstall registry entry of that product code, and falls back to "an older/newer version" if the entry is not found. It does not check whether the yFiles add-on is present, and so says that it is removed "if installed". Another build of the same version is replaced as well, with its own text on the page. jpackage derives the product code from name and version, so a rebuild of the same version would count as a minor update of the installed product, which `msiexec` refuses with error 1638 ("Another version of this product is already installed"), a message that is misleading next to this page; the script therefore gives every build its own product code, and the fragment adds an upgrade rule for exactly the same version. Running the very same `.msi` file again still opens Windows Installer's maintenance dialog (repair or remove). A silent installation shows no page.
+Installing the `.msi` over another version of GROOVE first shows a page saying that the installed version, older or newer, will be replaced, with Continue and Cancel; the fragment is `jpackage/wix/replace-warning.wxf`. jpackage itself allows both upgrades and downgrades, and removes the other version without mentioning it. The page is shown before the licence page, when jpackage's own detection of related products has found one. That detection yields product codes; the page names the version being replaced by reading `DisplayVersion` from the uninstall registry entry of that product code, and falls back to "an older/newer version" if the entry is not found. Another build of the same version is replaced as well, with its own text on the page. jpackage derives the product code from name and version, so a rebuild of the same version would count as a minor update of the installed product, which `msiexec` refuses with error 1638 ("Another version of this product is already installed"), a message that is misleading next to this page; the script therefore gives every build its own product code, and the fragment adds an upgrade rule for exactly the same version. Running the very same `.msi` file again still opens Windows Installer's maintenance dialog (repair or remove). A silent installation shows no page.
 
-The last page of the `.msi` installation offers to start the Simulator, through a checkbox that is ticked by default; it is spliced into `main.wxs` the same way (`jpackage/wix/launch-simulator.wxf`). It uses the optional checkbox of WiX's standard exit dialog, which the dialog shows after an installation or upgrade but not after a repair or an uninstall. Since Windows Installer cannot draw checkboxes transparently, the fragment also replaces WiX's white dialog background with `jpackage/icons/groove-dialog.bmp`, which is dialog gray where the controls are, with a green GROOVE panel beside them; the banner of the pages in between gets the same green and the G (`groove-banner.bmp`; see the README in `jpackage/icons`). A silent installation (`msiexec /qn`) shows no dialogs and so starts nothing. The Simulator is started by Windows Installer's custom-action host rather than by the installer window, and Windows does not hand the foreground to a program started that way: its window may open behind the windows already open. The other installers cannot offer this: a `.dmg` is installed by dragging the application into place, and `.deb` and `.rpm` package scripts run as root, often without a display.
+The last page of the `.msi` installation offers to start the Simulator, through a checkbox that is ticked by default; the fragment is `jpackage/wix/launch-simulator.wxf`. It uses the optional checkbox of WiX's standard exit dialog, which the dialog shows after an installation or upgrade but not after a repair or an uninstall. Since Windows Installer cannot draw checkboxes transparently, the fragment also replaces WiX's white dialog background with `jpackage/icons/groove-dialog.bmp`, which is dialog gray where the controls are, with a green GROOVE panel beside them; the banner of the pages in between gets the same green and the G (`groove-banner.bmp`; see the README in `jpackage/icons`). A silent installation (`msiexec /qn`) shows no dialogs and so starts nothing. The Simulator is started by Windows Installer's custom-action host rather than by the installer window, and Windows does not hand the foreground to a program started that way: its window may open behind the windows already open. The other installers cannot offer this: a `.dmg` is installed by dragging the application into place, and `.deb` and `.rpm` package scripts run as root, often without a display.
 
 The `.msi` shows the licence in a narrow box on its first page. jpackage converts a plain-text licence to RTF line by line, keeping the hard line breaks of `LICENSE.txt`, which then wrap raggedly; the script therefore writes the RTF itself at build time, one paragraph per block of `LICENSE.txt`, which stays the only copy of the text.
 
@@ -144,7 +144,7 @@ The `.msi` shows the licence in a narrow box on its first page. jpackage convert
 
 The installers are not code-signed, so Windows and macOS block them at first, and rpm-based package managers may ask before installing the `.rpm` (`zypper` does, `dnf` normally does not; `apt` and `dpkg` never check local `.deb` files). The release page therefore explains how to get past that, in two places, both kept in `github`:
 
-- `INSTALL-NOTE.md` opens the body of the release page. The `release` job builds the body with `github/release-notes.sh`, which appends this release's section of `include/CHANGES.md` (its first section) in a collapsed block, so that the note stays close to the asset list below it; a later step of the job appends an invisible HTML comment naming the `yfiles-lib` commit the add-on's library was taken from (see "Building" below). Run `bash github/release-notes.sh` to preview the body. To save the preview to a file from Windows PowerShell, keep the redirection inside bash, as in `bash -c "github/release-notes.sh > body.md"`: PowerShell 5.1's `>` writes UTF-16, which GitHub does not render as Markdown (in a gist, for instance).
+- `INSTALL-NOTE.md` opens the body of the release page. The `release` job builds the body with `github/release-notes.sh`, which appends this release's section of `include/CHANGES.md` (its first section) in a collapsed block, so that the note stays close to the asset list below it; a later step of the job appends an invisible HTML comment naming the `yfiles-lib` commit the yFiles library was taken from (see "Building" below). Run `bash github/release-notes.sh` to preview the body. To save the preview to a file from Windows PowerShell, keep the redirection inside bash, as in `bash -c "github/release-notes.sh > body.md"`: PowerShell 5.1's `>` writes UTF-16, which GitHub does not render as Markdown (in a gist, for instance).
 - `IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTALLER.txt` is attached to the release as an asset, with step-by-step instructions. Its name is the message, for those who read nothing but the asset list.
 
 Unlike the contents of `include`, neither file ends up in the zips or the installers.
@@ -156,53 +156,43 @@ Unlike the contents of `include`, neither file ends up in the zips or the instal
    pleasant side effect of the suffix: the Central portal rejects `-SNAPSHOT`
    versions, so an accidental `deploy` between releases cannot publish.)
 
-# How to build the yFiles add-on
+# How to build the obfuscated yFiles jars
 
-The yFiles add-on is a small second artifact of the same release: the optional yFiles
-graph-visualisation backend (the unit in `yfiles/` of this repository, see its
-README) and the commercial yFiles library it runs on, zipped up as
-`groove-x_y_z-yfiles-addon.zip`. (yWorks did not approve the add-on as a form of
-distribution, so it never got further than the 99.0.x test releases and is to be replaced; see
-`claude/yfiles-restructure.md`. This section describes the build as it is.) The standard zips
-and installers do not contain it; a user unzips it into GROOVE's extension directory
-(`%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application Support/GROOVE/extensions`
-on macOS, `$XDG_DATA_HOME/groove/extensions`, normally `~/.local/share/groove/extensions`,
-elsewhere; the system property `groove.extensions.dir` overrides the location), from
-which GROOVE loads it at start-up
-(`nl.utwente.groove.util.Extensions`). The zip unpacks into a subdirectory `yfiles/`
-there, holding the two jars and the license notice. The yFiles license (an academic
-project license held by the University of Twente) has four consequences that shape
-this build:
+The optional yFiles graph-visualisation backend (the unit in `yfiles/` of this
+repository, see its README) runs on the commercial yFiles library. The two reach users
+inside GROOVE's binaries, in obfuscated form, and never as a component of their own:
+yWorks did not approve the separate add-on of the 99.0.x test releases (see
+`claude/yfiles-restructure.md`). **The binaries that are to contain them, a
+`groove-x_y_z-yfiles-bin.zip` and the installers, are not built yet**; what exists is the
+obfuscation, described in this chapter. The yFiles license (an academic project license
+held by the University of Twente) has four consequences that shape this build:
 
-- The library may be redistributed only in obfuscated form. The release reactor
-  therefore has a module `yfiles` that runs yWorks' free obfuscator yGuard over the
-  library jar together with the backend jar: all names of the library are renamed
-  (except the few yWorks marks as reflectively used), and the backend's references
-  to them are rewritten, while the backend's own classes and members keep their
-  names since the main jar and its `ServiceLoader` registration need them.
+- The library may be redistributed only in obfuscated form, and yWorks require the same
+  of the code that calls it. The release reactor therefore has a module `yfiles` that
+  runs yWorks' free obfuscator yGuard over the library jar together with the backend
+  jar. All names of the library are renamed (except the few yWorks marks as
+  reflectively used), and so are the classes and members of the backend, except for the
+  methods by which it overrides or implements something of the GROOVE core or the JDK.
+  No name of the backend has to survive: the core finds the backend through the
+  `ServiceLoader`, and yGuard rewrites the provider file in the backend jar to the new
+  name of the provider class.
 - Only the licensed developer may develop against the plain library jar, and the
   release build may use it under the project license. It therefore exists in two
   places only: the local Maven repository of that developer, and the private
   repository the release workflow checks out (see below). It must never be uploaded
   anywhere public.
-- The add-on may be used for non-commercial purposes only. `yfiles/include/YFILES-ADDON.md`
-  states this and is placed in the add-on's directory; the download page must say
-  the same next to the add-on.
-- The license file the add-on carries must itself be redistributable. The backend
+- A binary with the library in it may be used for non-commercial purposes only, and
+  has to say so. `yfiles/include/YFILES-ADDON.md` said it for the former add-on and is
+  the basis of the notice those binaries are to carry; nothing packages it at present.
+- The license file the backend jar carries must itself be redistributable. The backend
   packages the distribution license (`yfiles.license.file`, see below) and never the
   development license, whose `<distribution>false</distribution>` forbids precisely
   this. That property is meant to be overridable, for a development build with the
   development watermark, so the `yfiles` module does not trust it: the `check-license`
   execution of its `pom.xml` reads every license out of the obfuscated jars after the
-  obfuscation and before the assembly, and fails the build on one marked
-  non-distributable. The check exists because the public 99.0.x test releases of
-  2026-09 shipped the development license, in the days before the backend build chose
-  between the two.
-
-The add-on is built for one GROOVE version: the manifest of the backend jar records
-it (attribute `GROOVE-Version`, set by the backend's `pom.xml` from its `revision`), and a
-GROOVE of another version skips the jar with a warning at start-up. Every release
-therefore needs its own add-on.
+  obfuscation, and fails the build on one marked non-distributable. The check exists
+  because the public 99.0.x test releases of 2026-09 shipped the development license,
+  in the days before the backend build chose between the two.
 
 ## Building
 
@@ -219,14 +209,14 @@ installed in the local Maven repository from that jar, as described in
     (from the repository root; this runs the backend's tests, which open a
     Simulator window briefly).
 
-2. Package the add-on by running Maven in the release directory with the `yfiles`
-   profile:
+2. Obfuscate by running Maven in the release directory with the `yfiles` profile:
 
     `mvn clean package -Drevision=x.y.z -Pyfiles`
 
-    This produces the standard zips and, next to them, `groove-x_y_z-yfiles-addon.zip`
-    in `release/target`. The obfuscation runs in `release/yfiles`; its name mapping is
-    written to `release/yfiles/target/yguard.log.xml.gz` (view it with
+    This produces the standard zips in `release/target`, which do not contain yFiles,
+    and the two obfuscated jars in `release/yfiles/target/lib`, under the file names of
+    their inputs. The name mapping of the obfuscation is written to
+    `release/yfiles/target/yguard.log.xml.gz` (view it with
     `java -jar yguard.jar <log>` from the yGuard distribution).
 
 **The name mapping must never be published.** It maps every obfuscated name back to
@@ -239,26 +229,25 @@ commit it.
 Nor does it need keeping: the renaming is deterministic, so the mapping of a release
 can be regenerated when a user's stack trace needs translating. Two obfuscations of
 the same inputs, under JDK 26 and JDK 21, gave logs identical except for yGuard's
-timestamp and memory-usage comments (checked 2026-09-24 on Windows; that a Linux
-runner renames the same way is expected, not checked). Such a trace needs the mapping
-only for its `com.yworks` frames, which carry no line numbers; the backend's own frames
-keep their names and lines. To regenerate the mapping of release x.y.z, repeat the two
-steps above from the release tag with the inputs of that release: the same
+timestamp and memory-usage comments (checked 2026-09-24 on Windows, when the backend
+still kept its names; that a Linux runner renames the same way is expected, not
+checked). Such a trace needs the mapping for its `com.yworks` frames, which carry no
+line numbers, and for the frames of the backend, which carry obfuscated class and
+method names with the original line numbers (and `y` for the source file, without which
+the JDK prints no line number). To regenerate the mapping of release x.y.z, repeat the
+two steps above from the release tag with the inputs of that release: the same
 `yguard.version` and the same library jar, that of the `yfiles-lib` commit the release
 was built with (its `lib/` directory keeps its history). The release workflow checks
 that repository out by branch name, which does not fix the commit, so it records the
 commit at the end of the release notes, as an HTML comment that the release page does
 not show: `gh release view release-x_y_z --json body` prints it.
 
-The script `do-all.sh yfiles` runs the standard steps and then these two. The
-installers need nothing for the add-on: the standard ones bundle a runtime that
-suffices for it. The Windows installer does know of it in one respect: uninstalling
-GROOVE removes the add-on directory (see the Installers section).
+The script `do-all.sh yfiles` runs the standard steps and then these two.
 
 ## In the release workflow
 
-The `release` job of `.github/workflows/release.yml` builds the add-on along with the
-standard zips, so that a release needs no manual step. For that it checks out the
+The `release` job of `.github/workflows/release.yml` runs the obfuscation along with
+the standard zips. For that it checks out the
 private repository `nl-utwente-groove/yfiles-lib` next to the code checkout, at the
 branch of the same name as the branch being released if there is one and at `main`
 otherwise (see "Deploying" above, on pre-releases). That
@@ -271,8 +260,8 @@ the runner's local Maven repository under the coordinates of `yfiles/pom.xml`
 (whose `yfiles.version` it reads), builds the backend from `yfiles/`
 with its tests (the license directory defaults to the `lib/` directory of that checkout; the
 tests open Simulator windows, so they run under Xvfb), and packages the release with
-the `yfiles` profile; the add-on zip is then attached to the github release by the
-same step as the standard zips.
+the `yfiles` profile. No asset contains the obfuscated jars yet: the release consists
+of the standard zips and installers.
 
 The checkout authenticates with the repository secret `YFILES_LIB_TOKEN`, a
 fine-grained personal access token of the licensed developer with read access to
@@ -287,17 +276,26 @@ keep working without the library, as it does.
 
 ## Checking the result
 
-The add-on zip holds `yfiles/groove-yfiles-x.y.z.jar` and
-`yfiles/yfiles-for-java-swing-<v>.jar`, both obfuscated, and `yfiles/YFILES-ADDON.md`.
-Unzipping it into an otherwise empty directory `<ext>` and running, from an unzipped
-standard release,
+The obfuscated backend jar, `release/yfiles/target/lib/groove-yfiles-x.y.z.jar`, holds
+no class under `nl/`: `jar tf` lists its classes under obfuscated package names, and its
+provider file `META-INF/services/nl.utwente.groove.gui.view.GraphBackend` names one of
+them. With the two jars on the class path of an unzipped standard release,
 
-    java -Dgroove.extensions.dir=<ext> -jar bin/Imager.jar -b yfiles -f png <grammar> <dir>
+    java -cp "bin/Imager.jar;<directory of the two jars>/*" nl.utwente.groove.Imager -b yfiles -f png <grammar> <dir>
 
-exercises the obfuscated library headlessly through the extension loader (without the
-add-on, the Imager warns that the backend is not available and renders with JGraph).
-The backend's own tests can be run against the obfuscated jars by the recipe in
-`claude/yfiles-migration.md` (phase 5, "Verification").
+(with `:` for `;` outside Windows) renders on the obfuscated stack, headlessly; without
+the jars, the Imager warns that the backend is not available and renders with JGraph.
+
+The backend's own tests name its classes and so do not link against the obfuscated
+backend jar. They do run on the obfuscated stack when they are obfuscated in the same
+yGuard pass: jar the unit's `target/test-classes`, give that jar a third `inoutpair` in
+a copy of `release/yfiles/pom.xml`, with a `keep` rule for the names of the test classes
+(they share the backend's package, which then keeps its name as well, unlike in the
+real run), and run `org.junit.platform.console.ConsoleLauncher execute --scan-class-path
+<tests.jar>` with the three obfuscated jars, the external class path and
+`junit-platform-console-standalone` on the JVM's own `-classpath`. This was done by hand
+on 2026-11-16 (73 tests, the 6 Robot tests skipping by assumption); scripting it belongs
+to the build of the binaries.
 
 # How to build a Maven artefact
 

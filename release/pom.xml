@@ -31,7 +31,7 @@
 		<plugins>
 			<plugin>
 				<!-- the version with underscores, as used in the artifact names
-				     (groove-x_y_z-bin.zip, groove-x_y_z-yfiles-addon.zip) -->
+				     (groove-x_y_z-bin.zip) -->
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>3.3.0</version>
@@ -64,11 +64,10 @@
 
 	<profiles>
 		<profile>
-			<!-- The yFiles add-on: the yFiles backend (the groove-yfiles artifact
-			     built from the unit in yfiles/) and the yFiles
-			     library, the latter obfuscated as its
-			     license requires, zipped up for the user's extension directory
-			     (see README.md). The standard zips are not affected. Activate with
+			<!-- The obfuscated yFiles jars: the yFiles backend (the groove-yfiles
+			     artifact built from the unit in yfiles/) and the yFiles library,
+			     both obfuscated as the license of the library requires (see
+			     README.md). The standard zips are not affected. Activate with
 			     -Pyfiles; it needs the licensed library in the local Maven
 			     repository. -->
 			<id>yfiles</id>

@@ -170,25 +170,26 @@ pom as well, so for those the comparison holds trivially.
   gestures are driven by a Robot, which takes over the mouse: those two tests run only
   with `-Dgroove.test.robot=true` and are skipped otherwise. All need the licensed
   library and the license file: `mvn -q test` in this directory (in PowerShell, quote any
-  `-D` arguments). The tests never touch the real user preferences, nor the real
-  extension directory.
+  `-D` arguments). The tests never touch the real user preferences.
 
 ## Distribution
 
-How this backend reaches users is being changed: yWorks did not approve the add-on
-described here, which never got further than test releases, and the backend is to ship
-inside the binaries instead (`claude/yfiles-restructure.md`). Until that is built, the
-release build still produces the add-on: the backend's jar and the
-library, obfuscated with yGuard, zipped up for GROOVE's extension directory, from which
-`nl.utwente.groove.util.Extensions` loads them at start-up through a class loader of
-its own. The release reactor builds the add-on under its `yfiles` profile, see
-`release/README.md`. Two things in this project serve that: the jar's manifest declares
-the GROOVE version it is built against (`GROOVE-Version`, from the `revision`
-property), by which GROOVE recognises and skips an add-on built for another version;
-and the distribution licence file is a resource at the root of the jar, where the
-library finds it also when the jar is loaded through the extension loader. The
-obfuscation rewrites the backend jar's references to the library and keeps every name of
-`nl.utwente.groove`.
+This backend reaches users inside GROOVE's binaries and never as a component of its
+own: yWorks did not approve the separate add-on of the 99.0.x test releases
+(`claude/yfiles-restructure.md`). The release reactor, under its `yfiles` profile, runs
+yGuard over the jar of this unit together with the library, see `release/README.md`:
+every name of the library and of this unit is renamed, and the provider file in
+`META-INF/services`, by which the GROOVE core finds the backend, is rewritten to the new
+name of the provider class. The zips and installers that are to contain the two
+obfuscated jars are not built yet. Two things in this project serve the distribution:
+
+- The distribution licence file is a resource at the root of the jar, where the library
+  finds it.
+- Nothing may depend on the name of a class or member of this unit at run time, since
+  the distributed ones have other names: no code outside the unit refers to its classes
+  (the core reaches them through the `GraphBackend` service only), and inside it there is
+  no `Class.forName` on a computed string, no class name that is stored or shown, and no
+  resource looked up relative to a class. Names of enum constants are unaffected.
 
 The project runs on the class path (no `module-info`): the yFiles documentation does not
 state the jar's module name, and GROOVE's installed application runs from the class path
