@@ -5,7 +5,7 @@ This document expands the one-line entries of `CHANGES.md` for release 8.0.0,
 which collects the changes since 7.5.3 (July 2026). It is organised by topic
 rather than by date. GitHub issues are referenced as `gh #N`.
 
-Graph visualisation backends and the yFiles add-on
+Graph visualisation backends and yFiles
 -------------------------------
 
 - The graph views of the Simulator, the editor, the Viewer and the Imager now run
@@ -13,31 +13,22 @@ Graph visualisation backends and the yFiles add-on
   one of all previous releases, and a new one built on the commercial library
   yFiles for Java (Swing). Backends are discovered as services; a backend that
   fails to load is skipped, so GROOVE always starts with JGraph as fallback.
-- The yFiles backend is not part of the standard release. It comes as a separate
-  add-on (`groove-x_y_z-yfiles-addon.zip`, for non-commercial use only, see
-  `YFILES-ADDON.md` inside), which is unzipped into GROOVE's new extension
-  directory: `%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application
-  Support/GROOVE/extensions` on macOS, `$XDG_DATA_HOME/groove/extensions` (normally
-  `~/.local/share/groove/extensions`) elsewhere, overridable with the system
-  property `groove.extensions.dir`. Jars there are loaded at
-  start-up; a jar built for another GROOVE version is skipped with a warning.
-- The Simulator offers to download and install the add-on at the first start of a
-  release version (once per version; never for snapshot builds; suppressed with
-  `-Dgroove.addon.prompt=false`). The same is available at any time under View >
-  `YFiles add-on`, together with installation from a downloaded file (the file
-  chooser pre-fills the expected zip name) and removal; the submenu offers only
-  the actions that apply to the add-on's current state. Removing or replacing an
-  add-on whose jars the running JVM holds open (as it does on Windows) is
-  recorded as pending and carried out at the next start; a pending removal can
-  be cancelled with `Reactivate`. The Windows installer removes the add-on on
-  uninstall and hence on upgrade.
+- The yFiles library is licensed for academic, non-commercial use only, so the
+  release comes in two forms. The native installers and
+  `groove-x_y_z-yfiles-bin.zip` contain the yFiles backend and the library, both
+  in obfuscated form, and may be used for academic, non-commercial purposes
+  only: `LICENSE-YFILES.txt` at their root states the restrictions, and the
+  installers show them with the licence. `groove-x_y_z-bin.zip` and
+  `groove-x_y_z-bin+doc.zip` contain nothing of yFiles and are under the Apache
+  License 2.0 alone; they show graphs with JGraph. The source of the yFiles
+  backend is public with the rest of GROOVE (the unit in `yfiles/` of the
+  repository), without the library: building it needs a yFiles licence of one's
+  own.
 - Where both backends are present, the Simulator's View > Options menu offers the
-  choice (`Graph backend`); yFiles is the default. The submenu is rebuilt each
-  time the View menu opens, so a freshly installed add-on shows up without a
-  restart, and installing it selects its backend. A choice takes effect at the
-  next start, which an information dialog points out; the radio mark shows the
-  backend in use, the suffix "(from next start)" the one the next start will pick
-  if that differs. The seven yFiles
+  choice (`Graph backend`); yFiles is the default. A choice takes effect at the
+  next start, which an information dialog points out; until then the radio mark
+  is on the chosen backend, with the suffix "(after restart)", and the backend
+  in use has the suffix "(this session)". The seven yFiles
   layout algorithms (hierarchic, organic, orthogonal, tree, balloon, circular,
   radial) join the layout menu. The Imager's new `-b` option selects the backend
   to render with, falling back with a warning if the requested one is unavailable.
@@ -375,8 +366,7 @@ Removed features
 - The 2012 conceptual-model layer (`io/conceptual`) with its CONFIG resource
   kind, replaced by the new Ecore porter.
 - `ModelChecker -ltl` (see above), the JGoodies, OSXAdapter, args4j, xerces and
-  xml-resolver dependencies (XML parsing now uses the JDK's parser), the
-  "yFiles edition" distribution that briefly existed during development, and
+  xml-resolver dependencies (XML parsing now uses the JDK's parser), and
   assorted dead code (`graph.multi`, two unused certificate strategies, several
   `util.collect` classes).
 

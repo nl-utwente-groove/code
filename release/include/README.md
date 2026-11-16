@@ -21,20 +21,26 @@ following ways:
 See the user manual at <https://nl-utwente-groove.github.io/manual.html> for
 instructions on how to use the GROOVE Tool Set.
 
-The yFiles add-on
------------------
+With or without yFiles
+----------------------
 
 GROOVE can show graphs with the commercial library yFiles for Java (Swing) by
 yWorks GmbH, which adds its layout algorithms to the Simulator's layout menu.
-The library is not part of this distribution: it comes as a separate add-on,
-`groove-x_y_z-yfiles-addon.zip` for this version of GROOVE, licensed for
-non-commercial use only (see YFILES-ADDON.md inside). The Simulator offers to
-download and install it at the first start of a new version, and at any later
-time under View > yFiles add-on; by hand, unzip it into GROOVE's extension
-directory (`%APPDATA%\GROOVE\extensions` on Windows,
-`~/Library/Application Support/GROOVE/extensions` on macOS,
-`$XDG_DATA_HOME/groove/extensions`, normally `~/.local/share/groove/extensions`,
-elsewhere), from which GROOVE loads it at the next start.
+The library is licensed for academic, non-commercial use only, and so GROOVE
+comes in two forms:
+
+*  With yFiles: the native installers and `groove-x_y_z-yfiles-bin.zip`. These
+   may be used for academic, non-commercial purposes only; the restrictions
+   are in the file `LICENSE-YFILES.txt`, next to this one. The Simulator shows
+   graphs with yFiles unless you choose otherwise under View > Options > Graph
+   backend.
+
+*  Without yFiles: `groove-x_y_z-bin.zip` and `groove-x_y_z-bin+doc.zip`,
+   under the Apache License 2.0 alone (see `LICENSE.txt`). Graphs are shown
+   with the JGraph-based backend of earlier releases.
+
+If there is no file `LICENSE-YFILES.txt` next to this one, this is the form
+without yFiles.
 
 Features
 --------

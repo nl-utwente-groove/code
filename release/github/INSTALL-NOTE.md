@@ -3,14 +3,14 @@
 <details>
 <summary><b>Libraries for manual installation</b></summary>
 
-The `groove-…-bin[+doc].zip` assets contain compiled sources (one of them with Javadoc) and can be used out of the box if you have the right Java version on your machine (21 or newer). Installation instructions are given in `README.md` inside the zip.
+The `groove-…-bin[+doc].zip` assets contain compiled sources (one of them with Javadoc) and can be used out of the box if you have the right Java version on your machine (21 or newer); `groove-…-yfiles-bin.zip` is the same with yFiles added, for academic use only (see below). Installation instructions are given in `README.md` inside the zip.
 
 </details>
 
 <details>
 <summary><b>Automatic installers</b></summary>
 
-The `linux`, `macos` and `windows` assets are automatic installers for the three most common platforms. They will save you the trouble of unzipping, having the right Java version on your machine (they bundle a Java 25 runtime of their own) and getting the invocation correct. Note that the installers have few customisation options; among other things, they use a fixed, platform-default installation path. If you want more control, use the manual installation route above.
+The `linux`, `macos` and `windows` assets are automatic installers for the three most common platforms. They will save you the trouble of unzipping, having the right Java version on your machine (they bundle a Java 25 runtime of their own) and getting the invocation correct. Note that the installers have few customisation options; among other things, they use a fixed, platform-default installation path. If you want more control, use the manual installation route above. The installers contain yFiles and are therefore for academic, non-commercial use only (see below).
 
 #### Potential installation problems
 
@@ -30,16 +30,19 @@ More detailed instructions can be found in `IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTA
 </details>
 
 <details>
-<summary><b>The yFiles add-on</b></summary>
+<summary><b>With or without yFiles: academic use only, or unrestricted</b></summary>
 
-The `groove-…-yfiles-addon.zip` is _not_ a stand-alone asset; instead, it is a separate backend with stricter usage requirements than the main tool: in particular, you may not use it for commercial purposes. The first time you start a newly released GROOVE Simulator, it asks once whether to download and install this add-on; the same choice remains available afterwards under the `View` menu, which also installs the add-on from a zip you downloaded yourself.
+GROOVE shows graphs with the commercial library [yFiles for Java](https://www.yworks.com/products/yfiles-for-java) by yWorks GmbH, which is licensed to us for academic, non-commercial use only. That restriction carries over to every asset that contains the library:
 
-More precise usage restrictions for the yFiles add-on can be found in `YFILES-ADDON.md` inside the zip.
+- The automatic installers and `groove-…-yfiles-bin.zip` contain yFiles. **You may use them for academic, non-commercial purposes only**, such as research, teaching and study. The precise restrictions are in `LICENSE-YFILES.txt` inside the zip; the installers show them for you to accept.
+- `groove-…-bin.zip` and `groove-…-bin+doc.zip` do not contain yFiles and carry no such restriction: they are under the Apache License 2.0 alone. They show graphs with the JGraph-based backend of earlier releases, which lacks the yFiles layout algorithms but is otherwise the same tool.
+
+If in doubt about whether your use qualifies, take one of the zips without yFiles.
 
 </details>
 <details>
 <summary><b>Source code</b></summary>
 
-The GROOVE project (except for the yFiles addon) is open source; you can either clone the project directly from github or use one of the source archive in the assets.
+The GROOVE project is open source, under the Apache License 2.0; you can either clone the project directly from github or use one of the source archives in the assets. The source includes the part of GROOVE that calls yFiles, but not the yFiles library itself, which is not open source: building that part requires a yFiles licence of your own.
 
 </details>

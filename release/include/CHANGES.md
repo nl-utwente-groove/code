@@ -7,7 +7,7 @@ Upcoming release (8.0.0)
 -------------------------------
 Major release; `CHANGES-8_0_0.md` expands on every item below
 
-- Graph views run on a swappable backend; yFiles for Java is available as an optional add-on (gh #909)
+- Graph views run on a swappable backend; the installers and `-yfiles-bin.zip` contain yFiles for Java and are for academic, non-commercial use only, `-bin.zip` is without it and unrestricted (gh #909)
 - Platform-native installers (`.msi`, `.dmg`, `.deb`, `.rpm`) with a bundled Java 25 runtime; the zips need Java 21+ and start without warnings on Java 24+
 - Generator `-x`; new exploration feature: traces as results
 - Ecore import/export revived (`.ecore` and type graphs, `.xmi` and host graphs), with an `ecore` settings resource
