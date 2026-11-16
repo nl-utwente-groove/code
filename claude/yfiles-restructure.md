@@ -240,10 +240,22 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
   choice inside an installer, which would not help anyway since the installer file
   would contain the library and so be the restricted artifact whatever the user ticks.
   The plain `-bin.zip` serves everyone else.
-- **The seam is closed by not exporting it** (taken in the session, to be confirmed by
+- **The seam is closed by not exporting it** (taken in the session, confirmed by
   Arend): the four packages are no longer exported at all. The alternative, qualified
   exports to a named backend module, needs a module name for the library jar, which its
   documentation does not state and which may not be read from the jar. The backend
   reaches the packages as class-path code, which is how the unit's tests, Eclipse and
   the installed application run; a GROOVE on the module path with the backend on the
   class path no longer works, and nothing runs that way.
+- **The `check-revision` guard of the unit's pom stays** (taken in the session,
+  confirmed by Arend), against item 3 of the required shape: it keeps a command-line
+  build from compiling against a stale core artifact, whatever the distribution.
+- **The user-facing add-on texts wait for step 4** (taken in the session, confirmed by
+  Arend): `release/include/README.md`, `CHANGES.md`, `CHANGES-8_0_0.md`,
+  `release/github/INSTALL-NOTE.md` and `release/yfiles/include/YFILES-ADDON.md` still
+  describe the add-on, and step 3 leaves them alone as well, apart from what packaging
+  the notice needs.
+
+Nothing in this note is open any more; step 3 starts from the state above. All gates
+of step 2 passed on its tip (fast suite 985 tests, GUI suite 23 tests in 8 classes,
+backend unit 73 tests with 6 Robot skips, both null checks).
