@@ -61,7 +61,9 @@
 						     of the yfiles module besides the jars of the plain zip,
 						     each byte for byte the obfuscated one and not its input
 						     (the licence check of the yfiles module, which inspects
-						     its output, then holds for the zip as well); and the
+						     its output, then holds for the zip as well); the
+						     restrictions that come with yFiles are at its root, in
+						     LICENSE-YFILES.txt; and the
 						     launchers of the zip, unpacked, must render a grammar
 						     on the yFiles backend. The Imager falls back to JGraph
 						     with a warning when the backend is missing, so the
@@ -154,6 +156,23 @@ See zip.xml and pom.xml of ${project.artifactId}.
 								</macrodef>
 								<check-obfuscated jar="${backend.jar}" />
 								<check-obfuscated jar="${yfiles.jar}" />
+								<!-- a binary with yFiles in it must carry the restrictions
+								     that come with the library -->
+								<resourcecount property="restrictions.count">
+									<zipfileset src="${zip}" includes="*/LICENSE-YFILES.txt" />
+								</resourcecount>
+								<condition property="restrictions.missing">
+									<not>
+										<equals arg1="${restrictions.count}" arg2="1" />
+									</not>
+								</condition>
+								<fail if="restrictions.missing">
+
+${zip} has no LICENSE-YFILES.txt at its root.
+A binary that contains the yFiles library must carry the restrictions that come
+with it, in that file, which the zip takes from release/yfiles/include and the
+installers show as part of their licence; see zip.xml of ${project.artifactId}.
+								</fail>
 								<sequential unless:true="${yfiles.smoke.skip}">
 									<property name="smoke.dir" location="${check.dir}/smoke" />
 									<property name="smoke.home" location="${smoke.dir}/${zip.basedir}" />

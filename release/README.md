@@ -108,7 +108,7 @@ To try this locally without any packaging tools, build the release as described 
 
     bash jpackage/build-installer.sh x.y.z app-image
 
-which produces the raw application directory (no installer) under `jpackage/target/dist`. A third argument `yfiles` (as in `bash jpackage/build-installer.sh x.y.z app-image yfiles`) packages `groove-x_y_z-yfiles-bin.zip` instead of the plain bin zip, so that the installer contains the obfuscated yFiles jars; the release has to have been built with the `yfiles` profile. It is the same product either way, with the same name, identifiers, upgrade UUID and file names: there is to be one set of installers, with yFiles, and the plain form remains for builds without the licensed library and, until it is switched, for the release workflow. The bundled runtime needs no extra module for the yFiles jars: the one they need beyond the core, `jdk.xml.dom`, already comes out of the analysis of the core jar, which was confirmed on 2026-11-16 by rendering with `-b yfiles` through the Imager launcher of such an app image. The licence text the installers show is still that of `LICENSE.txt`. On Windows this must be Git Bash: in PowerShell, `bash` resolves to WSL's `C:\Windows\System32\bash.exe`, and the script then runs under Linux with the Linux jpackage, which knows no `msi` ("Invalid or unsupported type: [msi]"). Either run the script from a Git Bash window, or name Git Bash: `& "C:\Program Files\Git\bin\bash.exe" release/jpackage/build-installer.sh x.y.z msi`.
+which produces the raw application directory (no installer) under `jpackage/target/dist`. A third argument `yfiles` (as in `bash jpackage/build-installer.sh x.y.z app-image yfiles`) packages `groove-x_y_z-yfiles-bin.zip` instead of the plain bin zip, so that the installer contains the obfuscated yFiles jars; the release has to have been built with the `yfiles` profile. It is the same product either way, with the same name, identifiers, upgrade UUID and file names: there is to be one set of installers, with yFiles, and the plain form remains for builds without the licensed library and, until it is switched, for the release workflow. The bundled runtime needs no extra module for the yFiles jars: the one they need beyond the core, `jdk.xml.dom`, already comes out of the analysis of the core jar, which was confirmed on 2026-11-16 by rendering with `-b yfiles` through the Imager launcher of such an app image. The licence such an installer shows is `LICENSE.txt` followed by the restrictions that come with yFiles, `LICENSE-YFILES.txt` as packaged in the zip, and the script refuses a yFiles zip without that file; its `.rpm` carries the licence tag `Apache-2.0 AND LicenseRef-GROOVE-yFiles-academic-non-commercial`, there being no SPDX identifier for those restrictions. On Windows this must be Git Bash: in PowerShell, `bash` resolves to WSL's `C:\Windows\System32\bash.exe`, and the script then runs under Linux with the Linux jpackage, which knows no `msi` ("Invalid or unsupported type: [msi]"). Either run the script from a Git Bash window, or name Git Bash: `& "C:\Program Files\Git\bin\bash.exe" release/jpackage/build-installer.sh x.y.z msi`.
 
 ### Building the Windows installer locally
 
@@ -139,7 +139,7 @@ Installing the `.msi` over another version of GROOVE first shows a page saying t
 
 The last page of the `.msi` installation offers to start the Simulator, through a checkbox that is ticked by default; the fragment is `jpackage/wix/launch-simulator.wxf`. It uses the optional checkbox of WiX's standard exit dialog, which the dialog shows after an installation or upgrade but not after a repair or an uninstall. Since Windows Installer cannot draw checkboxes transparently, the fragment also replaces WiX's white dialog background with `jpackage/icons/groove-dialog.bmp`, which is dialog gray where the controls are, with a green GROOVE panel beside them; the banner of the pages in between gets the same green and the G (`groove-banner.bmp`; see the README in `jpackage/icons`). A silent installation (`msiexec /qn`) shows no dialogs and so starts nothing. The Simulator is started by Windows Installer's custom-action host rather than by the installer window, and Windows does not hand the foreground to a program started that way: its window may open behind the windows already open. The other installers cannot offer this: a `.dmg` is installed by dragging the application into place, and `.deb` and `.rpm` package scripts run as root, often without a display.
 
-The `.msi` shows the licence in a narrow box on its first page. jpackage converts a plain-text licence to RTF line by line, keeping the hard line breaks of `LICENSE.txt`, which then wrap raggedly; the script therefore writes the RTF itself at build time, one paragraph per block of `LICENSE.txt`, which stays the only copy of the text.
+The `.msi` shows the licence in a narrow box on its first page. jpackage converts a plain-text licence to RTF line by line, keeping the hard line breaks of `LICENSE.txt`, which then wrap raggedly; the script therefore writes the RTF itself at build time, one paragraph per block of `LICENSE.txt`, which stays the only copy of the text. With yFiles in the installer the same is done to `LICENSE.txt` and `LICENSE-YFILES.txt` together, which is why the latter is plain text with a blank line between its paragraphs rather than Markdown.
 
 ## The release page
 
@@ -185,10 +185,15 @@ Twente) has four consequences that shape this build:
   places only: the local Maven repository of that developer, and the private
   repository the release workflow checks out (see below). It must never be uploaded
   anywhere public.
-- A binary with the library in it may be used for non-commercial purposes only, and
-  has to say so. The yFiles zip carries `yfiles/include/YFILES-ADDON.md` at its root for
-  that, as it is: the file was written for the former add-on, and its text and name are
-  still to be rewritten for the distribution, with the licence texts of the binaries.
+- A binary with the library in it may be used for academic, non-commercial purposes
+  only, and has to say so. The restrictions are in `yfiles/include/LICENSE-YFILES.txt`,
+  which is the only copy of that text: the yFiles zip carries it at its root, next to
+  `LICENSE.txt`, and an installer built from that zip shows the two as one licence to
+  accept. `LICENSE.txt` itself, which goes into every zip and heads the source, says
+  that it does not cover the yFiles library and points to that file. The other texts a
+  user meets say the same in their own words: `include/README.md` in the zips, the
+  change logs, and `github/INSTALL-NOTE.md` on the release page. A change to the
+  restrictions has to reach all of them, and the download page of the website.
 - The license file the backend jar carries must itself be redistributable. The backend
   packages the distribution license (`yfiles.license.file`, see below) and never the
   development license, whose `<distribution>false</distribution>` forbids precisely
@@ -276,7 +281,8 @@ each check failing the build with a message that says what is wrong:
   its `lib/` holds the jars of the standard bin zip and exactly the two of
   `release/yfiles/target/lib` besides, each byte for byte the obfuscated one and not
   the input of the obfuscation in `release/yfiles/target/in`, so the licence check of
-  the `yfiles` module holds for the zip as well. Then the zip is unpacked and its Imager
+  the `yfiles` module holds for the zip as well. Its root must hold
+  `LICENSE-YFILES.txt`, the restrictions a binary with yFiles has to carry. Then the zip is unpacked and its Imager
   launcher renders a small grammar of `junit/samples` with `-b yfiles`, headlessly; the
   check fails unless the run succeeds and writes images without the Imager's warning
   that the backend is not available. As a control, the standard Imager launcher, run

@@ -220,16 +220,34 @@ msi_resources() {
     fi
 }
 
+# ----------------------------------------------------------------- licence
+# The licence that the installer shows, has the user accept and installs:
+# LICENSE.txt, and with the yFiles jars in the package also the restrictions
+# that come with them, LICENSE-YFILES.txt, taken from the yFiles zip so that
+# the installer says what the zip says. A binary with yFiles in it must carry
+# those restrictions, so a yFiles zip without the file is refused, for an app
+# image as well, which shows no licence but contains the file.
+LICENSE_TEXT=$ROOT_DIR/LICENSE.txt
+if [[ $EDITION == yfiles ]]; then
+    if [[ ! -f $INPUT/LICENSE-YFILES.txt ]]; then
+        echo "error: $ZIP has no LICENSE-YFILES.txt at its root, without which a package with yFiles must not be built" >&2
+        exit 1
+    fi
+    LICENSE_TEXT=$WORK/LICENSE.txt
+    { cat "$ROOT_DIR/LICENSE.txt"; echo; cat "$INPUT/LICENSE-YFILES.txt"; } > "$LICENSE_TEXT"
+fi
+
 # ----------------------------------------------------------------- msi licence
 # The MSI shows the licence in a narrow box on its first page. jpackage turns
 # a plain-text licence into RTF line by line, so the hard line breaks of
-# LICENSE.txt survive and wrap raggedly there. This writes RTF with one
-# paragraph per blank-line-separated block of LICENSE.txt instead, which
-# jpackage recognises by its header and takes as it is; LICENSE.txt remains the
-# only copy of the text. Non-ASCII characters become RTF Unicode escapes.
+# the licence text survive and wrap raggedly there. This writes RTF with one
+# paragraph per blank-line-separated block of the text instead, which
+# jpackage recognises by its header and takes as it is; LICENSE.txt and
+# LICENSE-YFILES.txt remain the only copies of the text. Non-ASCII characters
+# become RTF Unicode escapes.
 msi_license() {
     MSI_LICENSE=$WORK/LICENSE.rtf
-    perl - "$ROOT_DIR/LICENSE.txt" > "$MSI_LICENSE" <<'PERL'
+    perl - "$LICENSE_TEXT" > "$MSI_LICENSE" <<'PERL'
 use strict; use warnings;
 open my $in, '<:encoding(UTF-8)', $ARGV[0] or die "cannot read $ARGV[0]: $!";
 my $text = do { local $/; <$in> };
@@ -294,7 +312,7 @@ case $OS in
         ;;
 esac
 if [[ $TYPE != app-image ]]; then
-    LICENSE=$ROOT_DIR/LICENSE.txt
+    LICENSE=$LICENSE_TEXT
     if [[ $OS == windows ]]; then
         msi_license
         LICENSE=$MSI_LICENSE
@@ -317,8 +335,15 @@ if [[ $TYPE != app-image ]]; then
             args+=(--linux-menu-group Development)
             if [[ $TYPE == rpm ]]; then
                 # the rpm License tag; without it jpackage writes "Unknown".
-                # With yfiles, the tag is settled with the licence texts
-                args+=(--linux-rpm-license-type Apache-2.0)
+                # With yFiles in the package it is an SPDX expression that
+                # names the restrictions of LICENSE-YFILES.txt next to the
+                # Apache licence, by a reference of our own: no SPDX
+                # identifier exists for them
+                if [[ $EDITION == yfiles ]]; then
+                    args+=(--linux-rpm-license-type "Apache-2.0 AND LicenseRef-GROOVE-yFiles-academic-non-commercial")
+                else
+                    args+=(--linux-rpm-license-type Apache-2.0)
+                fi
             fi
             ;;
     esac
