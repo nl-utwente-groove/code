@@ -35,6 +35,7 @@
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="add-exports" value="nl.utwente.groove/nl.utwente.groove.gui=nl.utwente.groove.yfiles:nl.utwente.groove/nl.utwente.groove.gui.action=nl.utwente.groove.yfiles:nl.utwente.groove/nl.utwente.groove.gui.display=nl.utwente.groove.yfiles:nl.utwente.groove/nl.utwente.groove.gui.export=nl.utwente.groove.yfiles:nl.utwente.groove/nl.utwente.groove.gui.tree=nl.utwente.groove.yfiles:nl.utwente.groove/nl.utwente.groove.io=nl.utwente.groove.yfiles"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
