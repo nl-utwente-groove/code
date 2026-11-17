@@ -291,13 +291,10 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
      `manual/io.md` and is rebased onto it, so it goes in after the merge.
 7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
    be seen. Wait for their answer.
-   **Reminder for that mail (Arend asked to be reminded, 2026-11-16):** put the question
-   to yWorks whether the content of the library's module descriptor
-   (`module-info.class` of the plain jar: the module name, its `requires` and `exports`)
-   may be given to an LLM session. The ruling of 2026-09-05 admits demo code and the
-   documentation only, and excludes class-file inspection; the session was given the
-   module name alone, and learned the rest from compiler errors. A session that
-   prepares the pre-release or the mail must bring this up.
+   The mail does not ask whether the library's module descriptor may be given to an LLM
+   session (considered 2026-11-16, dropped by Arend 2026-11-17): the module name, which
+   a session was given, is all the build needs, the compiler names a package that is not
+   exported, and the installers' runtime modules are computed by `jdeps`.
 8. **Release 8.0.0** by `release-8_0_0-state.md`; only the core artifact goes to Maven
    Central.
 
