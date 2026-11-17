@@ -10,22 +10,14 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Graph views run on a swappable backend; the installers and `-yfiles-bin.zip` 
   contain yFiles for Java and are for academic, non-commercial use only, 
   `-bin.zip` is without it and unrestricted (gh #909)
-- Platform-native installers (`.msi`, `.dmg`, `.deb`, `.rpm`) with a bundled 
-  Java 25 runtime; the zips need Java 21+ and start without warnings on Java 24+
-- Generator `-x`; new exploration feature: traces as results
-- Ecore import/export revived (`.ecore` and type graphs, `.xmi` and host graphs), 
-  with an `ecore` settings resource 
+- The installers bundle a Java 25 runtime (Java 21 in releases 7.6.0 to 7.8.0);
+  the zips need Java 21+, as before, and start without warnings on Java 24+
 - Indeterminate operations on quantified levels are rejected again, 
   pending proper support (gh #911)
-- Recipes: an undefined in-argument makes the call inapplicable; deleted 
-  out-parameters render as `_`
 - Special transition labels are restricted to `%s` forms (gh #877)
-- Text exports are UTF-8 with LF line ends
-- macOS Cmd-Q runs the quit action
 - Editor: one undo step for create-and-label (gh #913), own clipboard, 
   offset paste, line-style and bend fixes
 - Editor: Escape cancels edits (gh #819)
-- Removed: old Ecore layer
 
 Release 7.8.0, 16 November 2026
 -------------------------------
@@ -147,6 +139,7 @@ Release 7.6.0, 29 October 2026
   the grammar; exploration is configured in such a resource (`explore` folder) and
   a reworked dialog
 - New exploration features: unstored exploration, random and beam frontiers, new bounds
+- Generator `-x`; new exploration feature: traces as results
 - Reproducible randomness: Generator `-seed`, exploration key `seed`; the effective
   seed is stored in the LTS (gh #897)
 - Exploration order is identical across JVM runs (gh #888, #894)
@@ -157,6 +150,8 @@ Release 7.6.0, 29 October 2026
   for disabled units (gh #560)
 - Control: dead out-parameter values no longer distinguish states; expression
   arguments fixed (gh #561)
+- Recipes: an undefined in-argument makes the call inapplicable; deleted
+  out-parameters render as `_`
 - CTL always explores the full state space (gh #863); weak-until and release
   verdicts corrected
 - LTL counterexamples are proper lassos (gh #484); special transition labels are
@@ -166,18 +161,24 @@ Release 7.6.0, 29 October 2026
   (gh #905, #906)
 - Saving large state spaces needs far less memory (gh #854)
 - LTS export as control program compiles again (gh #861)
+- Ecore import/export revived (`.ecore` and type graphs, `.xmi` and host graphs),
+  with an `ecore` settings resource
+- Text exports are UTF-8 with LF line ends
 - Diagnostic logging through `-log level[:subsystem]` on all command-line tools (gh #891)
 - FlatLaf look-and-feel (HiDPI, light/dark) replaces JGoodies
+- macOS Cmd-Q runs the quit action
 - Editor: bidirectional edges merged in preview (gh #336), find/replace on untyped
   labels (gh #701), case-only rename (gh #853)
 - Display: sub-level match emphasis (gh #858), quantifier names shown, level tags (gh #867)
 - Removed: the RETE matching engine and `ModelChecker -ltl` (gh #727)
+- Removed: old Ecore layer
 - Removed dependencies: JGoodies, OSXAdapter, args4j (now picocli), xerces; EMF is
   back at 2.41
 - API change: the `automaton` package was dissolved
 - The unpublished third-party libraries are now on Maven Central, so the Maven
   artifact resolves without extra repositories; the GROOVE jar is a proper Java
   module again
+- Platform-native installers (`.msi`, `.dmg`, `.deb`) with a bundled Java 21 runtime
 - Also resolved: gh #421, #732, #733 (partial), #756, #843, #865, #881, #901
 - Removed the remote exploration strategy (`remote:host`), which sent the explored
   state space as a symbolic transition system (STS) to a remote server; command lines
