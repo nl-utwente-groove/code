@@ -1,9 +1,10 @@
 GROOVE 8.0.0: detailed change notes
 ===================================
 
-This document expands the one-line entries of `CHANGES.md` for release 8.0.0,
-which collects the changes since 7.5.3 (July 2026). It is organised by topic
-rather than by date. GitHub issues are referenced as `gh #N`.
+This document expands the one-line entries of `CHANGES.md` for the changes since
+7.5.3 (July 2026). A large part of them was released ahead of 8.0.0, in release
+7.6.0; `CHANGES.md` tells for each change which release has it. This document is
+organised by topic rather than by date. GitHub issues are referenced as `gh #N`.
 
 Graph visualisation backends and yFiles
 -------------------------------
