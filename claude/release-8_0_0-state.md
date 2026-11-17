@@ -8,7 +8,7 @@ the Maven module split (gh #887) is out of scope.
 no add-on any more. Where this note speaks of the add-on, read the distribution with
 yFiles (the installers and `groove-x_y_z-yfiles-bin.zip`); the add-on section of
 `installing.md` and the manual's pointers to it are rewritten on the website branch
-`yfiles-distribution-docs` (ff3ffb7, off `release-8_0_0`, awaiting review). The website
+`yfiles-distribution-docs` (1986c83, on top of the merge below, awaiting review). The website
 worktree named below no longer exists. Item 3's version is no longer
 7.5.4-SNAPSHOT.
 
@@ -33,9 +33,9 @@ message says how each conflict was settled. What it means for this note:
   `GROOVE_CLASSPATH` only and takes the version from the build. The reference pages
   were regenerated from `master` (214ef1b65) and say 7.8.1-SNAPSHOT; regenerate at the
   tag, as planned.
-- `yfiles-distribution-docs` conflicts with the merge in one line of `manual/io.md`
-  (the Imager's `-b` sentence next to the layout paragraph from `main`); rebase it once
-  the merge is accepted.
+- `yfiles-distribution-docs` conflicted with the merge in one line of `manual/io.md`
+  (the Imager's `-b` sentence next to the layout paragraph from `main`) and is rebased
+  onto the merge branch (1986c83), so the order is: the merge first, then that branch.
 
 ## Branches and worktrees
 

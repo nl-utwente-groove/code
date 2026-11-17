@@ -265,7 +265,7 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
      what step 3 left unverified on a Linux runner.
 6. **Website**. Written 2026-11-16 in the website repository
    (`nl-utwente-groove.github.io`), branch `yfiles-distribution-docs` off `release-8_0_0`,
-   one commit (ff3ffb7); **the wording awaits Arend's review**, like that of step 4, from
+   one commit (1986c83 since its rebase of 2026-11-17, see below); **the wording awaits Arend's review**, like that of step 4, from
    whose texts (`INSTALL-NOTE.md`, `LICENSE-YFILES.txt`) it is taken.
    - `installing.md`: the add-on section is replaced by *With or without yFiles*
      (explicit anchor `#yfiles`), naming the assets of either form and linking
@@ -287,8 +287,8 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
      manual updates for 7.6.0 to 7.8.0), and a trial merge conflicts in `manual.md`,
      `manual/MakeRefs.java` and further manual files. That merge was made the next day on
      the website branch `merge-main-into-release-8_0_0` and is no part of this step; see
-     `release-8_0_0-state.md`. This step's branch conflicts with it in one line of
-     `manual/io.md`.
+     `release-8_0_0-state.md`. This step's branch conflicted with it in one line of
+     `manual/io.md` and is rebased onto it, so it goes in after the merge.
 7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
    be seen. Wait for their answer.
    **Reminder for that mail (Arend asked to be reminded, 2026-11-16):** put the question
