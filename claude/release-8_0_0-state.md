@@ -8,12 +8,12 @@ the Maven module split (gh #887) is out of scope.
 no add-on any more. Where this note speaks of the add-on, read the distribution with
 yFiles (the installers and `groove-x_y_z-yfiles-bin.zip`); the add-on section of
 `installing.md` and the manual's pointers to it are rewritten on the website branch
-`yfiles-distribution-docs` (1986c83, on top of the merge below, awaiting review). The website
+`yfiles-distribution-docs` (1986c83, merged into `release-8_0_0` by Arend on 2026-11-17). The website
 worktree named below no longer exists. Item 3's version is no longer
 7.5.4-SNAPSHOT.
 
 **Website: `main` merged into `release-8_0_0` (2026-11-17)**, on the website branch
-`merge-main-into-release-8_0_0` (bbd583b, awaiting review; `release-8_0_0` fast-forwards
+`merge-main-into-release-8_0_0` (bbd583b, merged by Arend the same day; `release-8_0_0` fast-forwarded
 to it). `main` had moved 27 commits ahead with the manual of 7.6.0 to 7.8.0 (the *Using
 data* chapter, the release convention of `manual.md`, the reference pages); the commit
 message says how each conflict was settled. What it means for this note:
@@ -22,12 +22,17 @@ message says how each conflict was settled. What it means for this note:
   `release` entry of each chapter's front matter, all seven set to 8.0.0 in the merge.
 - The exploration material that this note calls 8.0.0 (settings resources, the dialog,
   seeds, `matchBound`, `-x`, `semantics`) was released in 7.6.0, by the change log. The
-  merged text dates it so where the two sides conflicted. Still open, in text that merged
-  without conflict: "GROOVE 8.0.0" for the `SPO-multi` default (`advanced.md`,
-  `basics.md`), for the `system.properties` rename and for the multigraph file format
-  (`io.md`); the first and third are 7.6.0, the rename is unchecked. And the features
-  that are new in 8.0.0 carry no *(since release 8.0.0)* notes yet, which the
-  convention asks for.
+  merged text dates it so where the two sides conflicted. The rest was done on the
+  website branch `manual-release-dating` (1a53725, off `release-8_0_0`, awaiting
+  review): every feature this branch added is dated by the first release tag that
+  contains it, and the wrong "8.0.0" datings are corrected. New in 8.0.0 by that test
+  are only the graph backends with yFiles, the Imager's `-b`, the `%s` restriction
+  (gh #877), the Java 25 runtime of the installers and the gh #911 rejection; the
+  installers themselves, the Ecore porter with its `ecore` settings resource, traces as
+  results, the recipe changes and the UTF-8 text exports are in `release-7_6_0`.
+  **`CHANGES.md` lists those under "Upcoming release (8.0.0)"**, and string escapes and
+  remark merging are in 7.6.0 but only in `CHANGES-8_0_0.md`: the change notes need the
+  same correction before the release (not done).
 - `MakeRefs.java` is a combination: this branch's page per exploration key, `main`'s
   table of legacy keywords computed through `LegacySyntaxParser`. `make-refs.sh` needs
   `GROOVE_CLASSPATH` only and takes the version from the build. The reference pages
