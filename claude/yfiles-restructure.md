@@ -285,8 +285,10 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
      from no page) says nothing of yFiles.
    - Found on the way: the website's `main` is 27 commits ahead of `release-8_0_0` (the
      manual updates for 7.6.0 to 7.8.0), and a trial merge conflicts in `manual.md`,
-     `manual/MakeRefs.java` and further manual files. That merge is due before 8.0.0
-     and is no part of this step; recorded in `release-8_0_0-state.md`.
+     `manual/MakeRefs.java` and further manual files. That merge was made the next day on
+     the website branch `merge-main-into-release-8_0_0` and is no part of this step; see
+     `release-8_0_0-state.md`. This step's branch conflicts with it in one line of
+     `manual/io.md`.
 7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
    be seen. Wait for their answer.
    **Reminder for that mail (Arend asked to be reminded, 2026-11-16):** put the question
