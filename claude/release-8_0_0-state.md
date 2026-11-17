@@ -30,9 +30,13 @@ message says how each conflict was settled. What it means for this note:
   (gh #877), the Java 25 runtime of the installers and the gh #911 rejection; the
   installers themselves, the Ecore porter with its `ecore` settings resource, traces as
   results, the recipe changes and the UTF-8 text exports are in `release-7_6_0`.
-  **`CHANGES.md` lists those under "Upcoming release (8.0.0)"**, and string escapes and
-  remark merging are in 7.6.0 but only in `CHANGES-8_0_0.md`: the change notes need the
-  same correction before the release (not done).
+  `CHANGES.md` listed those under "Upcoming release (8.0.0)". Corrected on branch
+  `change-notes-release-dating` (2e5f12405, off master, awaiting review): the entries
+  are moved to the 7.6.0 section, and the 8.0.0 section keeps the backends, the Java 25
+  runtime with the native-access grant, gh #911, gh #877 and the editor entries
+  (gh #913, gh #819). **Still open: `CHANGES-8_0_0.md` describes everything since 7.5.3
+  without dating its items**; only its opening was changed. String escapes and remark
+  merging are in 7.6.0 but have no line in `CHANGES.md`.
 - `MakeRefs.java` is a combination: this branch's page per exploration key, `main`'s
   table of legacy keywords computed through `LegacySyntaxParser`. `make-refs.sh` needs
   `GROOVE_CLASSPATH` only and takes the version from the build. The reference pages
