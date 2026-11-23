@@ -57,6 +57,9 @@ jobs:
         # the READ-ME asset carries its message in its name, for those who
         # read nothing but the asset list
         artifacts: "code/release/target/*.zip,code/release/github/IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTALLER.txt"
+        # a zip that fails to upload must fail the job: by default the action
+        # only warns, and the release goes out without it
+        artifactErrorsFailBuild: true
         bodyFile: "${{ runner.temp }}/release-notes.md"
         draft: false
         prerelease: false
@@ -128,3 +131,9 @@ jobs:
         omitNameDuringUpdate: true
         omitDraftDuringUpdate: true
         omitPrereleaseDuringUpdate: true
+        # an installer that fails to upload must fail its matrix entry: by
+        # default the action only warns, which left test release 99.0.9
+        # without its Apple-silicon image under a green run (the upload could
+        # not resolve uploads.github.com). The failed entry can be re-run by
+        # itself, the others being unaffected (fail-fast is off)
+        artifactErrorsFailBuild: true
