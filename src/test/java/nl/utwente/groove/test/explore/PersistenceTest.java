@@ -42,6 +42,7 @@ import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.test.MasterSeedGuard;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -71,9 +72,12 @@ public class PersistenceTest {
     /** Location of the sample grammars. */
     static private final String INPUT_DIR = "junit/samples";
 
+    /** The depth of the bound in {@link #BOUND}. */
+    static private final int DEPTH = 6;
+
     /** Depth bound making the tree unfolding of the (cyclic) ferryman
      * grammar finite. */
-    static private final String BOUND = "cost=uniform bound=cost:6";
+    static private final String BOUND = "cost=uniform bound=cost:" + DEPTH;
 
     /**
      * Tests that without persistence, the GTS afterwards contains the trace
@@ -146,6 +150,50 @@ public class PersistenceTest {
                      "Unpersisted exploration should retain the same traces");
         assertTrue(first.getNextStateNr() >= allGts.nodeCount(),
                    "The tree unfolding cannot be smaller than the collapsed state space");
+    }
+
+    /**
+     * Tests that the unpersisted exploration discovers exactly the tree
+     * unfolding of the state space up to the depth bound: one state for
+     * every path of modifying transitions from the start state of the
+     * stored state space that the bound admits, since a collapsed state
+     * has the same matches as the discovered ones it stands for. This pins the count down from an independent source; that it
+     * does not depend on the lifetime of the state caches is tested by
+     * {@link nl.utwente.groove.test.DeterminismTest} (gh #928).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testNoneDiscoversUnfolding() throws Exception {
+        Grammar grammar = loadGrammar("ferryman");
+        GTS allGts = explore(grammar, "").getGTS();
+        // the bound limits the states that are explored, so their successors,
+        // one step beyond it, are still discovered
+        long expected = countPaths(allGts.startState(), DEPTH + 1);
+        for (String order : new String[] {"", "next=newest "}) {
+            String config = "persistence=none " + order + BOUND;
+            GTS gts = explore(grammar, config).getGTS();
+            assertEquals(expected, gts.getNextStateNr(),
+                         "Config '%s' should discover the tree unfolding".formatted(config));
+        }
+    }
+
+    /**
+     * Returns the number of paths of at most a given length from a given
+     * state of a stored state space, counting only the transitions of
+     * modifying rules: the others lead back to their source state, also in
+     * an unpersisted exploration.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private long countPaths(GraphState state, int length) {
+        long result = 1;
+        if (length > 0) {
+            for (var trans : state.getRuleTransitions()) {
+                if (trans.getAction().isModifying()) {
+                    result += countPaths(trans.target(), length - 1);
+                }
+            }
+        }
+        return result;
     }
 
     /**
