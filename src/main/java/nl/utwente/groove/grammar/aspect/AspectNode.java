@@ -394,7 +394,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             for (var opEdge : opEdges) {
                 var operator = opEdge.getOperator();
                 assert operator != null;
-                var opSignature = operator.getParamSorts();
+                var opSignature = operator.getParamSorts(signature.size());
                 if (!opSignature.equals(signature)) {
                     errors
                         .add("Product node signature %s does not equal '%s' signature %s",

@@ -17,8 +17,10 @@
 package nl.utwente.groove.algebra;
 
 import java.util.List;
+import java.util.Set;
 
 import nl.utwente.groove.algebra.syntax.Expression;
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Implementation of integers consisting of a singleton value.
@@ -89,12 +91,12 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
 
     @Override
     public Expression bigmax(List<Expression> arg) {
-        return Op.PROD.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
+        return Op.BIGMAX.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
     public Expression bigmin(List<Expression> arg) {
-        return Op.MIN.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
+        return Op.BIGMIN.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
     }
 
     @Override
@@ -165,6 +167,12 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
     @Override
     public Expression prod(List<Expression> arg) {
         return Op.PROD.getOperator().newTerm(arg.toArray(new Expression[arg.size()]));
+    }
+
+    /** A symbolic range cannot be enumerated. */
+    @Override
+    public Set<Expression> range(Expression arg) {
+        throw Exceptions.unsupportedOp("Enumerator 'range' not supported in the term algebra");
     }
 
     @Override

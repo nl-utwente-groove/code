@@ -241,6 +241,26 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
+     * Checks the algebra family of this configuration against a given grammar.
+     * User-defined operations are implemented in the default family only, so
+     * a grammar that declares them cannot be explored under any other one; this
+     * is what the check on the {@code userOperations} grammar property says of the
+     * family that the grammar itself sets.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private FormatErrorSet checkAlgebra(Grammar grammar) {
+        var errors = new FormatErrorSet();
+        var algebra = getAlgebraFamily();
+        if (algebra != null && algebra != AlgebraFamily.DEFAULT
+            && !grammar.getProperties().getUserOperations().isEmpty()) {
+            errors
+                .add("User-defined operations cannot be used with '%s' algebra family",
+                     algebra.getName());
+        }
+        return errors;
+    }
+
+    /**
      * Verifies the per-GTS features of the configuration against the values
      * recorded in the GTS: any deviation is an error — a fresh state space
      * (Restart) is needed to change them. On a successful verification the
@@ -249,6 +269,7 @@ public class ConfiguredExploreType extends ExploreType {
      */
     @Override
     public void prepareRun(GTS gts) throws FormatException {
+        checkAlgebra(gts.getGrammar()).throwException();
         checkGTS(gts).throwException();
         gts.setStoring(gts.isPersistent());
     }
@@ -330,6 +351,7 @@ public class ConfiguredExploreType extends ExploreType {
             Randomness.setMasterSeed((Long) getConfig().get(ExploreKey.SEED).content());
         }
         var errors = new FormatErrorSet();
+        errors.addAll(checkAlgebra(grammar));
         Strategy strategy = null;
         try {
             strategy = createStrategy(grammar);

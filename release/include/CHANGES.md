@@ -3,44 +3,218 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
-Upcoming release (8.0.0)
+Release 8.0.0, 24 November 2026
 -------------------------------
 Major release; `CHANGES-8_0_0.md` expands on every item below
 
-- Graph views run on a swappable backend; yFiles for Java is available as an optional add-on (gh #909)
-- Platform-native installers (`.msi`, `.dmg`, `.deb`, `.rpm`) with a bundled Java 25 runtime; the zips need Java 21+ and start without warnings on Java 24+
-- Multigraph transformation: new `semantics` property (`SPO-simple`, `SPO-multi`, `DPO`) and `mult=k:` host aspect
-- Regular expressions are no longer witnessed by edges the rule erases (`regExpMatching` property, gh #900)
-- Exploration is configured in settings resources (`explore` folder) and a reworked dialog; Generator `-x`
-- New exploration features: unstored exploration, traces as results, random and beam frontiers, new bounds
-- Reproducible randomness: Generator `-seed`, exploration key `seed`; effective seed stored in the LTS (gh #897)
+- Graph views run on a swappable backend; the installers and `-yfiles-bin.zip` 
+  contain yFiles for Java and are for academic, non-commercial use only, 
+  `-bin.zip` is without it and unrestricted (gh #909)
+- The installers bundle a Java 25 runtime (Java 21 in releases 7.6.0 to 7.8.0);
+  the zips need Java 21+, as before, and start without warnings on Java 24+
+- Indeterminate operations on quantified levels are rejected again, 
+  pending proper support (gh #911)
+- Special transition labels are restricted to `%s` forms (gh #877)
+- Editor: one undo step for create-and-label (gh #913), own clipboard, 
+  offset paste, line-style and bend fixes
+- Editor: Escape cancels edits (gh #819)
+- Editor: the label syntax help lists the user operations as they are after
+  the user classes have been loaded anew, and no longer keeps closed editors
+  in memory
+
+Release 7.8.0, 16 November 2026
+-------------------------------
+- Resolved gh #939: the `userOperations` property accepts a name of the form
+  `package.*`, which stands for all classes of that package (not of its subpackages)
+  that are a `@UserType` or declare a `@UserOperation`; other classes in the package,
+  such as helpers, are left alone
+- Resolved gh #941: the Imager and the Viewer have an option `-l spring` or
+  `-l forest` that lays out every graph afresh before it is rendered or shown,
+  ignoring the layout stored with it; the graph files are not changed
+- The Imager lays out the nodes of a graph that have no stored position, as
+  the Viewer already did; they used to end up at random positions
+- Resolved gh #938: a `@UserType` record can have a display method, a public
+  `String` method without parameters that is annotated with `@UserDisplay`; the
+  state display of the Simulator shows a value of the type by the string that
+  method returns, with the constructor term in the tooltip of the node. The value
+  itself and the way it is written, saved and parsed do not change: editors, saved
+  graphs and transition labels show the constructor term as before
+- Resolved gh #933: user types can share fields and operations. A Java interface
+  annotated with `@UserInterface` declares operations by `@UserOperation` methods;
+  the user types that implement the interface share those operations, each
+  implementing them by a field or method of that name. Such an operation is applied
+  as implemented by the user type of its first argument. This is the only way for two
+  user types to have a field or operation of the same name; a name that is not
+  declared in a common user interface still belongs to one user type only.
+  A user interface declares a sequence-valued field `c` by a method `c()` that
+  returns the sequence, which stands for the operations `cAt` and `cSize`. User
+  interfaces can extend one another and can be used as parameter and result types
+  of user operations; they need not be listed in the `userOperations` property.
+  The name of a user interface, without its package, has to differ from those of the
+  other user interfaces and the user types of the grammar
+- The last parameter of a user operation can be a `UserSeq` of a user interface
+  (`UserSeq<I>`, or `UserSeq<I<?>>` if `I` is generic), which takes any number of
+  values of the user types that implement the interface. For this the type parameter
+  of `UserSeq` is no longer restricted to records; as a consequence, user classes
+  that use `UserSeq` and were compiled against release 7.7.0 or 7.7.1 have to be
+  recompiled
+- A call of a user operation is checked against the Java types of its implementation
+  when the grammar is loaded, as far as the type of an argument is known then: that of
+  a user constant or constructor call, and the result type of a call of a user
+  operation. A call that cannot succeed, such as an operation of one user type or
+  user interface applied to a value of a type that does not fit, is now an error in
+  the grammar; it used to load and yield an error value when evaluated, as it still
+  does if the type is not known (for a variable or field)
+- Resolved gh #932: in the term algebra, the integer operators `bigmax` and `bigmin`
+  built the wrong terms (a product, respectively a binary minimum, over all
+  arguments); they now build `bigmax` and `bigmin` terms, as the real operators did
+
+Release 7.7.1, 13 November 2026
+--------------------------------
+- Installer-only release; GROOVE itself is unchanged
+- The Windows installer creates start menu entries again: the GROOVE group lists
+  GROOVE (the main launcher), Simulator, Generator, ModelChecker, Imager and Viewer
+- The Windows installer asks to close a running GROOVE before it touches anything
+  (Cancel/Retry/Ignore): the JVM holds the installed jars open, so an install over
+  a running GROOVE could not complete, and its rollback left no GROOVE installed
+- The Windows installer asks before replacing another installed version of
+  GROOVE: older, newer, or another build of the same version
+- The Windows installer offers to start the Simulator when it finishes; the
+  window opens behind those already open
+- The Windows installer shows GROOVE's own banner and panel images, and the
+  licence as formatted text
+- Linux gets an `.rpm` installer next to the `.deb`; the release page explains
+  the unsigned-package question some rpm package managers ask
+
+Release 7.7.0, 13 November 2026
+-------------------------------
+- Resolved gh #943: a negated test (`not:test:`) was negated twice and so held where
+  the plain test did; it now holds if the tested fields have no values for which the
+  test holds
+- Resolved gh #934: equally named user operations or record components in different
+  user classes are reported as an error; the one of the class listed later silently
+  replaced the other
+- Resolved gh #937: user-defined operations are refused under every algebra family but
+  the default one, as the `algebraFamily` of the grammar and as the `algebra` setting of
+  an exploration; under the point and big families they ended in an internal error
+- The example classes `UserOpsExample`, `UserTypeIntBool` and `UserTypeString` of package
+  `nl.utwente.groove.algebra` are no longer part of the distribution; a grammar whose
+  `userOperations` property names one of them no longer loads
+- Resolved gh #936: a user value with a double quote or a backslash in a string
+  component was saved in a form that did not read back as the same value
+- Enumerators: a built-in operation may yield a set of values, and a rule that
+  calls it is matched once for every value: one of them on an existential level, all of
+  them under a universal quantifier (gh #931)
+- New integer enumerator `range(n)`, yielding 0 up to but not including `n`
+- An expression may call at most one enumerator
+- An attribute whose value is an enumeration tests that the attribute value is one
+  of the enumerated values, and is displayed with an element-of sign
+- A `test`-edge may call an enumerator only as the value a field of its node is
+  compared to (`test:x == range(n)`), which is the same membership test; an embargo
+  edge may not point to an enumeration node unless that node is itself an embargo
+- Enumerators are not supported in the term algebra
+- The last component of a user type may be a sequence of values of one sort (`IntSeq`,
+  `RealSeq`, `BoolSeq` or `StringSeq` of package `nl.utwente.groove.annotation`): the
+  constructor and constants of the type take the elements as trailing arguments, and for
+  a component `c` the operations `cAt` and `cSize` yield the element at a position and
+  the number of elements; `range(cSize(p))` ranges over the positions (gh #931)
+- The last parameter of a user operation may be such a sequence as well, or a `UserSeq`
+  of values of a user type; the operation is called with any number of trailing arguments
+
+Release 7.6.1, 9 November 2026
+-------------------------------
+- Bug fix release
+- Resolved gh #929: the Simulator crashed on loading a grammar with a user-defined
+  operation that is not static and has parameters, since the operator help had no
+  documentation line for the receiving object
+- The operator help of a user-defined operation also survives a `@ToolTipPars`
+  annotation, whose lines document the declared parameters of the method, and tool
+  tip texts that are not valid format strings, such as a text with a literal `%`
+
+Release 7.6.0, 29 October 2026
+-------------------------------
+- User-defined types and operations can be loaded more conveniently
+- Multigraph transformation: new `semantics` property (`SPO-simple`, `SPO-multi`,
+  `DPO`) and `mult=k:` host aspect; grammar version 3.12
+- Regular expressions are no longer witnessed by edges the rule erases
+  (`regExpMatching` property, gh #900)
+- Settings resources: new resource kind for schema-checked properties files inside
+  the grammar; exploration is configured in such a resource (`explore` folder) and
+  a reworked dialog
+- New exploration features: unstored exploration, random and beam frontiers, new bounds
+- Generator `-x`; new exploration feature: traces as results
+- Reproducible randomness: Generator `-seed`, exploration key `seed`; the effective
+  seed is stored in the LTS (gh #897)
 - Exploration order is identical across JVM runs (gh #888, #894)
-- Settings resources: new resource kind for schema-checked properties files inside the grammar
-- Ecore import/export revived (`.ecore` and type graphs, `.xmi` and host graphs), with an `ecore` settings resource
 - Too many matches halts exploration gracefully; new `matchBound` grammar property (gh #784)
 - Format errors have severities; warnings no longer block a grammar (gh #885, #904)
 - Duplicate node ids in a host graph merge the nodes (gh #780)
-- Quantifier levels on `test:`/`let:` edges are honoured (gh #725); clearer errors for disabled units (gh #560)
-- Indeterminate operations on quantified levels are rejected again, pending proper support (gh #911)
-- Control: dead out-parameter values no longer distinguish states; expression arguments fixed (gh #561)
-- Recipes: an undefined in-argument makes the call inapplicable; deleted out-parameters render as `_`
-- CTL always explores the full state space (gh #863); weak-until and release verdicts corrected
-- LTL counterexamples are proper lassos (gh #484); special transition labels are respected (gh #855) and restricted to `%s` forms (gh #877)
+- String values: the escape character in quoted strings is itself escaped, as
+  documented, and escapes are processed left to right
+- Parallel remark edges between the same nodes are merged into one multi-line remark
+- Quantifier levels on `test:`/`let:` edges are honoured (gh #725); clearer errors
+  for disabled units (gh #560)
+- Control: dead out-parameter values no longer distinguish states; expression
+  arguments fixed (gh #561)
+- Recipes: an undefined in-argument makes the call inapplicable; deleted
+  out-parameters render as `_`
+- CTL always explores the full state space (gh #863); weak-until and release
+  verdicts corrected
+- LTL counterexamples are proper lassos (gh #484); special transition labels are
+  respected (gh #855)
 - Regular-expression automaton minimisation and equivalence fixed (gh #892)
-- Faster multigraph exploration through edge pooling and per-bundle certificates (gh #905, #906)
-- Saving large state spaces needs far less memory (gh #854); text exports are UTF-8 with LF line ends
+- Faster multigraph exploration through edge pooling and per-bundle certificates
+  (gh #905, #906)
+- Saving large state spaces needs far less memory (gh #854)
 - LTS export as control program compiles again (gh #861)
+- Ecore import/export revived (`.ecore` and type graphs, `.xmi` and host graphs),
+  with an `ecore` settings resource
+- Text exports are UTF-8 with LF line ends
 - Diagnostic logging through `-log level[:subsystem]` on all command-line tools (gh #891)
-- FlatLaf look-and-feel (HiDPI, light/dark) replaces JGoodies; macOS Cmd-Q runs the quit action
-- Editor: one undo step for create-and-label (gh #913), own clipboard, offset paste, line-style and bend fixes
-- Editor: bidirectional edges merged in preview (gh #336), find/replace on untyped labels (gh #701), case-only rename (gh #853), Escape cancels edits (gh #819)
-- Display: sub-level match emphasis (gh #858), quantifier names shown, type-graph fixes (gh #878, #879), level tags (gh #867)
-- Legacy `disabledRules` property converted on loading; unknown names in `ruleEnabling` are warnings (gh #908)
-- Removed: RETE engine, `remote` and `minimax` strategies (gh #890), `ModelChecker -ltl` (gh #727), old Ecore layer
-- Removed dependencies: JGoodies, OSXAdapter, args4j (now picocli), xerces; EMF is back at 2.41
-- API: package relocations without deprecation, `Transformer.setStrategy`/`setAcceptor` gone, `automaton` package dissolved
-- Unpublished third-party libraries are now on Maven Central; the GROOVE jar is a proper Java module again
+- FlatLaf look-and-feel (HiDPI, light/dark) replaces JGoodies
+- macOS Cmd-Q runs the quit action
+- Editor: bidirectional edges merged in preview (gh #336), find/replace on untyped
+  labels (gh #701), case-only rename (gh #853)
+- Display: sub-level match emphasis (gh #858), quantifier names shown, level tags (gh #867)
+- Removed: the RETE matching engine and `ModelChecker -ltl` (gh #727)
+- Removed: old Ecore layer
+- Removed dependencies: JGoodies, OSXAdapter, args4j (now picocli), xerces; EMF is
+  back at 2.41
+- API change: the `automaton` package was dissolved
+- The unpublished third-party libraries are now on Maven Central, so the Maven
+  artifact resolves without extra repositories; the GROOVE jar is a proper Java
+  module again
+- Platform-native installers (`.msi`, `.dmg`, `.deb`) with a bundled Java 21 runtime
 - Also resolved: gh #421, #732, #733 (partial), #756, #843, #865, #881, #901
+- Removed the remote exploration strategy (`remote:host`), which sent the explored
+  state space as a symbolic transition system (STS) to a remote server; command lines
+  or saved explorations using `remote` now fail with an unknown-strategy error
+- Removed the minimax exploration strategy (`minimax:...`), which generated a game
+  strategy for a two-player game encoded as a grammar with parametrised rules;
+  command lines or saved explorations using `minimax` now fail with an error
+  pointing to gh issue #890
+- API change: the programmatic exploration interface `explore.Transformer` (until
+  this release `transform.Transformer`) lost its `setStrategy` and `setAcceptor`
+  methods (without deprecation); use `setExploreType` instead
+- API change: a dependency-layering cleanup moved a number of classes to new
+  packages (without deprecation), notably `transform.Transformer` →
+  `explore.Transformer`, `grammar.QualName` and `grammar.ModuleName` → `util`,
+  `io.FileType`, `io.FileUtils` and `io.ExtensionFilter` → `util.io`,
+  `explore.ExploreResult` and `explore.util.LTSLabels` → `lts`,
+  `transform.Proof` → `match`, and `explore.Verbosity` → `util.cli`
+- The Generator's `-l` run log no longer appends the contents of a `gc.log` file
+  found in the working directory (a remnant of the JDK 8 `-Xloggc` era); use
+  `-Xlog:gc:file=...` to record garbage collection separately
+- The Labels panel of the Type display no longer shows occurrence counts, which are
+  always 1 for type graph elements (gh #879)
+- Resolved gh #878: with "Show arrows on labels" enabled, subtype edges in a
+  type graph no longer show a spurious arrow symbol as their label
+- Resolved gh #908: grammars saved before GROOVE 7.4.0 with a `disabledRules`
+  property silently lost their disabled rules on loading, since the property had
+  been replaced by `ruleEnabling` without conversion; errors in the wrongly
+  re-enabled rules then blocked the grammar. The legacy property is now converted
+  on loading. Unknown rule names in `ruleEnabling` are reported as warnings
+  instead of errors, since the property is a filter over the existing rules
 
 Release 7.5.3, 2 July 2026
 -------------------------------

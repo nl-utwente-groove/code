@@ -45,6 +45,7 @@ import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.UnitPar.Direction;
+import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.util.ModuleName;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
@@ -800,7 +801,14 @@ public class CtrlHelper {
             if (!result) {
                 String message = "%s %s%s not applicable without arguments";
                 String ruleSig = sig.toString();
-                emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig);
+                // data-valued input parameters can be turned into oracle-provided ones
+                if (sig.stream().anyMatch(v -> v.isInOnly() && v.getType().isSort())) {
+                    message += " (use '%s' parameters for oracle-provided values)";
+                    emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig,
+                                     AspectKind.PARAM_ASK.getPrefix());
+                } else {
+                    emitErrorMessage(callTree, message, unitKind.getName(true), name, ruleSig);
+                }
             }
         } else {
             result = args.size() == sig.size();

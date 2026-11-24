@@ -41,6 +41,7 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.ExprTreeParser;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.FieldExpr;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -173,6 +174,32 @@ public class ExpressionTest {
         Expression ex6 = parse("-3+5");
         assertEquals(ex6, parse("(-3)+5"));
         assertFalse(ex6.equals(parse("-(3+5)")));
+    }
+
+    /** Tests which expressions count as enumerations (gh #931). */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    @Test
+    public void testEnumerations() {
+        // constants, fields and calls of ordinary operators are no enumerations
+        assertEnumerators(0, "1");
+        assertEnumerators(0, "int:n");
+        assertEnumerators(0, "int:n + 1");
+        assertEnumerators(0, "int:max(int:n, 2)");
+        // an enumerator call is one, wherever in the expression it stands
+        assertEnumerators(1, "int:range(3)");
+        assertEnumerators(1, "int:lo + int:range(int:n)");
+        assertEnumerators(1, "int:max(int:lo, 2 * int:range(int:n))");
+        assertEnumerators(1, "int:range(int:n) > 2");
+        // every call is counted
+        assertEnumerators(2, "int:range(3) + int:range(3)");
+        assertEnumerators(2, "int:range(int:range(3))");
+    }
+
+    /** Asserts the number of enumerator calls in a given expression. */
+    private void assertEnumerators(int count, String expr) {
+        var parsed = parse(expr, true);
+        assertEquals(expr, count, parsed.getEnumeratorCount());
+        assertEquals(expr, count > 0, parsed.isEnumeration());
     }
 
     private Expression parse(String expr) {

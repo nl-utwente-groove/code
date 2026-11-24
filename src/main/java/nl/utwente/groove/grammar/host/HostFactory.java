@@ -18,11 +18,13 @@ package nl.utwente.groove.grammar.host;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
@@ -178,6 +180,29 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         HostEdge edge = newEdge(source, type, target, nr);
         return storeEdge(edge);
+    }
+
+    /**
+     * Returns the host edge with given source and target nodes and edge type
+     * if this factory has created one, and {@code null} otherwise. Unlike
+     * {@link #createEdge(HostNode, TypeEdge, HostNode)} this neither allocates
+     * nor registers an edge, which makes it the right call for a lookup whose
+     * answer is usually "no such edge", as for a negative condition: a probe
+     * minted for that answer would otherwise stay in the factory for good.
+     * Only meaningful for a simple factory, where content determines the edge.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    public @Nullable HostEdge findEdge(HostNode source, TypeEdge type, HostNode target) {
+        assert isSimple() : "Lookup by content is only canonical in a simple factory";
+        Iterator<HostEdge> bucket = getStoredEdges(getStoredCode(source, type.label(), target));
+        while (bucket.hasNext()) {
+            HostEdge edge = bucket.next();
+            if (edge.getType() == type && edge.source().equals(source)
+                && edge.target().equals(target)) {
+                return edge;
+            }
+        }
+        return null;
     }
 
     /**

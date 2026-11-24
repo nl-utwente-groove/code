@@ -63,6 +63,20 @@ Existential intSumAlt [non-positive]
     Existential intSumAlt[0,0]
       root: nodes [] edges []
       lhs: nodes [] edges []
+== rule intSumVar
+signature: ()
+hidden: []
+anchor: [n1:Ω#, x5:int, x6:int, n1--x-->x6]
+Existential intSumVar [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:Ω#, p4:int:sum(int), x5:int, x6:int] edges [n1--B-->n1, n1--x-->x6]
+  rhs: nodes [n1:Ω#, p4:int:sum(int), x5:int, x6:int] edges [n1--B-->n1, n1--x-->x5]
+  Universal intSumVar[0] [non-positive] outputs=[x3:int]
+    root: nodes [] edges []
+    lhs: nodes [n0:Ω#, x3:int] edges [n0--A-->n0, n0--x-->x3]
+    Existential intSumVar[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
 == rule realMult
 signature: (bi real)
 hidden: []

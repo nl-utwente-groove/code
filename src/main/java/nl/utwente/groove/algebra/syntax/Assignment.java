@@ -16,8 +16,14 @@
  */
 package nl.utwente.groove.algebra.syntax;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.algebra.Constant;
+import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.algebra.UserAlgebra;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
@@ -71,6 +77,18 @@ public class Assignment {
      * the equality symbol is used.
      */
     public Line toLine(String assignSymbol) {
+        return toLine(assignSymbol, false);
+    }
+
+    /**
+     * Returns the display line used by the GUI, optionally showing
+     * an assigned user value by its custom display string.
+     * @param assignSymbol the assignment symbol to be used; if {@code null},
+     * the equality symbol is used.
+     * @param userDisplay if {@code true} and the assigned value has a custom display string
+     * (see {@link #getUserDisplay()}), that string is shown instead of the right hand side term
+     */
+    public Line toLine(String assignSymbol, boolean userDisplay) {
         StringBuilder result = new StringBuilder(getLhs());
         result.append(Unicode.THIN_SPACE);
         result
@@ -78,7 +96,26 @@ public class Assignment {
                 ? "="
                 : assignSymbol);
         result.append(Unicode.THIN_SPACE);
-        return Line.atom(result.toString()).append(getRhs().toLine());
+        var display = userDisplay
+            ? getUserDisplay()
+            : null;
+        var rhsLine = display == null
+            ? getRhs().toLine()
+            : Line.atom(display);
+        return Line.atom(result.toString()).append(rhsLine);
+    }
+
+    /**
+     * Returns the custom display string of the assigned value, if the right hand side
+     * is a constant of a user type that has a display method.
+     * @return the display string, or {@code null} if the assigned value has none
+     * @see UserAlgebra#toDisplayString(Constant)
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public @Nullable String getUserDisplay() {
+        return getRhs() instanceof Constant c && c.getSort() == Sort.USER
+            ? UserAlgebra.instance.toDisplayString(c)
+            : null;
     }
 
     @Override

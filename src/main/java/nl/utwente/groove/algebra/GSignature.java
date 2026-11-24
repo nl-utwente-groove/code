@@ -26,6 +26,7 @@ import static nl.utwente.groove.util.parse.OpKind.OR;
 import static nl.utwente.groove.util.parse.OpKind.UNARY;
 
 import java.util.List;
+import java.util.Set;
 
 import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.Syntax;
@@ -157,6 +158,16 @@ public interface GSignature<MAIN,INT,REAL,BOOL,STRING> extends Signature {
     public default MAIN prod(List<MAIN> arg) {
         throw Exceptions
             .unsupportedOp("Operation %s not implemented for sort %s", "prod", getSort());
+    }
+
+    /** Range of integers below a given bound. */
+    @Syntax("[sort:]Q%s.LPAR.expr.RPAR")
+    @ToolTipHeader("Integer range")
+    @ToolTipBody({"Enumerator: yields each of the integers from 0 up to but not including %2$s.",
+        "Use on a quantified level to range over those values."})
+    public default Set<MAIN> range(MAIN arg) {
+        throw Exceptions
+            .unsupportedOp("Operation %s not implemented for sort %s", "range", getSort());
     }
 
     /** Summation over a set of values. */

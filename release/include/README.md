@@ -21,20 +21,26 @@ following ways:
 See the user manual at <https://nl-utwente-groove.github.io/manual.html> for
 instructions on how to use the GROOVE Tool Set.
 
-The yFiles add-on
------------------
+With or without yFiles
+----------------------
 
 GROOVE can show graphs with the commercial library yFiles for Java (Swing) by
 yWorks GmbH, which adds its layout algorithms to the Simulator's layout menu.
-The library is not part of this distribution: it comes as a separate add-on,
-`groove-x_y_z-yfiles-addon.zip` for this version of GROOVE, licensed for
-non-commercial use only (see YFILES-ADDON.md inside). The Simulator offers to
-download and install it at the first start of a new version, and at any later
-time under View > yFiles add-on; by hand, unzip it into GROOVE's extension
-directory (`%APPDATA%\GROOVE\extensions` on Windows,
-`~/Library/Application Support/GROOVE/extensions` on macOS,
-`$XDG_DATA_HOME/groove/extensions`, normally `~/.local/share/groove/extensions`,
-elsewhere), from which GROOVE loads it at the next start.
+The library is licensed for academic, non-commercial use only, and so GROOVE
+comes in two versions:
+
+*  With yFiles: the native installers and `groove-x_y_z-yfiles-bin.zip`. These
+   may be used for academic, non-commercial purposes only; the restrictions
+   are in the file `LICENSE-YFILES.txt`, next to this one. The Simulator displays
+   graphs using yFiles unless you choose otherwise under View > Options > Graph
+   backend.
+
+*  Without yFiles: `groove-x_y_z-bin.zip` and `groove-x_y_z-bin+doc.zip`,
+   under the Apache License 2.0 alone (see `LICENSE.txt`). Graphs are displayed
+   using the JGraph-based backend of earlier releases.
+
+If there is no file `LICENSE-YFILES.txt` next to this one, this is the version
+without yFiles.
 
 Features
 --------
@@ -44,11 +50,12 @@ consult the online user manual or the YouTube demos on
 [the GROOVE web site](https://groove.cs.utwente.nl).
 
 *  Visual editing and simulation of graphs and graph transformation rules
-*  Global rule priorities or control program
+*  Global rule priorities or control programs
 *  State space exploration using customised exploration strategies
 *  Model checking generated transition systems over CTL and LTL formulae
 *  Regular expression matching and label wildcards in transformation rules
 *  Primitive data types (int, string, bool and real) with corresponding operations
+*  User-defined data types (essentially Java records) with user-defined operations
 *  Nested (i.e., quantified) rules
 *  Typing and inheritance through node types
 *  Prolog querying of graphs and state space

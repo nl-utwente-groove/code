@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -285,9 +287,12 @@ class Edge2SearchItem extends AbstractSearchItem {
 
         @Override
         boolean find() {
+            // an edge the factory never made cannot be in the host graph;
+            // a lookup rather than a creation, so that the usual negative
+            // answer of an embargo neither allocates nor leaves a probe edge
+            // behind in the factory
             HostEdge image = getEdgeImage();
-            assert image != null;
-            boolean result = isImageCorrect(image);
+            boolean result = image != null && isImageCorrect(image);
             if (result) {
                 this.image = image;
                 // writing may fail, e.g. because the image coincides
@@ -313,23 +318,33 @@ class Edge2SearchItem extends AbstractSearchItem {
         }
 
         /**
-         * Creates and returns the edge image, as constructed from the available
-         * end node images.
+         * Looks up the edge image determined by the available end node images
+         * in the host factory; {@code null} if the factory has no such edge.
          */
-        private HostEdge getEdgeImage() {
-            HostNode sourceFind = this.sourceSeed;
-            if (sourceFind == null) {
-                sourceFind = this.search.getNode(this.sourceIx);
+        private @Nullable HostEdge getEdgeImage() {
+            return this.host.getFactory().findEdge(getSourceImage(), getType(), getTargetImage());
+        }
+
+        /** Returns the source node image, seeded or found by the search. */
+        private HostNode getSourceImage() {
+            HostNode result = this.sourceSeed;
+            if (result == null) {
+                result = this.search.getNode(this.sourceIx);
             }
-            assert sourceFind != null : String
+            assert result != null : String
                 .format("Source node of %s has not been found", Edge2SearchItem.this.edge);
-            HostNode targetFind = this.targetSeed;
-            if (targetFind == null) {
-                targetFind = this.search.getNode(this.targetIx);
+            return result;
+        }
+
+        /** Returns the target node image, seeded or found by the search. */
+        private HostNode getTargetImage() {
+            HostNode result = this.targetSeed;
+            if (result == null) {
+                result = this.search.getNode(this.targetIx);
             }
-            assert targetFind != null : String
+            assert result != null : String
                 .format("Target node of %s has not been found", Edge2SearchItem.this.edge);
-            return this.host.getFactory().createEdge(sourceFind, getType(), targetFind);
+            return result;
         }
 
         /** Callback method to determine the label of the edge image. */
@@ -339,7 +354,11 @@ class Edge2SearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return Edge2SearchItem.this.toString() + " = " + getEdgeImage();
+            HostEdge image = getEdgeImage();
+            return Edge2SearchItem.this.toString() + " = " + (image == null
+                ? getSourceImage() + "--" + getType().label() + "->" + getTargetImage()
+                    + " (not in factory)"
+                : image);
         }
 
         /** The pre-matched (fixed) source image, if any. */

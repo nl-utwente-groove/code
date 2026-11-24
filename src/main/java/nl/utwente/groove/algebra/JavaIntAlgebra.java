@@ -17,6 +17,9 @@
 package nl.utwente.groove.algebra;
 
 import java.util.List;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.Expression;
 
@@ -121,6 +124,23 @@ public final class JavaIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Stri
     @Override
     public Integer prod(List<Integer> arg) {
         return arg.stream().reduce(1, (i, j) -> i * j);
+    }
+
+    @Override
+    public Set<Integer> range(Integer arg) {
+        return new IntInterval<>(0, arg - 1L) {
+            @Override
+            Integer toValue(long number) {
+                return (int) number;
+            }
+
+            @Override
+            @Nullable Long fromValue(Object value) {
+                return value instanceof Integer i
+                    ? Long.valueOf(i)
+                    : null;
+            }
+        };
     }
 
     @Override

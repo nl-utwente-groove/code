@@ -1,0 +1,250 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>nl.utwente.groove</groupId>
+		<artifactId>assembly</artifactId>
+		<version>1.0</version>
+	</parent>
+	<artifactId>groove-yfiles-bin</artifactId>
+	<packaging>pom</packaging>
+
+	<!-- The yFiles zip, groove-x_y_z-yfiles-bin.zip (only under the yfiles
+	     profile): the plain bin zip with the two obfuscated jars of the yfiles
+	     module in lib/, launchers whose class path lists them, and the yFiles
+	     notice at the root. See zip.xml, and release/README.md. -->
+
+	<properties>
+		<output-suffix>yfiles-bin</output-suffix>
+		<yfiles.zip>true</yfiles.zip>
+		<!-- the run of the Imager on the zip's content (check-yfiles-zip below);
+		     skip with -Dyfiles.smoke.skip=true -->
+		<yfiles.smoke.skip>false</yfiles.smoke.skip>
+		<smoke.grammar>${project.basedir}/../../../junit/samples/circularlist4.gps</smoke.grammar>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<!-- orders the reactor after the obfuscation. Its own dependencies,
+			     the plain backend and library jars among them, are excluded, so
+			     that they are in the dependency graph of no assembling module:
+			     the include filter of the dependency set is lenient (see
+			     ../bin/zip.xml), and a plain library jar in a zip would breach the
+			     yFiles licence -->
+			<groupId>${project.groupId}</groupId>
+			<artifactId>yfiles-obfuscated</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+			<exclusions>
+				<exclusion>
+					<groupId>*</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<!-- the check of the zip, after the assembly, and the checks of the
+				     yFiles zip in particular -->
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- What the yFiles zip must hold beyond the plain bin zip,
+						     checked on the zip itself: in lib/, exactly the two jars
+						     of the yfiles module besides the jars of the plain zip,
+						     each byte for byte the obfuscated one and not its input
+						     (the licence check of the yfiles module, which inspects
+						     its output, then holds for the zip as well); the
+						     restrictions that come with yFiles are at its root, in
+						     LICENSE-YFILES.txt; and the
+						     launchers of the zip, unpacked, must render a grammar
+						     on the yFiles backend. The Imager falls back to JGraph
+						     with a warning when the backend is missing, so the
+						     check looks for that warning, and a plain launcher run
+						     on the same tree must print it, which keeps the check
+						     from going blind if the wording of the warning
+						     changes. -->
+						<id>check-yfiles-zip</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target xmlns:unless="ant:unless">
+								<property name="zip" location="${zip.file}" />
+								<property name="check.dir" location="${project.build.directory}/yfiles-check" />
+								<property name="obf.dir" location="${project.basedir}/../../yfiles/target" />
+								<property name="plain.zip" location="${project.basedir}/../../target/groove-${groove-version-underscored}-bin.zip" />
+								<delete dir="${check.dir}" />
+								<mkdir dir="${check.dir}" />
+								<fail message="The plain bin zip ${plain.zip}, against which the lib/ of the yFiles zip is checked, is missing; build the whole release reactor.">
+									<condition>
+										<not>
+											<available file="${plain.zip}" type="file" />
+										</not>
+									</condition>
+								</fail>
+								<pathconvert property="lib.plain" pathsep=" ">
+									<sort>
+										<zipfileset src="${plain.zip}" includes="*/lib/*" />
+									</sort>
+									<flattenmapper />
+								</pathconvert>
+								<pathconvert property="lib.rest" pathsep=" ">
+									<sort>
+										<zipfileset src="${zip}" includes="*/lib/*" excludes="*/lib/${backend.jar} */lib/${yfiles.jar}" />
+									</sort>
+									<flattenmapper />
+								</pathconvert>
+								<resourcecount property="lib.yfiles.count">
+									<zipfileset src="${zip}" includes="*/lib/${backend.jar} */lib/${yfiles.jar}" />
+								</resourcecount>
+								<!-- (a fail with a nested condition loses its nested
+								     text in antrun, hence the separate conditions) -->
+								<condition property="lib.wrong">
+									<not>
+										<and>
+											<equals arg1="${lib.plain}" arg2="${lib.rest}" />
+											<equals arg1="${lib.yfiles.count}" arg2="2" />
+										</and>
+									</not>
+								</condition>
+								<fail if="lib.wrong">
+
+The lib/ of ${zip} must hold the jars of the plain bin zip and
+exactly two more, ${backend.jar} and ${yfiles.jar}
+from release/yfiles/target/lib. Of these two it holds ${lib.yfiles.count}; its other jars:
+
+  ${lib.rest}
+
+and those of the plain zip:
+
+  ${lib.plain}
+
+See zip.xml and pom.xml of ${project.artifactId}.
+								</fail>
+								<unzip src="${zip}" dest="${check.dir}/lib">
+									<patternset>
+										<include name="*/lib/${backend.jar}" />
+										<include name="*/lib/${yfiles.jar}" />
+									</patternset>
+									<flattenmapper />
+								</unzip>
+								<macrodef name="check-obfuscated">
+									<attribute name="jar" />
+									<sequential>
+										<fail message="The jar lib/@{jar} of ${zip} is not the obfuscated one of release/yfiles/target/lib: it differs from that one, or equals the input of the obfuscation in release/yfiles/target/in. A jar that has not been through yGuard must never be distributed; see zip.xml of ${project.artifactId}.">
+											<condition>
+												<not>
+													<and>
+														<filesmatch file1="${check.dir}/lib/@{jar}" file2="${obf.dir}/lib/@{jar}" />
+														<not>
+															<filesmatch file1="${check.dir}/lib/@{jar}" file2="${obf.dir}/in/@{jar}" />
+														</not>
+													</and>
+												</not>
+											</condition>
+										</fail>
+									</sequential>
+								</macrodef>
+								<check-obfuscated jar="${backend.jar}" />
+								<check-obfuscated jar="${yfiles.jar}" />
+								<!-- a binary with yFiles in it must carry the restrictions
+								     that come with the library -->
+								<resourcecount property="restrictions.count">
+									<zipfileset src="${zip}" includes="*/LICENSE-YFILES.txt" />
+								</resourcecount>
+								<condition property="restrictions.missing">
+									<not>
+										<equals arg1="${restrictions.count}" arg2="1" />
+									</not>
+								</condition>
+								<fail if="restrictions.missing">
+
+${zip} has no LICENSE-YFILES.txt at its root.
+A binary that contains the yFiles library must carry the restrictions that come
+with it, in that file, which the zip takes from release/yfiles/include and the
+installers show as part of their licence; see zip.xml of ${project.artifactId}.
+								</fail>
+								<sequential unless:true="${yfiles.smoke.skip}">
+									<property name="smoke.dir" location="${check.dir}/smoke" />
+									<property name="smoke.home" location="${smoke.dir}/${zip.basedir}" />
+									<unzip src="${zip}" dest="${smoke.dir}" />
+									<!-- the negative control: the plain launcher in the same tree -->
+									<copy file="${project.basedir}/../../runnable/target/Imager.jar" tofile="${smoke.home}/bin/PlainImager.jar" />
+									<macrodef name="imager">
+										<attribute name="jar" />
+										<attribute name="out" />
+										<sequential>
+											<mkdir dir="${smoke.dir}/@{out}" />
+											<java jar="${smoke.home}/bin/@{jar}.jar" fork="true" jvm="${java.home}/bin/java" dir="${smoke.home}" failonerror="false" resultproperty="@{out}.result" outputproperty="@{out}.output">
+												<jvmarg value="-Djava.awt.headless=true" />
+												<arg value="-b" />
+												<arg value="yfiles" />
+												<arg value="-f" />
+												<arg value="png" />
+												<arg file="${smoke.grammar}" />
+												<arg file="${smoke.dir}/@{out}" />
+											</java>
+											<resourcecount property="@{out}.pngs">
+												<fileset dir="${smoke.dir}/@{out}" includes="**/*.png" />
+											</resourcecount>
+										</sequential>
+									</macrodef>
+									<imager jar="Imager" out="yfiles" />
+									<imager jar="PlainImager" out="plain" />
+									<condition property="smoke.failed">
+										<or>
+											<not>
+												<equals arg1="${yfiles.result}" arg2="0" />
+											</not>
+											<equals arg1="${yfiles.pngs}" arg2="0" />
+											<contains string="${yfiles.output}" substring="is not available" />
+										</or>
+									</condition>
+									<fail if="smoke.failed">
+
+The Imager of ${zip}, run headlessly on the unpacked zip
+(${smoke.home}) with -b yfiles -f png on
+${smoke.grammar}, did not render on the yFiles backend:
+exit code ${yfiles.result}, ${yfiles.pngs} png files, and the output
+
+${yfiles.output}
+
+A warning that the backend is not available means that the obfuscated jars
+are missing from the launcher's class path or do not load. Skip this check
+with -Dyfiles.smoke.skip=true.
+									</fail>
+									<condition property="control.failed">
+										<not>
+											<contains string="${plain.output}" substring="is not available" />
+										</not>
+									</condition>
+									<fail if="control.failed">
+
+The plain Imager launcher, run on the unpacked yFiles zip
+(${smoke.home}/bin/PlainImager.jar) with -b yfiles, did not warn that
+the yFiles backend is not available; its output was
+
+${plain.output}
+
+The check of the yFiles launcher above recognises a fallback to JGraph by that
+warning (see Imager.selectBackend), so its wording has probably changed: update
+this pom to the new wording.
+									</fail>
+								</sequential>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

@@ -19,7 +19,7 @@ From the root of the checkout or worktree being verified:
    powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/null-check/run-ecj.ps1 src/main/java/nl/utwente/groove/foo/Bar.java ...
    ```
 
-   The script runs `mvn -q test-compile` first, fetches ecj 3.42.0 via Maven if not yet in the
+   The script runs `mvn -q test-compile` first, fetches ecj 3.44.0 via Maven if not yet in the
    local repository, caches the dependency classpath in `target/ecj-classpath.txt`, and runs ecj
    with the project's own `.settings/org.eclipse.jdt.core.prefs` at `--release 21`, with the
    curated external null annotations from `lib/eea` attached (`-annotationpath`) — the same
@@ -47,11 +47,9 @@ hierarchies, so the modular/unnamed distinction does not affect the analysis the
 `-All` does not combine with explicit file arguments, and unrecognized switches are
 rejected rather than passed to ecj as file names.
 
-Expected baseline: **16 problems, exit code 0** — 15 warnings (2 missing-`@Override` in
-`control/Binding.java`, 13 TODO task tags: 9 main, 4 test) plus 1 info in
-`gui/tree/TypeTree.java` (exported API mentioning a non-exported type; surfaces only in
-modular compilation). The Binding warnings are spurious: those record component accessors
-do carry `@Override`; the warning is an ecj 3.42.0 regression (3.37.0 does not report it).
+Expected baseline: **13 problems, exit code 0**, all of them warnings for TODO task tags
+(9 main, 4 test). The info in `gui/tree/TypeTree.java` that used to be part of the baseline
+(exported API mentioning a non-exported type) went when `gui.tree` stopped being exported.
 The bar for a change is that it adds nothing to that set.
 
 ## Error masking: why `-All` is the authoritative gate
@@ -68,22 +66,52 @@ null bug in that file. `-All` compiles modularly and has no such error. Conseque
   (`Constant`, `Variable`, `FieldExpr`, `CallExpr`) check cleanly per-file.
 - Generally, if a per-file run reports any error in a unit, that unit has not been
   null-checked — resolve the error (or run `-All`) before trusting the result.
-- A per-file run of `gui/tree/TypeFilter.java` reports one spurious "redundant null check"
-  warning that `-All` does not — an artifact of compiling against `target/classes` instead
-  of the sources; do not "fix" it in code.
 
 ## Notes
 
 - This check plus a quiet test run is a good task for an Opus subagent: have it run both and
   report only failures and warnings.
 - If the classpath cache is stale after a pom change, delete `target/ecj-classpath.txt` and rerun.
-- The script pins ecj 3.42.0. Do not fall back to 3.37.0: that version dies with an internal
+- The script pins ecj 3.44.0. The pin has to keep up with the JDT of the Eclipse in use
+  (Help > About > Installation Details lists "Eclipse JDT Core"): a newer JDT adds checks
+  that an older ecj passes silently, and then this gate says nothing where Eclipse
+  reports errors. That happened with 3.42.0, the previous pin: from 3.44 on, the implicit
+  accessor of a record component is checked as an override of an annotated interface
+  method, and the component needs an explicit `@NonNull` since `@NonNullByDefault` does
+  not reach it; 3.42.0 accepts the unannotated component. When raising the pin, rerun
+  `-All` and update the baseline above; 3.42.0 had two more warnings, spurious
+  missing-`@Override` reports on the explicit component accessors of
+  `control/Binding.java`.
+- Do not fall back to 3.37.0: that version dies with an internal
   NPE on switch expressions over sealed types when given many files at once, and reports
   spurious "import is never used" warnings for nested subtypes of sealed types that are
   imported only for their `permits` clauses (`grammar/aspect/AspectContent.java`,
-  `verify/Proposition.java`); 3.42.0 shows neither problem. The multi-release-jar
+  `verify/Proposition.java`); later versions show neither problem. The multi-release-jar
   descriptor bug is still present in 3.44.0 (checked 2026-08-18), so a version bump alone
   does not obsolete the jar patching.
 - Remember the null-annotation idioms in claude/CLAUDE.md (annotate consistently across an
   inheritance web; `Map<K,@Nullable V>` for null-checked lookups; `@Nullable` late-init fields
   with asserting accessors).
+
+## The yFiles backend
+
+The unit in `yfiles/` is not part of the main build, so neither mode above sees it. It has
+a script of its own, which needs the licensed yFiles library in the local Maven repository:
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/null-check/run-ecj-yfiles.ps1
+```
+
+It checks the unit's whole source tree every time (15 main and 8 test sources, well under a
+minute) with the same ecj version, settings (`yfiles/.settings`, kept identical to the main
+project's) and external annotations, straight from source: the unit is a named module, but the script leaves its
+`module-info.java` out and checks the sources in the unnamed module, on the class path,
+and there are no generated sources, so none of the module handling above applies (access
+between the modules is checked by the unit's Maven build, not here). The core comes from this checkout's `target\classes` when that is built, as in
+Eclipse's workspace resolution, and from the installed `nl.utwente.groove:groove` jar
+otherwise or with `-UseInstalledJar`; stale core classes show up as API errors, and ecj
+skips null analysis in any unit with an error. The dependency class path is cached in
+`yfiles\target\ecj-classpath.txt` (`-Refresh` rebuilds it). The script prints `No problems.`
+and exits with 0, or lists the problems (also in `yfiles\target\ecj-problems.txt`) and exits
+with 1, warnings included: **zero problems is the bar**, there is no baseline. A clean run is
+no proof; see `claude/yfiles-backend.md`, *Null analysis*.

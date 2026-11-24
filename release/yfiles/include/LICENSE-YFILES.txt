@@ -1,0 +1,37 @@
+GROOVE with yFiles: license restrictions
+========================================
+
+This distribution of GROOVE contains, next to GROOVE itself, the commercial
+library yFiles for Java (Swing) by yWorks GmbH (https://www.yworks.com), on
+which the default graph visualisation backend of GROOVE is built. GROOVE
+itself is free software under the Apache License 2.0 (see LICENSE.txt). The
+yFiles library is not: it is included under an academic license held by the
+University of Twente and remains the property of yWorks GmbH. This
+distribution as a whole therefore comes with the following restrictions, on
+top of the terms of LICENSE.txt.
+
+1. This distribution may be used for academic, non-commercial purposes only,
+such as research, teaching and study. It may not be used by or on behalf of a
+commercial institution, nor by anyone for a commercial purpose.
+
+2. The yFiles library is included in obfuscated form, as its license
+requires: the file yfiles-for-java-swing-*.jar in the lib directory, together
+with groove-yfiles-*.jar, the part of GROOVE that calls it. Neither may be
+extracted from this distribution, de-obfuscated, decompiled or otherwise
+reverse engineered, or used for any purpose other than running GROOVE.
+
+3. This distribution may be passed on only unchanged and as a whole, under
+these same restrictions. It may not be repackaged or included in other
+software.
+
+A distribution of GROOVE without yFiles, to which none of these restrictions
+apply, is available as groove-x_y_z-bin.zip on the GROOVE release page
+(https://github.com/nl-utwente-groove/code/releases). It displays graphs with
+the JGraph-based backend (which this distribution contains as well). If in
+doubt about whether your use qualifies as "academic and non-commercial",
+use that one.
+
+The source code of GROOVE, including the part that calls yFiles, is public
+under the Apache License 2.0 (https://github.com/nl-utwente-groove/code). That
+does not include the yFiles library; building that part requires a yFiles
+license of one's own.

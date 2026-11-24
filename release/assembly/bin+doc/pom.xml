@@ -19,6 +19,10 @@
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<!-- the check of the zip, after the assembly -->
+				<artifactId>maven-antrun-plugin</artifactId>
+			</plugin>
 		</plugins>
 	</build>
 </project>

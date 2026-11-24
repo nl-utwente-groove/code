@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
@@ -59,9 +60,22 @@ public class OperationTest {
                 assertEquals(op, operation.getOperator());
                 Object result = operation.applyStrict(sampleArgs(family, op));
                 Algebra<?> resultAlgebra = family.getAlgebra(op.getResultSort());
+                if (op.isEnumerator() && !resultAlgebra.isErrorValue(result)) {
+                    // an enumeration yields a set of values of the result sort
+                    assertTrue(result instanceof Set, op + " should yield a set");
+                    for (Object value : (Set<?>) result) {
+                        assertTrue(resultAlgebra.isValue(value),
+                                   String
+                                       .format("%s of %s yields element %s, not a value of %s", op,
+                                               family, value, resultAlgebra.getName()));
+                    }
+                    applied++;
+                    continue;
+                }
                 assertTrue(resultAlgebra.isValue(result),
-                           String.format("%s of %s yields %s, not a value of %s", op, family,
-                                         result, resultAlgebra.getName()));
+                           String
+                               .format("%s of %s yields %s, not a value of %s", op, family, result,
+                                       resultAlgebra.getName()));
                 if (family == AlgebraFamily.TERM && !resultAlgebra.isErrorValue(result)) {
                     // term-algebra results are expressions of the result sort
                     assertTrue(result instanceof Expression);

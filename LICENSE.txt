@@ -12,6 +12,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-GROOVE has a yFiles graph backend that is only available for 
-non-commercial use. It is installed as a separate step upon the first
-invocation of the Simulator, and not as part of the current sequence.
+This license covers GROOVE itself. It does not cover the library yFiles for
+Java (Swing) by yWorks GmbH, on which one of the graph visualisation backends
+of GROOVE is built, and which is not part of the source code of GROOVE. A
+distribution of GROOVE that contains that library is for academic,
+non-commercial use only: it has a file LICENSE-YFILES.txt next to this one,
+whose restrictions apply on top of this license.

@@ -28,6 +28,7 @@ import nl.utwente.groove.transform.oracle.DefaultOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.DeltaMap;
 import nl.utwente.groove.util.DeltaMap.Delta;
 import nl.utwente.groove.util.Properties;
@@ -467,6 +468,15 @@ public class GrammarProperties extends Properties {
      */
     public List<QualName> getUserOperations() {
         return parsePropertyOrDefault(GrammarKey.USER_OPS).value(ValueType.QUAL_NAME_LIST);
+    }
+
+    /**
+     * Returns the entries of the grammar class path for the user-defined operations,
+     * relative to the grammar directory.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-10")
+    public List<String> getUserClassPath() {
+        return parsePropertyOrDefault(GrammarKey.USER_CLASS_PATH).value(ValueType.STRING_LIST);
     }
 
     /**

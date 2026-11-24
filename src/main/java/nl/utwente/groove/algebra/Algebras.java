@@ -38,6 +38,7 @@ import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
+import nl.utwente.groove.annotation.ToolTipPars;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.Exceptions;
@@ -129,24 +130,54 @@ public class Algebras {
                 result.add(help);
             }
         }
-        for (var e : UserSignature.getMethods().entrySet()) {
+        for (var e : UserSignature.getImplementations().entrySet()) {
             var name = e.getKey().getName();
             sigMap.put("Q" + name, name);
-            Help help = createUserHelp(e.getValue(), sigMap);
+            var impl = e.getValue();
+            var exec = impl.executable();
+            // a generated accessor of a sequence-valued field has no documentation
+            Help help = impl.accessor() == null
+                ? createUserHelp(exec, sigMap)
+                : null;
             if (help != null) {
-                help
-                    .addBody("<p style=\"margin-top:5;\"/>Declared in "
-                        + Help.source(e.getValue().getDeclaringClass().getCanonicalName()));
-                // parameter documentation
-                for (var param : e.getValue().getParameterTypes()) {
-                    var sort = Sort.toSort(param);
-                    assert sort != null;
-                    help.addPar(sort.name() + "-typed expression");
+                var sources = new StringBuilder("Declared in ");
+                sources.append(Help.source(exec.getDeclaringClass().getCanonicalName()));
+                // an operation of a user interface lists the user types that implement it
+                var receiver = impl.receiver();
+                if (receiver != null && receiver.isInterface()) {
+                    var userTypes = UserSignature.getUserTypes(receiver);
+                    for (int i = 0; i < userTypes.size(); i++) {
+                        sources.append(i == 0
+                            ? "; implemented by "
+                            : ", ");
+                        sources.append(Help.source(userTypes.get(i).getCanonicalName()));
+                    }
+                }
+                help.addBody("<p style=\"margin-top:5;\"/>" + sources);
+                // parameter documentation, for the operands rather than the
+                // Java parameters: a non-static operation has its receiving
+                // object as additional first operand
+                var parSorts = e.getKey().getParamSorts();
+                // the lines provided by the user are for the Java parameters;
+                // they may be too few or too many, which should not be fatal
+                var pars = exec.getAnnotation(ToolTipPars.class);
+                var userDocs = pars == null
+                    ? new String[0]
+                    : pars.value();
+                int receiverCount = parSorts.size() - exec.getParameterCount();
+                for (int i = 0; i < parSorts.size(); i++) {
+                    int userIx = i - receiverCount;
+                    boolean isTail = e.getKey().hasTail() && i == parSorts.size() - 1;
+                    help
+                        .addPar(0 <= userIx && userIx < userDocs.length
+                            ? userDocs[userIx]
+                            : isTail
+                                ? "any number of " + parSorts.get(i).name() + "-typed expressions"
+                                : parSorts.get(i).name() + "-typed expression");
                 }
                 result.add(help);
             }
         }
-        UserSignature.addUser(() -> opDocMap.reset());
         return result;
     }
 
@@ -183,6 +214,11 @@ public class Algebras {
         Help result = null;
         if (opName != null) {
             Arrays.stream(exec.getParameters()).map(Parameter::getName).forEach(parNames::add);
+            if (Operator.getTailType(exec) != null) {
+                // the last parameter stands for any number of arguments; this is marked by
+                // a star, as the syntax text of the help cannot hold dots
+                parNames.add(parNames.removeLast() + "*");
+            }
             String syntaxText = "[" + Sort.USER.name() + ":]Q" + opName;
             syntaxText += Strings.toString(parNames.toArray(), "(", ")", ",");
             result = Help.createOpHelp(exec, opName, syntaxText, resultSort, tokenMap);
@@ -195,6 +231,11 @@ public class Algebras {
 
     /** Syntax helper map for operators, from syntax items to associated tool tips. */
     private static final Factory<HelpMap> opDocMap = lazy(Algebras::computeOpDocMap);
+    static {
+        // the operator documentation includes the user operations. The reset is
+        // registered once, here, rather than upon every computation
+        UserSignature.addUser(() -> opDocMap.reset());
+    }
 
     /**
      * Returns a syntax helper mapping for all operators.

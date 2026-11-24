@@ -1,0 +1,8 @@
+== rule askInt
+signature: (ask int)
+hidden: []
+anchor: []
+Existential askInt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [] edges []
+  rhs: nodes [x0:int] edges []

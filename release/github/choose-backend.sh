@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Prints the branch of the private repository nl-utwente-groove/yfiles-lib
-# from which the yFiles backend is built for a given commit of this repository.
+# from which the yFiles library is taken for a given commit of this repository.
 #
 # The candidates are the remote branches of this repository whose tip is an
 # ancestor of the commit - the branch pushed or tagged and everything it was
 # branched off - ordered by distance, and the choice is the nearest of those
 # that the private repository also has, main if it has none. A branch of the
-# private repository that follows an interface change on a branch of this
-# repository must therefore carry that branch's name. A throwaway branch off
+# private repository that goes with a branch of this repository, as for an
+# upgrade of the library, must therefore carry that name. A throwaway branch off
 # such a branch, as for a test release, resolves to the branch it was taken
 # from; a commit on master resolves to main, the private repository having no
 # master. See the section "Deploying" of release/README.md, and the workflows

@@ -193,7 +193,7 @@ public class LegacySyntaxParserTest {
         // remote exploration was removed altogether
         assertThrows(FormatException.class,
                      () -> LegacySyntaxParser.parse("remote:http://localhost any 0"));
-        // the minimax strategy was removed in release 8.0, with a
+        // the minimax strategy was removed in release 7.6.0, with a
         // dedicated error pointing to gh #890
         var minimaxError = assertThrows(FormatException.class,
                                         () -> LegacySyntaxParser

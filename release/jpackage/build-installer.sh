@@ -6,29 +6,45 @@
 # - the release zip has been built:
 #     mvn -B clean install -Drevision=<version>       (repository root)
 #     cd release && mvn -B clean package -Drevision=<version>
+#   and, for the yfiles argument below, with -Pyfiles in the second command
+#   (see release/README.md)
 # - a JDK (>= 21) providing jpackage and jdeps, located through JAVA_HOME if
 #   set, otherwise through the PATH
 # - for the Windows .msi type: the WiX toolset (preinstalled on the GitHub
 #   windows runners), and perl, which Git Bash ships with
 #
 # Usage:
-#   build-installer.sh <version> [<type>]
+#   build-installer.sh <version> [<type> [yfiles]]
 #
 #   <version>  the GROOVE version, e.g. 7.5.4; must match the -Drevision value
 #              of the release build
 #   <type>     jpackage --type: msi, dmg, pkg, deb, rpm or app-image;
-#              defaults to msi (Windows), dmg (macOS) or deb (Linux).
+#              defaults to msi (Windows), dmg (macOS) or deb (Linux); give it
+#              as an empty string to take the default and still pass yfiles.
 #              app-image produces the raw application directory without an
 #              installer, which is useful for local testing since it needs no
 #              packaging tools.
+#   yfiles     package groove-<version>-yfiles-bin.zip, the zip with the
+#              obfuscated yFiles jars (built by the release reactor with
+#              -Pyfiles), instead of the plain bin zip. The installer is the
+#              same product either way, under the same name, identifiers and
+#              upgrade UUID: there is one set of installers, which is to
+#              contain yFiles. The plain form serves builds without the
+#              licensed library.
 #
 # The installer is placed in release/jpackage/target/dist, named
 # groove-<version>-<os>-<arch>.<ext>.
 
 set -euo pipefail
 
-VERSION=${1:?usage: build-installer.sh <version> [<type>]}
+USAGE="usage: build-installer.sh <version> [<type> [yfiles]]"
+VERSION=${1:?$USAGE}
 TYPE=${2:-}
+EDITION=${3:-}
+if [[ -n $EDITION && $EDITION != yfiles ]]; then
+    echo "$USAGE" >&2
+    exit 1
+fi
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 RELEASE_DIR=$(dirname "$SCRIPT_DIR")
@@ -69,9 +85,11 @@ JDEPS=${JAVA_BIN}jdeps
 # ----------------------------------------------------------------- input tree
 # The bin release zip already has the right shape for jpackage: thin launcher
 # jars in bin/ whose manifests put ../lib/* on the classpath, next to the
-# top-level documentation files. The whole tree becomes the app content.
+# top-level documentation files. The whole tree becomes the app content. The
+# yFiles zip has the same shape, with the two obfuscated jars in lib/ and the
+# launchers' class path listing them.
 VERSION_UNDERSCORED=${VERSION//./_}
-ZIP=$RELEASE_DIR/target/groove-$VERSION_UNDERSCORED-bin.zip
+ZIP=$RELEASE_DIR/target/groove-$VERSION_UNDERSCORED-${EDITION:+$EDITION-}bin.zip
 if [[ ! -f $ZIP ]]; then
     echo "error: $ZIP not found; build the release first (see header of this script)" >&2
     exit 1
@@ -91,8 +109,7 @@ INPUT=$WORK/input/groove-$VERSION_UNDERSCORED
 # charsets, zip filesystems, accessibility support) or through service
 # loading: jdk.crypto.ec holds the elliptic-curve provider on Java 21 (merged
 # into java.base from 22, where the module remains as an empty stub), which
-# jdeps cannot see; without it TLS handshakes with github fail, and so does
-# the download of the yFiles add-on (gh #909).
+# jdeps cannot see; without it TLS handshakes with github fail.
 EXTRA_MODULES="java.instrument java.management java.naming java.scripting java.sql jdk.accessibility jdk.charsets jdk.crypto.ec jdk.unsupported jdk.zipfs"
 MAIN_JAR=$INPUT/lib/groove-$VERSION.jar
 # The analysis runs on the core jar's classes WITHOUT its module descriptor.
@@ -118,10 +135,13 @@ if [[ -z ${MODULES:-} ]]; then
     echo "warning: jdeps failed to compute the module list; falling back to java.se" >&2
     MODULES=java.se
 fi
-# The yFiles add-on (see README.md) is loaded from the user's extension
-# directory into this same runtime; its jars need jdk.xml.dom, which the core
-# jar's analysis already yields, so no module is added for it here. Should
-# that change, the add-on would fail at start-up with a NoClassDefFoundError.
+# The yFiles jars of the yFiles zip (see README.md) run in this same runtime;
+# they need jdk.xml.dom, which the core jar's analysis already yields, so no
+# module is added for them here (confirmed on 2026-11-16: the Imager of an
+# app image of the yFiles zip rendered with -b yfiles on the module set
+# computed here). Should that change, the yFiles backend would fail at
+# start-up with a NoClassDefFoundError, and the Imager would fall back to
+# JGraph with a warning.
 MODULES=$(printf '%s\n' ${MODULES//,/ } $EXTRA_MODULES | sort -u | paste -sd, -)
 echo "bundled runtime modules: $MODULES"
 
@@ -153,8 +173,7 @@ make_launcher Imager true
 make_launcher Viewer false
 
 # ----------------------------------------------------------------- msi resources
-# Uninstalling the MSI also removes the yFiles add-on from the user's extension
-# directory (see README.md), it asks the user to close a running GROOVE before
+# The MSI asks the user to close a running GROOVE before
 # it touches anything (see wix/files-in-use.wxf), it warns before replacing another
 # installed version, another build of the same version included, for which
 # every build gets its own product code (see wix/replace-warning.wxf), and the
@@ -163,7 +182,7 @@ make_launcher Viewer false
 # resource directory in place of the bundled one, so this extracts the bundled one from the running
 # JDK and splices the fragments in wix/ into it, each with a reference that
 # pulls it into the installer. A checked-in copy of main.wxs would go stale
-# with every JDK upgrade; the three anchor lines used here have been the same
+# with every JDK upgrade; the two anchor lines used here have been the same
 # from JDK 21 to 26, and the splice fails loudly should they change.
 msi_resources() {
     local java_home=${JAVA_HOME:-$("${JAVA_BIN}java" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.home = //p')}
@@ -173,21 +192,17 @@ msi_resources() {
         --include 'regex:/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs' \
         "$(native_path "$java_home/lib/modules")"
     mv "$MSI_RESOURCES/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs" "$MSI_RESOURCES/main.wxs"
-    sed -i -e '/<ComponentGroupRef Id="Files"\/>/a\      <ComponentGroupRef Id="GrooveAddOnCleanup"/>' \
-        -e '/<UIRef Id="JpUI"\/>/a\    <PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' \
+    sed -i -e '/<UIRef Id="JpUI"\/>/a\    <PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' \
         -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveLaunchSimulatorUI"/>' \
         -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveReplaceWarningUI"/>' \
         -e 's/Id="\$(var\.JpProductCode)"/Id="*"/' \
-        -e "/<\/Product>/r $SCRIPT_DIR/wix/addon-cleanup.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/files-in-use.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/launch-simulator.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/replace-warning.wxf" "$MSI_RESOURCES/main.wxs"
     # text read in by r is not subject to the other commands of the same run;
     # WiX takes forward slashes in paths, which keeps sed's replacement simple
     sed -i "s|@GROOVE_ICONS_DIR@|$(cygpath -m "$SCRIPT_DIR/icons")|" "$MSI_RESOURCES/main.wxs"
-    if ! grep -q '<ComponentGroupRef Id="GrooveAddOnCleanup"/>' "$MSI_RESOURCES/main.wxs" \
-        || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs" \
-        || ! grep -q '<PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' "$MSI_RESOURCES/main.wxs" \
+    if ! grep -q '<PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q 'xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<util:CloseApplication Id="GrooveCloseSimulator"' "$MSI_RESOURCES/main.wxs" \
@@ -205,16 +220,34 @@ msi_resources() {
     fi
 }
 
+# ----------------------------------------------------------------- licence
+# The licence that the installer shows, has the user accept and installs:
+# LICENSE.txt, and with the yFiles jars in the package also the restrictions
+# that come with them, LICENSE-YFILES.txt, taken from the yFiles zip so that
+# the installer says what the zip says. A binary with yFiles in it must carry
+# those restrictions, so a yFiles zip without the file is refused, for an app
+# image as well, which shows no licence but contains the file.
+LICENSE_TEXT=$ROOT_DIR/LICENSE.txt
+if [[ $EDITION == yfiles ]]; then
+    if [[ ! -f $INPUT/LICENSE-YFILES.txt ]]; then
+        echo "error: $ZIP has no LICENSE-YFILES.txt at its root, without which a package with yFiles must not be built" >&2
+        exit 1
+    fi
+    LICENSE_TEXT=$WORK/LICENSE.txt
+    { cat "$ROOT_DIR/LICENSE.txt"; echo; cat "$INPUT/LICENSE-YFILES.txt"; } > "$LICENSE_TEXT"
+fi
+
 # ----------------------------------------------------------------- msi licence
 # The MSI shows the licence in a narrow box on its first page. jpackage turns
 # a plain-text licence into RTF line by line, so the hard line breaks of
-# LICENSE.txt survive and wrap raggedly there. This writes RTF with one
-# paragraph per blank-line-separated block of LICENSE.txt instead, which
-# jpackage recognises by its header and takes as it is; LICENSE.txt remains the
-# only copy of the text. Non-ASCII characters become RTF Unicode escapes.
+# the licence text survive and wrap raggedly there. This writes RTF with one
+# paragraph per blank-line-separated block of the text instead, which
+# jpackage recognises by its header and takes as it is; LICENSE.txt and
+# LICENSE-YFILES.txt remain the only copies of the text. Non-ASCII characters
+# become RTF Unicode escapes.
 msi_license() {
     MSI_LICENSE=$WORK/LICENSE.rtf
-    perl - "$ROOT_DIR/LICENSE.txt" > "$MSI_LICENSE" <<'PERL'
+    perl - "$LICENSE_TEXT" > "$MSI_LICENSE" <<'PERL'
 use strict; use warnings;
 open my $in, '<:encoding(UTF-8)', $ARGV[0] or die "cannot read $ARGV[0]: $!";
 my $text = do { local $/; <$in> };
@@ -279,7 +312,7 @@ case $OS in
         ;;
 esac
 if [[ $TYPE != app-image ]]; then
-    LICENSE=$ROOT_DIR/LICENSE.txt
+    LICENSE=$LICENSE_TEXT
     if [[ $OS == windows ]]; then
         msi_license
         LICENSE=$MSI_LICENSE
@@ -301,8 +334,16 @@ if [[ $TYPE != app-image ]]; then
         linux)
             args+=(--linux-menu-group Development)
             if [[ $TYPE == rpm ]]; then
-                # the rpm License tag; without it jpackage writes "Unknown"
-                args+=(--linux-rpm-license-type Apache-2.0)
+                # the rpm License tag; without it jpackage writes "Unknown".
+                # With yFiles in the package it is an SPDX expression that
+                # names the restrictions of LICENSE-YFILES.txt next to the
+                # Apache licence, by a reference of our own: no SPDX
+                # identifier exists for them
+                if [[ $EDITION == yfiles ]]; then
+                    args+=(--linux-rpm-license-type "Apache-2.0 AND LicenseRef-GROOVE-yFiles-academic-non-commercial")
+                else
+                    args+=(--linux-rpm-license-type Apache-2.0)
+                fi
             fi
             ;;
     esac

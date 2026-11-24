@@ -64,6 +64,12 @@ public class DeterminismTest {
     public void testPlanEngineDeterminism() {
         test("ferryman", "");
         test("loose-nodes", "");
+        // enumerators: values enumerated under a quantifier, with created
+        // nodes, and tested for membership after reconstruction from a seed (gh #931)
+        test("range-cells", "");
+        // sequence-valued fields of user types: values that are built anew
+        // along every route, and so have to be equal and hash by content (gh #931)
+        test("poly-growth", "");
     }
 
     /**
@@ -122,7 +128,7 @@ public class DeterminismTest {
                 .format("Non-deterministic '%s' exploration of grammar %s", config, grammarName),
                          first, second);
             for (int collapseAt : new int[] {COLLAPSE_ALWAYS, 1, closures / 4, closures / 2,
-                3 * closures / 4}) {
+                    3 * closures / 4}) {
                 if (collapseAt == 0) {
                     continue;
                 }

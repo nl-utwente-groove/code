@@ -1,0 +1,53 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+	<!-- The bin zip with yFiles: the content of ../bin/zip.xml, except that the
+	     launchers come from the yfiles module (their class path lists the two
+	     obfuscated jars), plus those two jars in lib/ and the yFiles notice at
+	     the root. The two jars are taken from the yfiles module's output
+	     directory, never through a dependency set: the plain backend and
+	     library jars are deliberately not in this module's dependency graph
+	     (see pom.xml). -->
+	<id>zip</id>
+	<formats>
+		<format>zip</format>
+	</formats>
+	<fileSets>
+	    <fileSet>
+		    <directory>../../include</directory>
+			<outputDirectory></outputDirectory>
+	    </fileSet>
+	    <fileSet>
+		    <directory>../../yfiles/include</directory>
+			<outputDirectory></outputDirectory>
+	    </fileSet>
+	    <fileSet>
+		    <directory>../../yfiles/target/bin</directory>
+			<outputDirectory>bin</outputDirectory>
+	    </fileSet>
+	    <fileSet>
+		    <directory>../../yfiles/target/lib</directory>
+			<outputDirectory>lib</outputDirectory>
+	    </fileSet>
+	</fileSets>
+	<files>
+	    <file>
+		    <source>../../../LICENSE.txt</source>
+			<outputDirectory></outputDirectory>
+	    </file>
+	</files>
+
+	<dependencySets>
+		<dependencySet>
+			<includes>
+				<!-- as in ../bin/zip.xml; the trail starts with
+				     nl.utwente.groove:groove-yfiles-bin:pom:1.0 here, of which the
+				     pattern is no substring either -->
+				<include>nl.utwente.groove:groove:jar</include>
+			</includes>
+			<useTransitiveFiltering>true</useTransitiveFiltering>
+			<outputDirectory>lib</outputDirectory>
+			<useProjectArtifact>false</useProjectArtifact>
+		</dependencySet>
+	</dependencySets>
+
+	<baseDirectory>${zip.basedir}</baseDirectory>
+</assembly>

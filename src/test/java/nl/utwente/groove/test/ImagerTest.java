@@ -18,7 +18,10 @@ package nl.utwente.groove.test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -109,6 +112,68 @@ public class ImagerTest {
         Assert.assertTrue(output, output.startsWith("Warning: "));
         Assert.assertTrue(output, output.contains("'" + GraphBackend.JGRAPH + "'"));
     }
+
+    /** Tests the layout option (gh #941) on a graph without stored layout, the nodes
+     * of which start out at random positions: under the forest layouter, which does
+     * not depend on those positions, the image is the same every time.
+     */
+    @Test
+    public void testLayoutOption() throws Exception {
+        Path graph = createUnplaced();
+        String forest = imageTikz(graph, "-l", "forest");
+        Assert.assertTrue(forest.contains("\\node"));
+        Assert.assertEquals(forest, imageTikz(graph, "-l", "forest"));
+        // the other layouts start from the random positions, so only their working is tested
+        imageTikz(graph, "-l", "spring");
+        imageTikz(graph);
+        // the option overrides a stored layout
+        Path stored = Path.of(TEST_DIR, START_GRAPH);
+        Assert.assertNotEquals(imageTikz(stored), imageTikz(stored, "-l", "forest"));
+        Assert.assertEquals(imageTikz(stored), imageTikz(stored));
+    }
+
+    @Test
+    public void testUnknownLayout() {
+        try {
+            imageTikz(Path.of(TEST_DIR, START_GRAPH), "-l", "circle");
+            Assert.fail("Unknown layout should be refused");
+        } catch (Exception exc) {
+            String message = exc.getMessage();
+            Assert.assertNotNull(message);
+            Assert.assertTrue(message, message.contains("Unknown layout"));
+        }
+    }
+
+    /** Images a given graph as TikZ, with given additional options, and returns the result. */
+    private String imageTikz(Path graph, String... options) throws Exception {
+        File out = new File(OUTPUT_DIR, "layout" + FileType.TIKZ.getExtension());
+        List<String> args = new ArrayList<>(List.of("-f", "tikz", "-v", "0"));
+        args.addAll(List.of(options));
+        args.add(graph.toString());
+        args.add(out.toString());
+        Imager.execute(args.toArray(new String[0]));
+        return Files.readString(out.toPath());
+    }
+
+    /** Creates a temporary grammar with a copy of the start graph of the test grammar
+     * that has no layout information, and returns the location of that copy.
+     */
+    private Path createUnplaced() throws IOException {
+        Path grammar = Files
+            .createDirectory(Files.createTempDirectory("imager").resolve("unplaced.gps"));
+        String start = Files.readString(Path.of(TEST_DIR, START_GRAPH));
+        Assert.assertTrue(start.contains(LAYOUT_ATTR));
+        start = start.replaceAll("(?s)\\s*" + LAYOUT_ATTR + ".*?</attr>", "");
+        Assert.assertFalse(start.contains(LAYOUT_ATTR));
+        Path result = grammar.resolve(START_GRAPH);
+        Files.writeString(result, start);
+        grammar.toFile().deleteOnExit();
+        result.toFile().deleteOnExit();
+        return result;
+    }
+
+    private final static String START_GRAPH = "start.gst";
+    private final static String LAYOUT_ATTR = "<attr name=\"layout\">";
 
     private void test(FileType type, String... options) {
         new File(OUTPUT_DIR).mkdir();

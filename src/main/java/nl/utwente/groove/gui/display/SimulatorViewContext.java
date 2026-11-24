@@ -111,7 +111,8 @@ public class SimulatorViewContext<G extends Graph> implements GraphViewContext<G
     }
 
     /** Indicates if the graphs shown are graph states; {@code false} by default. */
-    protected boolean isForState() {
+    @Override
+    public boolean isForState() {
         return false;
     }
 

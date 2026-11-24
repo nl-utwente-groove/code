@@ -49,7 +49,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Algebras;
-import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
@@ -402,15 +401,24 @@ final public class AspectEditorTab extends AspectTab
     @Override
     protected JComponent getLowerInfoPanel() {
         JComponent result = this.syntaxHelp;
-        if (result == null) {
+        // the syntax help lists the user operations, hence it is out of date once
+        // new user classes have been loaded; this shows in the operator
+        // documentation, which is then computed anew. Testing for that here,
+        // rather than registering for a reset at the user signature, avoids a
+        // registration that outlives this tab
+        var opDocs = Algebras.getOpDocMap();
+        if (result == null || opDocs != this.syntaxHelpOps) {
+            this.syntaxHelpOps = opDocs;
             this.syntaxHelp = result = createSyntaxHelp();
-            UserSignature.addUser(() -> this.syntaxHelp = null);
         }
         return result;
     }
 
     /** Syntax help panel. */
     private JComponent syntaxHelp;
+
+    /** The operator documentation from which {@link #syntaxHelp} was built. */
+    private HelpMap syntaxHelpOps;
 
     /** Creates and returns a panel for the syntax descriptions. */
     private JComponent createSyntaxHelp() {
@@ -438,7 +446,7 @@ final public class AspectEditorTab extends AspectTab
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges
         // when a cell edit is started on the canvas
-        getCanvas().addCanvasListener(new GraphCanvasListener<@NonNull AspectGraph>() {
+        var listener = new GraphCanvasListener<@NonNull AspectGraph>() {
             @Override
             public void editingStarted(GraphCanvas<@NonNull AspectGraph> canvas,
                                        ViewCell<@NonNull AspectGraph> cell) {
@@ -447,9 +455,19 @@ final public class AspectEditorTab extends AspectTab
                     : nodeTabIndex;
                 tabbedPane.setSelectedIndex(index);
             }
-        });
+        };
+        // the listener of a superseded syntax help has to make way
+        var oldListener = this.syntaxHelpListener;
+        if (oldListener != null) {
+            getCanvas().removeCanvasListener(oldListener);
+        }
+        getCanvas().addCanvasListener(listener);
+        this.syntaxHelpListener = listener;
         return result;
     }
+
+    /** The listener that switches the tabs of {@link #syntaxHelp}. */
+    private GraphCanvasListener<@NonNull AspectGraph> syntaxHelpListener;
 
     /**
      * Creates and returns a list of aspect descriptions.
@@ -480,9 +498,6 @@ final public class AspectEditorTab extends AspectTab
      * editor's graph mode.
      */
     private void initSyntax() {
-        if (this.nodeKeys != null) {
-            return;
-        }
         this.nodeKeys = new TreeSet<>(AspectKind.getNodeDocMap(this.role).keySet());
         this.edgeKeys = new TreeSet<>(AspectKind.getEdgeDocMap(this.role).keySet());
         // the edge role description for binary edges in rule graphs is inappropriate

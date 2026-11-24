@@ -31,7 +31,6 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Extensions;
 import nl.utwente.groove.util.Log;
 
 /**
@@ -42,8 +41,8 @@ import nl.utwente.groove.util.Log;
  * <p>
  * Backends are services: each backend module declares its implementation
  * with {@code provides} (and in {@code META-INF/services}, for the class path),
- * so what is on the module path is what is available, plus the jars of the
- * user-level extension directory of {@link Extensions}.
+ * so a backend is available if its jar is on the module path or the class path
+ * of the application.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -75,10 +74,23 @@ public interface GraphBackend {
     }
 
     /**
+     * Returns the notice on the terms of use that this backend brings to an
+     * application containing it, over and above the license of GROOVE itself:
+     * a sentence or two of plain text, shown in the About box whenever the backend
+     * is available, whether or not it is the selected one.
+     * @return the notice; {@code null} if the backend comes with no terms of its own,
+     * which is the default
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    default @Nullable String getLicenseNotice() {
+        return null;
+    }
+
+    /**
      * Returns the backend selected for this run.
      * The backends available are discovered once through the {@link ServiceLoader},
-     * on the class path and among the jars of the extension directory (see
-     * {@link Extensions}); a provider that fails to instantiate is logged and skipped,
+     * on the module path and the class path of the application (see
+     * {@link #available()}); a provider that fails to instantiate is logged and skipped,
      * as is a second provider with the name of an earlier one. Among the available
      * backends the one requested for this run (see {@link #request}) is selected if it
      * is available, otherwise the one named by the user preference
@@ -115,12 +127,13 @@ public interface GraphBackend {
      * class path and module path of the loader and its ancestors. A provider that cannot
      * be loaded or instantiated is logged and skipped, and so is a provider whose name
      * (see {@link #getName()}) is that of a provider discovered before it, so that the
-     * same backend on the class path and in the extension directory counts once.
-     * The backends of this run are discovered once, through the loader of
-     * {@link Extensions#instance()}; see {@link #available()}.
-     * @param loader the class loader to discover providers through
+     * same backend present twice, as on both the module path and the class path,
+     * counts once. The backends of this run are discovered once, through the loader of
+     * {@link GraphBackend} itself; see {@link #available()}.
+     * @param loader the class loader to discover providers through; {@code null} for
+     * the system class loader, as in {@link ServiceLoader#load(Class, ClassLoader)}
      */
-    static List<GraphBackend> discover(ClassLoader loader) {
+    static List<GraphBackend> discover(@Nullable ClassLoader loader) {
         List<GraphBackend> result = new ArrayList<>();
         var providers = ServiceLoader.load(GraphBackend.class, loader).iterator();
         // the iterator reports a provider that fails to load by throwing from next(),
@@ -166,7 +179,7 @@ public interface GraphBackend {
      * name if it is among them, otherwise the first in the {@link #RANKING}; names not
      * in the ranking come last, in list order. This is the selection of
      * {@link #instance()}, applicable by name alone to a run yet to come, such as the
-     * next start after an add-on was installed.
+     * next start.
      * @param available the names of the available backends, in discovery order
      * @param preferred the name of the preferred backend; {@code null} if there is none
      * @throws IllegalStateException if the list is empty
@@ -201,7 +214,7 @@ public interface GraphBackend {
         /** Declared before {@link Selected}, whose initialisation logs. */
         private static final Logger LOGGER = Log.getLogger("gui.backend");
 
-        static final List<GraphBackend> AVAILABLE = discover(Extensions.instance().getLoader());
+        static final List<GraphBackend> AVAILABLE = discover(GraphBackend.class.getClassLoader());
 
         /** Name of the backend requested for this run, if any; see {@link GraphBackend#request}. */
         static @Nullable String requested;

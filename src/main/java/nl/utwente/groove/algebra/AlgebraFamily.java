@@ -33,10 +33,19 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.Operator.SeqAccessor;
+import nl.utwente.groove.algebra.UserSignature.Impl;
 import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.algebra.syntax.Variable;
+import nl.utwente.groove.annotation.BoolSeq;
+import nl.utwente.groove.annotation.IntSeq;
+import nl.utwente.groove.annotation.RealSeq;
+import nl.utwente.groove.annotation.Seq;
+import nl.utwente.groove.annotation.StringSeq;
+import nl.utwente.groove.annotation.UserSeq;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Properties.ValueType;
@@ -185,6 +194,13 @@ public enum AlgebraFamily implements DocumentedEnum {
             for (Expression arg : call.getArgs()) {
                 args.add(computeStrict(arg, valuation));
             }
+            if (call.getOperator().isEnumerator()) {
+                // an enumerator only has a value in the context of a match
+                throw getAlgebra(expr.getSort())
+                    .errorValue(Exceptions
+                        .unsupportedOp("Enumerator '%s' cannot be evaluated",
+                                       call.getOperator().getName()));
+            }
             return getOperation(call.getOperator()).apply(args);
         default:
             throw Exceptions.illegalArg("Field expression %s cannot be evaluated", expr);
@@ -266,8 +282,7 @@ public enum AlgebraFamily implements DocumentedEnum {
             for (Sort sort : Sort.values()) {
                 Supplier<Map<Operator,Operation>> ops = switch (sort) {
                 case USER -> {
-                    var userOps
-                        = nl.utwente.groove.util.Factory.lazy(this::computeUserOperations);
+                    var userOps = nl.utwente.groove.util.Factory.lazy(this::computeUserOperations);
                     // the user operations are based on UserSignature#getMethods, which is
                     // not itself factory-tracked, so the cached map must be explicitly
                     // invalidated whenever a new user class is loaded
@@ -310,9 +325,9 @@ public enum AlgebraFamily implements DocumentedEnum {
      */
     private Map<Operator,Operation> computeUserOperations() {
         Map<Operator,Operation> result = new HashMap<>();
-        for (var exec : UserSignature.getMethods().entrySet()) {
-            var op = exec.getKey();
-            var operation = new UserOperation(op, exec.getValue());
+        for (var impl : UserSignature.getImplementations().entrySet()) {
+            var op = impl.getKey();
+            var operation = new UserOperation(op, impl.getValue());
             result.put(op, operation);
         }
         return result;
@@ -375,16 +390,27 @@ public enum AlgebraFamily implements DocumentedEnum {
 
     /** Implementation of a user-defined operator. */
     private class UserOperation extends Operation {
-        UserOperation(Operator op, Executable executable) {
+        UserOperation(Operator op, Impl impl) {
             super(AlgebraFamily.this, op);
-            this.executable = executable;
+            this.impl = impl;
         }
 
-        /** Invokes the executable in this operation with the given list of argument. */
+        /** Invokes the implementation of this operation on the given list of arguments.
+         * For an operation of a user interface, this is the method of the interface,
+         * so that the user type of the first argument determines what is executed (gh #933).
+         */
         @Override
         protected Object invoke(List<Object> args) throws ReflectiveOperationException {
-            var argsArray = args.toArray();
-            switch (this.executable) {
+            var impl = this.impl;
+            checkReceiver(args);
+            var accessor = impl.accessor();
+            if (accessor != null) {
+                return accessSeq((Method) impl.executable(), accessor, args);
+            }
+            var argsArray = getOperator().hasTail()
+                ? packTail(impl.executable(), args)
+                : args.toArray();
+            switch (impl.executable()) {
             case Method m:
                 if (Modifier.isStatic(m.getModifiers())) {
                     return m.invoke(getDeclaringAlgebra(), argsArray);
@@ -398,6 +424,125 @@ public enum AlgebraFamily implements DocumentedEnum {
             }
         }
 
-        private final Executable executable;
+        /**
+         * Checks that the first of a given list of arguments is a value that the
+         * implementation of this operation applies to, if that is an instance method:
+         * a value of the user type that has the method, or of a user type that
+         * implements the user interface that has it.
+         * @throws IllegalArgumentException if the first argument is not such a value,
+         * which makes the outcome of the operation an error value
+         */
+        @AIGenerated("Claude Fable 5.2, 2026-11")
+        private void checkReceiver(List<Object> args) throws IllegalArgumentException {
+            var receiver = this.impl.receiver();
+            if (receiver == null) {
+                // a constructor or static method
+                return;
+            }
+            if (args.isEmpty()) {
+                throw Exceptions.illegalArg("Too few arguments for %s: %s", getOperator(), args);
+            }
+            var type = args.get(0).getClass();
+            if (!receiver.isAssignableFrom(type)) {
+                throw Exceptions
+                    .illegalArg("User operation '%s' is not implemented for a value of type %s, only for %s",
+                                getOperator().getName(), type.getSimpleName(),
+                                UserSignature.describeType(receiver));
+            }
+        }
+
+        /**
+         * Applies a generated accessor of a sequence-valued field to the
+         * accessor method of the field, whose result is the sequence to inspect.
+         * @throws IllegalArgumentException if the position is out of range,
+         * which makes the outcome of the operation an error value
+         * @see Impl#accessor()
+         */
+        @AIGenerated("Claude Fable 5.2, 2026-11")
+        private Object accessSeq(Method field, SeqAccessor accessor,
+                                 List<Object> args) throws ReflectiveOperationException {
+            if (!(field.invoke(args.get(0)) instanceof Seq<?> seq)) {
+                // user code can construct a record without a value for the field
+                throw Exceptions.illegalArg("Field '%s' has no value", field.getName());
+            }
+            switch (accessor) {
+            case AT:
+                if (!(args.get(1) instanceof Integer index)) {
+                    throw Exceptions.illegalArg("Position %s is not an integer", args.get(1));
+                }
+                if (index < 0 || index >= seq.size()) {
+                    throw Exceptions
+                        .illegalArg("Position %s is out of range for field '%s' of length %s",
+                                    index, field.getName(), seq.size());
+                }
+                return seq.value(index);
+            case SIZE:
+                return seq.size();
+            default:
+                throw Exceptions.unreachable();
+            }
+        }
+
+        /**
+         * Converts the arguments of an operator with a variable argument tail
+         * into the arguments of its executable, by collecting the tail arguments
+         * into a single sequence of the type of the last parameter.
+         * @throws IllegalArgumentException if there are too few arguments, or
+         * the tail arguments are not of the element type of the sequence
+         * @see Operator#hasTail()
+         */
+        @AIGenerated("Claude Fable 5.2, 2026-11")
+        private Object[] packTail(Executable executable,
+                                  List<Object> args) throws IllegalArgumentException {
+            // the number of arguments before the tail, including the receiving object if any
+            int fixed = getOperator().getArity() - 1;
+            if (args.size() < fixed) {
+                throw Exceptions.illegalArg("Too few arguments for %s: %s", getOperator(), args);
+            }
+            var result = Arrays.copyOf(args.toArray(), fixed + 1);
+            var tail = args.subList(fixed, args.size());
+            var parTypes = executable.getParameterTypes();
+            var seqType = parTypes[parTypes.length - 1];
+            try {
+                Seq<?> seq;
+                if (seqType == IntSeq.class) {
+                    var elems = new int[tail.size()];
+                    for (int i = 0; i < elems.length; i++) {
+                        elems[i] = (Integer) tail.get(i);
+                    }
+                    seq = IntSeq.of(elems);
+                } else if (seqType == RealSeq.class) {
+                    var elems = new double[tail.size()];
+                    for (int i = 0; i < elems.length; i++) {
+                        elems[i] = (Double) tail.get(i);
+                    }
+                    seq = RealSeq.of(elems);
+                } else if (seqType == BoolSeq.class) {
+                    var elems = new boolean[tail.size()];
+                    for (int i = 0; i < elems.length; i++) {
+                        elems[i] = (Boolean) tail.get(i);
+                    }
+                    seq = BoolSeq.of(elems);
+                } else if (seqType == StringSeq.class) {
+                    var elems = new String[tail.size()];
+                    for (int i = 0; i < elems.length; i++) {
+                        elems[i] = (String) tail.get(i);
+                    }
+                    seq = StringSeq.of(elems);
+                } else {
+                    var elemType = Operator.getTailType(executable);
+                    assert elemType != null; // the operator has a tail
+                    seq = UserSeq.copyOf(elemType, tail);
+                }
+                result[fixed] = seq;
+            } catch (ClassCastException exc) {
+                // report this like an argument of the wrong type for a parameter without a tail
+                throw new IllegalArgumentException(exc);
+            }
+            return result;
+        }
+
+        /** The implementation of this operation. */
+        private final Impl impl;
     }
 }

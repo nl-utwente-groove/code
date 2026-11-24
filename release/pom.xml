@@ -8,6 +8,12 @@
 	<properties>
 		<revision>0.0.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- the yFiles library and the names of the two obfuscated jars, used
+		     by the yfiles module and the yFiles zip of the yfiles profile;
+		     keep yfiles.version equal to that of yfiles/pom.xml -->
+		<yfiles.version>3.6.0.1</yfiles.version>
+		<yfiles.jar>yfiles-for-java-swing-${yfiles.version}.jar</yfiles.jar>
+		<backend.jar>groove-yfiles-${revision}.jar</backend.jar>
 	</properties>
 
 	<modules>
@@ -31,7 +37,7 @@
 		<plugins>
 			<plugin>
 				<!-- the version with underscores, as used in the artifact names
-				     (groove-x_y_z-bin.zip, groove-x_y_z-yfiles-addon.zip) -->
+				     (groove-x_y_z-bin.zip) -->
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>3.3.0</version>
@@ -64,11 +70,10 @@
 
 	<profiles>
 		<profile>
-			<!-- The yFiles add-on: the yFiles backend (the groove-yfiles artifact
-			     built from the private yfiles-lib repository) and the yFiles
-			     library, the latter obfuscated as its
-			     license requires, zipped up for the user's extension directory
-			     (see README.md). The standard zips are not affected. Activate with
+			<!-- The obfuscated yFiles jars: the yFiles backend (the groove-yfiles
+			     artifact built from the unit in yfiles/) and the yFiles library,
+			     both obfuscated as the license of the library requires (see
+			     README.md). The standard zips are not affected. Activate with
 			     -Pyfiles; it needs the licensed library in the local Maven
 			     repository. -->
 			<id>yfiles</id>

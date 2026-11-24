@@ -59,7 +59,7 @@ public class SimulatorAspectContext extends SimulatorViewContext<AspectGraph> {
     private final DisplayKind kind;
 
     @Override
-    protected boolean isForState() {
+    public boolean isForState() {
         return this.kind == DisplayKind.STATE;
     }
 
