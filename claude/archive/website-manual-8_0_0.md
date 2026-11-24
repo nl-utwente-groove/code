@@ -1,5 +1,14 @@
 # Updating the web user manual for release 8.0.0
 
+*Status (2026-11-24)*: carried out. The manual was rewritten on the website branch
+`release-8_0_0` along the answers of section 5, and went live on the website's `main`
+with release 8.0.0 (website commit 2d71cc0); the add-on items were replaced by the
+section *With or without yFiles* of `installing.md` after yWorks rejected the add-on
+(`claude/yfiles-restructure.md`). Skipped by decision: a figure rendered with yFiles,
+the editor and display items (no home in the manual), a section on error severities.
+The handoff note this proposal refers to, `release-8_0_0-state.md`, was deleted after
+the release; its manual plan is in the git history (last in 77cf7e7b4).
+
 Proposal for the `manual/` directory of the Jekyll site (`nl-utwente-groove.github.io`).
 Sources: `release/include/CHANGES.md` (8.0.0 section) and `CHANGES-8_0_0.md`, gh #896, and
 the 8.0.0 source tree. Nothing in the website repository was modified for this note.

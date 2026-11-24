@@ -299,9 +299,10 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
    session (considered 2026-11-16, dropped by Arend 2026-11-17): the module name, which
    a session was given, is all the build needs, the compiler names a package that is not
    exported, and the installers' runtime modules are computed by `jdeps`.
-8. **Release 8.0.0** by `release-8_0_0-state.md`; only the core artifact goes to Maven
-   Central. Prepared 2026-11-24 on the branch `prepare-release-8_0_0`; what is left is
-   listed at the top of that note.
+8. **Release 8.0.0**; only the core artifact goes to Maven Central. Released
+   2026-11-24: tag `release-8_0_0` on 77cf7e7b4, the pre-release 99.0.9 and its tag
+   removed. The handoff note `release-8_0_0-state.md`, to which this note refers in
+   places, was deleted after the release (last in 77cf7e7b4).
 
 ## Decided in step 2 (2026-11-16)
 
