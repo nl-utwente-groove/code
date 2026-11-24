@@ -24,8 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -36,11 +40,13 @@ import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.lts.AbstractGraphState;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Randomness;
@@ -193,6 +199,61 @@ public class PersistenceTest {
                 }
             }
         }
+        return result;
+    }
+
+    /**
+     * Tests that the errors on the graph of an error state do not depend on
+     * the liveness of the state's cache. When the graph of such a state is
+     * rebuilt, its property errors are derived from the state's outgoing
+     * transitions, which an unstored state does not keep outside its cache;
+     * so there the cache has to stay (gh #928). In the fixture, the single
+     * rule application leads to a state that violates one of two invariants
+     * and satisfies a forbidden property.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testErrorsSurviveCacheLoss() throws Exception {
+        Grammar grammar = loadGrammar("property-errors");
+        for (String config : new String[] {"", "persistence=none"}) {
+            Randomness.setMasterSeed(42);
+            GTS gts = new GTS(grammar);
+            // collected here rather than taken from the GTS, which an unstored
+            // exploration only enters the retained states into
+            List<AbstractGraphState> errorStates = new ArrayList<>();
+            gts.addLTSListener(new GTSListener() {
+                @Override
+                public void statusUpdate(GTS source, GraphState state, int change) {
+                    if (Flag.FULL.test(change) && state.isError()) {
+                        errorStates.add((AbstractGraphState) state);
+                    }
+                }
+            });
+            ExploreTypeConverter
+                .toExploreType(ExploreConfig.parse(config))
+                .newExploration(gts, null)
+                .play();
+            assertEquals(1, errorStates.size(),
+                         "Config '%s' should find one error state".formatted(config));
+            AbstractGraphState state = errorStates.get(0);
+            Set<String> errors = errorTexts(state);
+            assertEquals(Set
+                .of("Graph fails to satisfy invariant property 'unmarked'",
+                    "Graph satisfies forbidden property 'is-marked'"), errors,
+                         "Config '%s': errors of state %s".formatted(config, state));
+            // what a garbage collection may do to the state at any time
+            state.clearCache();
+            assertEquals(errors, errorTexts(state),
+                         "Config '%s': errors of state %s after losing its cache"
+                             .formatted(config, state));
+        }
+    }
+
+    /** Returns the texts of the errors on the graph of a given state. */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private Set<String> errorTexts(GraphState state) {
+        Set<String> result = new TreeSet<>();
+        state.getGraph().getErrors().forEach(e -> result.add(e.toString()));
         return result;
     }
 

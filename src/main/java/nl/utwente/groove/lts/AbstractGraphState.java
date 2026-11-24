@@ -36,6 +36,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
 import nl.utwente.groove.util.cache.CacheReference;
@@ -275,9 +276,25 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         // been copied to the state; which is to say, as long as it is not closed.
         // Note that closing the state changes its status and should only occur when
         // the exploration asks for it
-        if (isClosed()) {
+        if (isClosed() && !hasErrorsInCacheOnly()) {
             super.clearCache();
         }
+    }
+
+    /**
+     * Indicates if the cache of this state is the only place that holds the
+     * errors on its graph. Normally the errors of an error state are not
+     * kept at all: when the graph is rebuilt, they are derived again from
+     * the graph and from the outgoing transitions of the state (see
+     * {@link StateCache#getGraph()}). A closed state of a non-persistent GTS
+     * does not keep its transitions outside its cache, however, so there
+     * the cache has to stay for as long as the state does (gh #928). This
+     * pins nothing else: an error state is not explored further, so it has
+     * no successors to hold on to.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private boolean hasErrorsInCacheOnly() {
+        return isError() && !getGTS().isPersistent();
     }
 
     @Override
@@ -300,7 +317,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
                 setFrame(getActualFrame().onRemove());
             }
             checkFullConstraints();
-            setCacheCollectable();
+            if (!hasErrorsInCacheOnly()) {
+                setCacheCollectable();
+            }
             fireStatus(oldStatus);
         }
         return result;
