@@ -4,6 +4,58 @@ Handoff note for the release of GROOVE 8.0.0 from `yworks-migration` (merged int
 `master`). Written 2026-09-14, re-checked 2026-09-15, merged with `master` on 2026-09-20;
 the Maven module split (gh #887) is out of scope.
 
+## State on 2026-11-24: prepared, awaiting the tag
+
+yWorks approved pre-release 99.0.9 (Arend, 2026-11-24). This block supersedes the
+checklist further down, which is kept for the record.
+
+Code, two branches in one worktree (`.claude/worktrees/merge-release-7-syntax-help`),
+nothing pushed:
+
+- `merge-release-7-syntax-help`, off `master`: the merge of `release-7`. It carried
+  two fixes of the editor's label syntax help that master lacked, ported by hand to
+  `AspectEditorTab`.
+- `prepare-release-8_0_0`, on top of it: this note, then "Preparing release 8.0.0",
+  the commit to tag. `revision` 8.0.0 in both poms (the unit's pom had been left at
+  7.8.1-SNAPSHOT by the bump of the main pom), `GROOVE_BUILD` and the release heading
+  of `CHANGES.md` dated 24 November 2026: **both carry the date and have to follow if
+  the tag is made on another day.**
+
+Website (`nl-utwente-groove.github.io`), branch `prepare-release-8_0_0` off
+`release-8_0_0`, nothing pushed: the transition-label paragraph of item 1 below, the
+Maven snippet at 8.0.0, `user-ops.gps` at grammar version 3.12, the reference pages and
+figures regenerated from the 8.0.0 build, and `MIGRATION-8_0_0.md` removed, its items
+being done. Left out of the latter, both marked optional there: the `use=young:test:`
+form of the `create` rule, and the venue of the cited paper, which is not known here.
+
+Left, all Arend's:
+
+1. Review and merge the two code branches into `master`; push.
+2. Check that the secret `YFILES_LIB_TOKEN` is still valid: the release job has no
+   skip guard. It was on 2026-11-17, when the pre-release ran.
+3. Tag `release-8_0_0` on the release commit and push the tag. The workflow builds the
+   zips, publishes the release and then builds the installers from its yFiles zip. A
+   failed asset upload now fails the job, which then wants a re-run.
+4. Website: merge `prepare-release-8_0_0` into `release-8_0_0` and that into `main`,
+   once the release is out, since the pages name 8.0.0 as current and link
+   `LICENSE-YFILES.txt` on `master`; push. Open there: whether `LICENSE.md` should
+   mention yFiles.
+5. Maven Central: deploy the core artifact only (third chapter of `release/README.md`).
+6. Bump `revision` to 8.0.1-SNAPSHOT in both poms.
+7. Issues: close gh #896 (the multigraph manual text is on the website branch) and
+   decide whether gh #909 closes with the release or stays open for the removal of
+   JGraph; gh #911 and gh #877 stay open, the release has only the restriction of
+   each.
+8. Residue of the test releases: the pre-release 99.0.9 and its tag on GitHub, local
+   tags `release-99_0_*`.
+9. After the release: delete this note and archive `website-manual-8_0_0.md`,
+   `yfiles-restructure.md` and `yfiles-distribution-options.md` with a status block.
+
+Not done for this release, by earlier decision or for lack of need: a figure rendered
+with yFiles (optional in the manual plan), the editor and display items of the manual
+proposal (no home in the manual), the test of the `.dmg` and the zip on a Mac without
+Java (open decision below).
+
 **Amended 2026-11-16, after the yFiles restructuring** (`yfiles-restructure.md`): there is
 no add-on any more. Where this note speaks of the add-on, read the distribution with
 yFiles (the installers and `groove-x_y_z-yfiles-bin.zip`); the add-on section of

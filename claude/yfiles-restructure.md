@@ -290,13 +290,18 @@ Each step is a branch off `master`; 1 to 3 touch the same files and go in this o
      `release-8_0_0-state.md`. This step's branch conflicted with it in one line of
      `manual/io.md` and is rebased onto it, so it goes in after the merge.
 7. **Pre-release 99.0.9** for yWorks, with a mail saying where each confirmed point can
-   be seen. Wait for their answer.
+   be seen. Published 2026-11-17 (tag `release-99_0_9` on the throwaway branch
+   `test-release`, since deleted), the first run of the workflow of step 5: all jobs
+   green, but the asset `groove-99_0_9-macos-aarch64.dmg` was missing, its upload having
+   failed on a name lookup without failing the job; the workflow now fails on a failed
+   upload (d951538ad). **yWorks gave the go-ahead**, as Arend reported on 2026-11-24.
    The mail does not ask whether the library's module descriptor may be given to an LLM
    session (considered 2026-11-16, dropped by Arend 2026-11-17): the module name, which
    a session was given, is all the build needs, the compiler names a package that is not
    exported, and the installers' runtime modules are computed by `jdeps`.
 8. **Release 8.0.0** by `release-8_0_0-state.md`; only the core artifact goes to Maven
-   Central.
+   Central. Prepared 2026-11-24 on the branch `prepare-release-8_0_0`; what is left is
+   listed at the top of that note.
 
 ## Decided in step 2 (2026-11-16)
 
