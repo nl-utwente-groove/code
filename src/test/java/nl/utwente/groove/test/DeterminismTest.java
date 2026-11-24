@@ -20,6 +20,9 @@ package nl.utwente.groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -195,6 +198,9 @@ public class DeterminismTest {
         }
         this.closureCount = 0;
         StringBuilder result = new StringBuilder();
+        // the states closed so far, collected here rather than taken from the
+        // GTS because an unstored exploration does not enter them there
+        List<AbstractGraphState> closedStates = new ArrayList<>();
         // the signature records the exploration event stream as it occurs,
         // followed by an enumeration of the final GTS. The event stream also
         // covers unstored explorations (persistence=none), whose states and
@@ -222,13 +228,12 @@ public class DeterminismTest {
                 if (Status.Flag.CLOSED.test(change) && state.isClosed()) {
                     result.append("close ").append(state).append('\n');
                     DeterminismTest.this.closureCount++;
+                    if (state instanceof AbstractGraphState closed) {
+                        closedStates.add(closed);
+                    }
                     if (collapseAt == COLLAPSE_ALWAYS
                         || DeterminismTest.this.closureCount == collapseAt) {
-                        for (GraphState s : observed.nodeSet().toArray(new GraphState[0])) {
-                            if (s.isClosed() && s instanceof AbstractGraphState closed) {
-                                closed.clearCache();
-                            }
-                        }
+                        closedStates.forEach(AbstractGraphState::clearCache);
                     }
                 }
             }

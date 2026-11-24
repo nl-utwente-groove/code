@@ -78,6 +78,7 @@ public class StateCache implements Cache {
         this.freezeGraphs = this.record.isCollapse();
         this.graphFactory
             = DeltaHostGraph.getInstance(state.hasSimpleGraph(), this.record.isCopyGraphs());
+        this.transitionsComplete = !state.isClosed() || state.getGTS().isPersistent();
         if (DEBUG && state.isFull()) {
             System.out.printf("Recreating cache for full state %s%n", state);
         }
@@ -400,7 +401,32 @@ public class StateCache implements Cache {
     void clearTransitionCache() {
         this.stubSet = null;
         this.transitionMap = null;
+        this.transitionsComplete = false;
     }
+
+    /**
+     * Indicates if the transition map of this cache is known to hold all
+     * transitions of the state that have been generated so far. This fails
+     * to hold for a closed state of a GTS that does not store its
+     * transitions (see {@link GTS#isPersistent()}), once the cache in
+     * which they were generated is gone: a cache created afterwards starts
+     * from the stored transition stubs, which for such a state are empty
+     * or, after {@link GTS#retainTraces}, restricted to the spanning ones.
+     * The transitions of an open state always live in its cache, which
+     * cannot be cleared until the state is closed.
+     * <p>Whoever derives information from the absence of a transition (as
+     * the {@link MatchCollector} of a child state does, which takes the
+     * matches of rules that the parent transition does not affect from the
+     * parent's transitions) has to test this first.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    boolean hasAllTransitions() {
+        return this.transitionsComplete;
+    }
+
+    /** Flag indicating that the transition map holds all transitions
+     * generated for the state; see {@link #hasAllTransitions()}. */
+    private boolean transitionsComplete;
 
     /**
      * The set of outgoing transitions computed for the underlying graph,
