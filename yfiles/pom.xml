@@ -21,7 +21,7 @@
 		     (m2e workspace resolution) and a command-line build finds the installed
 		     artifact. Update both in the same commit when bumping the version
 		     (release checklist); scripts may override with -Drevision. -->
-		<revision>8.0.0</revision>
+		<revision>8.0.1-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.release>21</maven.compiler.release>
 		<yfiles.version>3.6.0.1</yfiles.version>

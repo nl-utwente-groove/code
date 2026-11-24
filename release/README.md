@@ -153,7 +153,9 @@ Unlike the contents of `include`, neither file ends up in the zips or the instal
 ## Postprocessing
 
 1. In the main `pom.xml`, update the `revision` property (containing the release
-   version `x.y.z`) by increasing `z` and adding the suffix `-SNAPSHOT`. (A
+   version `x.y.z`) by increasing `z` and adding the suffix `-SNAPSHOT`, and
+   give the `revision` of `yfiles/pom.xml` the same value in the same commit:
+   a command-line build of the backend fails while the two differ. (A
    pleasant side effect of the suffix: the Central portal rejects `-SNAPSHOT`
    versions, so an accidental `deploy` between releases cannot publish.)
 
