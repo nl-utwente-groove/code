@@ -3,7 +3,7 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
-Upcoming release (8.0.0)
+Release 8.0.0, 24 November 2026
 -------------------------------
 Major release; `CHANGES-8_0_0.md` expands on every item below
 
@@ -18,6 +18,9 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Editor: one undo step for create-and-label (gh #913), own clipboard, 
   offset paste, line-style and bend fixes
 - Editor: Escape cancels edits (gh #819)
+- Editor: the label syntax help lists the user operations as they are after
+  the user classes have been loaded anew, and no longer keeps closed editors
+  in memory
 
 Release 7.8.0, 16 November 2026
 -------------------------------
@@ -146,6 +149,9 @@ Release 7.6.0, 29 October 2026
 - Too many matches halts exploration gracefully; new `matchBound` grammar property (gh #784)
 - Format errors have severities; warnings no longer block a grammar (gh #885, #904)
 - Duplicate node ids in a host graph merge the nodes (gh #780)
+- String values: the escape character in quoted strings is itself escaped, as
+  documented, and escapes are processed left to right
+- Parallel remark edges between the same nodes are merged into one multi-line remark
 - Quantifier levels on `test:`/`let:` edges are honoured (gh #725); clearer errors
   for disabled units (gh #560)
 - Control: dead out-parameter values no longer distinguish states; expression

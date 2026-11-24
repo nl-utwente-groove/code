@@ -236,6 +236,11 @@ Grammars, rules and the editor
   reaches the type-graph converter, and a type label that is missing where one
   is required is reported as a format error instead of crashing the event thread
   (gh #819).
+- Editor: the label syntax help is rebuilt when the user classes of the grammar
+  have been loaded anew, so that its Ops tab and the tool tips of the user
+  operations show the current ones; they used to show those that were loaded
+  when the editor first opened. An editor that has been closed is no longer
+  kept in memory by the help it showed.
 - Editor: bidirectional edges are merged in preview mode (gh #336); find/replace
   offers labels that fail to type and works when all labels are erroneous
   (gh #701); renaming a resource to a case variant of its name is allowed
