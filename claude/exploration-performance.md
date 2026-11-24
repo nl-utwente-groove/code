@@ -72,9 +72,11 @@ Regular-expression matching with a path cache, NACs. Generated start graphs
 | `start-4-4` | | > 2.2 M | > 16 M | too large, stopped |
 | `start-5-3` minus 1, 2, 3 `b` edges | | > 3.5 M, > 3.8 M, > 3.1 M | | 900 s timeout at 8 GB |
 | `start-4-4` minus 2, 4 `b` edges | | > 3.7 M, > 3.9 M | | 900 s timeout at 8 GB |
-| `start-4-3` | unstored(6) | 7.1 to 7.2 M | | 34 s, 24 s of it collector; count unstable (3.14) |
-| `start-4-3` | unstored(7) | 42 919 210 | | 315 s, 260 s collector; count unstable (3.14) |
-| `start-4-3` | unstored(8) | > 122 M | | 900 s timeout |
+| `start-4-3` | unstored(4) | 456 793 | | with the fix of 3.14; not timed |
+| `start-4-3` | unstored(5) | 6 572 509 | | with the fix of 3.14; not timed |
+| `start-4-3` | unstored(6) | 94 891 993 | | with the fix of 3.14, about 8 minutes; before it 7.1 to 7.2 M, unstable, in 34 s (24 s of it collector) |
+| `start-4-3` | unstored(7) | | | not rerun with the fix; before it 42 919 210 (too low, 3.14) in 315 s, 260 s collector |
+| `start-4-3` | unstored(8) | | | before the fix of 3.14: 900 s timeout at > 122 M |
 | `start-5-3` | `bound=cost:8` | 4 374 | 30 537 | 0.6 s; growth 2.3 per level |
 | `start-5-3` | `bound=cost:13` | 125 518 | | 5.1 s |
 | `start-5-3` | `bound=cost:14` | 208 319 | | 7.9 s |
@@ -90,11 +92,17 @@ count jumps from 131 k at `start-4-3` to over 3 M at the next node counts. Nor c
 stored run reach the long tier's two minutes at all: at about 4 KB retained per state
 (`as-and-bs-4-3`: 563 MB for 131 k) 8 GB holds under 2 M states, some 40 s of
 exploration. The unstored depth-first tree of `start-4-3`, the binary tree's shape, was
-tried next and rejected: its time is nearly all collector time (depth 7: 260 of 315 s),
-and its state count depends on which caches the collector has kept (finding 3.14). The
+tried next and rejected: its time was nearly all collector time (depth 7: 260 of 315 s),
+and its state count depended on which caches the collector had kept (finding 3.14). The
 largest As-and-Bs row is therefore `as-and-bs-5-3-bfs-18`, the stored breadth-first
 exploration of `start-5-3` to depth 18, memory-sized rather than time-sized; it sits
 in the long tier for its heap, not its minutes. The equality rows cover 4.4.4.
+
+The second objection is gone with the fix of 3.14 (2026-11-24), and the first has to be
+measured again, since the fixed runs match afresh wherever a parent's cache is gone and
+discover far more states: the tree to depth 6 has 94.9 M states and takes about 8
+minutes, so depth 5 (6.6 M states) is the candidate for a time-sized unstored row. Its
+time and collector share have not been measured.
 
 ### Mark-Unmark (`Mark-Unmark-List-regexp-benchmark.gps`)
 
@@ -1929,7 +1937,9 @@ builds: `leader-election-14` level over four pairs, `as-and-bs` and `mergers-9-m
 level, `count-100000` 4.9 to 2.1 s, `count-300000` 28.0 to 4.9 s.
 
 **3.14 Unstored bounded depth-first exploration discovers a cache-dependent number of
-states.** High (correctness) / unknown / verified 2026-10-21; filed as gh #928. Found while sizing an
+states.** High (correctness) / unknown / verified 2026-10-21; filed as gh #928. **Fixed
+2026-11-24** on branch `unstored-dfs-state-count` off master (awaiting review; see the
+end of this finding). Found while sizing an
 As-and-Bs long row: `as-and-bs-4-3` under `next=newest cost=uniform bound=cost:5
 persistence=none` discovered 3,063,835 states in one run and 3,006,811 in the next
 (8 GB, JDK 25), and at `bound=cost:6` 7,178,800 and 7,126,885; with
@@ -1947,6 +1957,49 @@ run deduplicates in its transition set but an unstored run turns into extra fres
 states, or the depth bookkeeping of `StackPool` under `readd`. To be filed as an issue
 and found before any unstored row with more than one rule is trusted; the
 `as-and-bs-4-3-unstored-*` rows are not test cases.
+
+*Cause and fix (2026-11-24).* It is the reuse of parent matches, but in the opposite
+direction: the reuse does not add duplicates while the parent's cache lives, it loses
+matches once the cache is gone. For a rule that the parent transition neither enables
+nor disables, `MatchCollector` takes a child's matches from the parent's outgoing
+transitions, and if the parent is closed it does not match at all. A closed state of an
+unstored GTS keeps no transition stubs (`AbstractGraphState.setClosed`, so that it does
+not pin its successors), so its transitions live in its soft cache alone; a cache
+recreated after a collection starts from an empty stub array, and every child created
+after that silently loses the matches of the rules in question, with the subtrees below
+them. All the counts above were therefore too low, the ones with live caches included,
+and the one-rule binary tree was presumably immune because its rule enables itself, and
+a rule that the parent transition enables is matched afresh anyway (not checked).
+`StackPool` is not involved. The fix:
+`StateCache.hasAllTransitions()` (true for an open state, and for a closed one only in a
+persistent GTS; reset by trace retention), tested in the `MatchCollector` constructor,
+which treats a state whose parent fails it like a state without a parent. A live parent
+cache is still reused, and stored runs are unchanged. Counts with the fix, same set-up:
+456,793 at `bound=cost:4` and 6,572,509 at `bound=cost:5`, each identical with and
+without `-XX:SoftRefLRUPolicyMSPerMB=0` (and at depth 5 over two runs without it);
+94,891,993 at `bound=cost:6` (one run, about 8 minutes).
+
+`DeterminismTest` had an unstored case and simulates cache clearing, but took the states
+to clear from the GTS, which an unstored run leaves nearly empty; it now tracks the
+closed states itself, and its `counting persistence=none` case fails without the fix (5
+states instead of 10). `PersistenceTest.testNoneDiscoversUnfolding` pins the unstored
+count to an independent oracle, the number of paths of modifying transitions in the
+stored state space.
+
+The same missing transitions had a second consumer: when the graph of a full error state
+is rebuilt, `StateCache.computeGraph` derives its property and deadlock errors from the
+state's outgoing transitions. For an unstored error state that had lost its cache, every
+invariant was reported as violated and satisfied forbidden properties were not reported
+(a pure deadlock error came back right by coincidence). Fixed on the same branch by
+keeping the cache of an error state of a non-persistent GTS strongly referenced and
+exempt from `clearCache` (`AbstractGraphState.hasErrorsInCacheOnly`); an error state is
+not explored further, so this pins no successors. Test:
+`PersistenceTest.testErrorsSurviveCacheLoss` on the new fixture
+`junit/samples/property-errors.gps`, the first fixture with invariant and forbidden
+properties.
+
+Once the branch is on master, unstored rows with more than one rule can be pinned, at
+the new counts.
 
 ### 4. Allocation on the per-state and per-match path
 
