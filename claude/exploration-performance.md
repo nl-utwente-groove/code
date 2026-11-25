@@ -1787,8 +1787,8 @@ overload that does `iterables.map(Iterable::iterator).toList()`
 transition sets eagerly, which resurrects every cache, rebuilds every stub set and
 `KeySet` transition map, and pins them all via the retained list: an O(N) burst that
 defeats the soft-reference policy for the whole GTS. Make the nested iterator lazy.
-*Done 2026-11-25* on branch `lazy-gts-transition-iteration` off master (tip dbef21e05,
-detached for review): `NestedIterator.newInstance(Stream)` takes an iterable from the
+*Done 2026-11-25*, on master since that day (dbef21e05, branch
+`lazy-gts-transition-iteration`): `NestedIterator.newInstance(Stream)` takes an iterable from the
 stream when it gets to it. Measured with a probe outside the harness (explore, collect,
 get the first transition, collect, iterate the rest; `-Xmx4g -XX:+UseParallelGC
 -XX:SoftRefLRUPolicyMSPerMB=0`, JDK 27, three JVMs per build, alternating) on

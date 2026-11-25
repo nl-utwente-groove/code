@@ -12,7 +12,8 @@ order of attack", then the finding the next item names).
 ## State as of 2026-09-28
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
-master merged in up to `3068fc23e` (2026-09-28; the latest quick-tier baseline, at `1726ed599`, a fresh quick-tier baseline at that merge
+master merged in up to `3068fc23e` (2026-09-28, and again since, last on 2026-11-25 up
+to `dbef21e05`; the next items are findings 3.8 to 3.10, then 3.4; the latest quick-tier baseline, at `1726ed599`, a fresh quick-tier baseline at that merge
 is in the note, stitched from two JVMs after another session disturbed the first run). Everything the branch set out to build is
 done and recorded in the note: the harness with its three tiers and the random-access
 switch; the grammar set (15 grammars, 58 rows); the quick-tier baseline (2026-09-23, re-run
@@ -89,8 +90,8 @@ and outcomes" in the note).
    closed. Section 3: 3.3 done 2026-10-21 on branch `nac-probe-edge` off master
    (ce8f0e842, detached for review): lookup-only `HostFactory.findEdge`, time-neutral,
    leak bounded (one probe per absent content) and removed; figures under 3.3. 3.5 done
-   2026-11-25 on branch `lazy-gts-transition-iteration` off master (dbef21e05, detached
-   for review): the transition set of a GTS is iterated state by state; the iterator
+   2026-11-25, on master (dbef21e05) and merged into this branch (5b7833639): the
+   transition set of a GTS is iterated state by state; the iterator
    used to pin 49 MB on a 31 MB GTS, time-neutral; figures under 3.5. 3.6 measured
    2026-11-25: the collector's pin is real only on grammars with property rules and
    costs 1 to 3 % of the held heap there; dropped by Arend's decision, the branch of
@@ -109,8 +110,8 @@ and outcomes" in the note).
    2026-11-25 (76cd4bb99), issue closed
    (cause: parent-match reuse against a closed unstored parent whose cache was
    collected; all earlier unstored As-and-Bs counts were too low; details at the end of
-   3.14). Once master is merged into this branch (not done yet): unstored
-   multi-rule rows can be pinned, at the new counts (`start-4-3` depth 5: 6,572,509,
+   3.14). Master is merged into this branch (5b7833639, 2026-11-25), so unstored
+   multi-rule rows can now be pinned, at the new counts (`start-4-3` depth 5: 6,572,509,
    depth 6: 94,891,993), and the depth-5 row is worth timing as a time-sized row.
 
 ## Grammar set (complete)
