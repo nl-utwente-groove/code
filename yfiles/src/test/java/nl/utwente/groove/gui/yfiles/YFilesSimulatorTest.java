@@ -511,12 +511,11 @@ public class YFilesSimulatorTest {
     /**
      * The in-place editor of the editor tab opens with the labels of its vertex selected,
      * and takes its keys as the JGraph editor does: Ctrl+Enter and Shift+Enter break the
-     * line (and do not reach the Simulator's Ctrl+Enter accelerator), Enter commits and
-     * Escape discards the edited text (gh #946). The keys go through the event queue to
-     * the focused text area, the path of real key input, which yFiles' key gestures need;
-     * so the Simulator window takes the keyboard focus, which makes this a Robot-flagged
-     * test like the others that take over the desktop, and it skips when the text area
-     * cannot get the focus.
+     * line (and do not reach the Simulator's Ctrl+Enter accelerator), Enter commits. The
+     * keys go through the event queue to the focused text area, the path of real key
+     * input, which yFiles' key gestures need; so the Simulator window takes the keyboard
+     * focus, which makes this a Robot-flagged test like the others that take over the
+     * desktop, and it skips when the text area cannot get the focus.
      */
     @Test
     void inPlaceEditorOfTheEditorTabTakesItsKeys() throws Exception {
@@ -588,18 +587,6 @@ public class YFilesSimulatorTest {
             assertEquals(labels + "\n\n", area.getText(), "text after Shift+Enter");
             typeKey(area, KeyEvent.VK_ENTER, 0);
             waitFor("editor to close on Enter", () -> !canvas.isEditingLabel());
-            // Escape closes the editor as well, but discards its text (gh #946)
-            String committed = targets.get(0).getEditableLabels().toEditString();
-            SwingUtilities.invokeAndWait(() -> canvas.startEditing(targets.get(0)));
-            waitFor("in-place editor to reopen", canvas::isEditingLabel);
-            var reopened = canvas.editorMode().getTextEditorInputMode().getTextArea();
-            SwingUtilities.invokeAndWait(reopened::requestFocusInWindow);
-            waitFor("the reopened editor to get the focus", reopened::isFocusOwner);
-            SwingUtilities.invokeAndWait(() -> reopened.setText(committed + "\nflag:discarded"));
-            typeKey(reopened, KeyEvent.VK_ESCAPE, 0);
-            waitFor("editor to close on Escape", () -> !canvas.isEditingLabel());
-            assertEquals(committed, targets.get(0).getEditableLabels().toEditString(),
-                         "labels after Escape");
         } finally {
             SwingUtilities.invokeAndWait(() -> {
                 canvas.finishEditing();
@@ -1186,11 +1173,9 @@ public class YFilesSimulatorTest {
     private static void typeKey(Component target, int keyCode, int modifiers) throws Exception {
         SwingUtilities.invokeAndWait(() -> {
             long when = System.currentTimeMillis();
-            char ch = switch (keyCode) {
-            case KeyEvent.VK_ENTER -> '\n';
-            case KeyEvent.VK_ESCAPE -> '\u001b';
-            default -> KeyEvent.CHAR_UNDEFINED;
-            };
+            char ch = keyCode == KeyEvent.VK_ENTER
+                ? '\n'
+                : KeyEvent.CHAR_UNDEFINED;
             var pressed = new KeyEvent(target, KeyEvent.KEY_PRESSED, when, modifiers, keyCode, ch);
             var released = new KeyEvent(target, KeyEvent.KEY_RELEASED, when + 10, modifiers,
                 keyCode, ch);

@@ -1814,6 +1814,31 @@ medium / medium. `lts/MatchCollector.java:68,390`: the collector holds
 transitions and stubs cannot be collected. Constructing the collector also forces
 `computeTransitionMap()` on the parent even when no step reuses parent matches.
 Suggestion: hold the parent state and fetch the map lazily inside `collectMatches`.
+*Measured 2026-11-25*: real, but 1 to 3 % of the strongly held heap and only on
+grammars with property rules; recommended not to merge, awaiting Arend's decision.
+The collector is created on the first `computeMatches`, which for a state of an
+ordinary grammar is when the state is explored: the pin then lasts for the exploration
+of the child and after that hangs from the child's soft cache, which costs nothing. A
+grammar with property rules (invariant, forbidden or condition) is different: the
+properties are a constraint attempt that `checkInitConstraints` runs when the state is
+added, so every state of the frontier has its collector, and holds its parent's map
+strongly. Probe on `car-platooning` `start-05` (three condition rules, breadth-first,
+soft references cleared at every collection): at 60,000 of 110,366 states 12,663 open
+states held 5,509 parent maps (28,183 transitions) whose parents' caches were
+collectable, and with a 300 MB heap 5,689 maps (31,675 transitions) were alive through
+collectors alone. The variant on branch `match-collector-parent-map` off master
+(66feef1c6, one commit, not gated) fetches the map from the parent's cache per
+`collectMatches` call in a persistent GTS and keeps holding it in one that is not
+persistent, where the collector is the only place the transitions survive the parent's
+cache (gh #928). Heap in use after a forced collection at every 20,000 states, in MB,
+master against variant, two JVMs each, reproducible to 0.5 MB: 60.4/58.4, 114.5/111.2,
+111.2/108.6, 117.9/115.2, 91.4/90.3; run time 3.5 against 3.4 s, within the noise. The
+second half of the finding does not hold up, going by the code (not counted): the map
+is used by every step whose rule is not disabled, and through the diamond check by
+every step that finds a match, so only a collector all of whose steps are disabled
+and without matches fetches it for nothing. What the same samples show on the side:
+the frontier itself is the cost, 114.5 MB strongly held at 40,000 states (15,791 of
+them open) against 31 MB for the finished GTS, that is roughly 6 KB per open state.
 
 **3.7 Erasing an edge into a `ValueNode` materialises the whole in-edge store.** High /
 small / medium to high. `transform/RuleApplication.java:651-662`: `removeEdges` calls
@@ -2537,7 +2562,9 @@ the exploration thread itself, uncontended.
    3.1 done (item 4); 3.2 fixed on master in 19dbd4194, time-neutral (see there); 3.3
    done 2026-10-21 on branch `nac-probe-edge`, time-neutral, leak bounded and removed
    (see there); 3.5 done 2026-11-25 on branch `lazy-gts-transition-iteration`, a memory
-   fix outside the exploration path (see there). Left: 3.6, 3.8 to 3.10 (cache pinning
+   fix outside the exploration path (see there); 3.6 measured 2026-11-25, 1 to 3 % of
+   the held heap on grammars with property rules, variant on branch
+   `match-collector-parent-map`, recommended not to merge. Left: 3.8 to 3.10 (cache pinning
    and tooling costs, to be judged on `retMB` and `gc ms` of the large rows), 3.4.
 9. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
    `Search` reuse, NAC context maps, algebra reflection, `Valuator` lambdas, match-set

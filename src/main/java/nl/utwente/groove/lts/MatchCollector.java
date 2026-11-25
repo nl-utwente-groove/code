@@ -63,11 +63,7 @@ public class MatchCollector {
         this.state = state;
         this.record = state.getRecord();
         this.matchBound = state.getGTS().getGrammar().getProperties().getMatchBound();
-        // the parent's transitions can only stand in for the matches of this
-        // state if none of them is missing: a closed parent that does not
-        // store its transitions has lost them if its cache was collected in
-        // the meantime, and everything then has to be matched afresh (gh #928)
-        if (state instanceof GraphNextState ns && ns.source().getCache().hasAllTransitions()) {
+        if (state instanceof GraphNextState ns) {
             GraphState parent = ns.source();
             this.parentClosed = parent.isClosed();
             this.parentTransMap = parent.getCache().getTransitionMap();
