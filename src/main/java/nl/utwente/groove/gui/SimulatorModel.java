@@ -43,7 +43,6 @@ import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSChangeListener;
-import nl.utwente.groove.lts.GTSCounter;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
@@ -740,7 +739,6 @@ public class SimulatorModel implements Cloneable {
             if (gts != null) {
                 gts.addLTSListener(this.ltsListener);
             }
-            getGTSCounter().setGTS(gts);
             this.ltsListener.clear();
             this.gts = gts;
             this.changes.add(Change.GTS);
@@ -1452,13 +1450,6 @@ public class SimulatorModel implements Cloneable {
     public String toString() {
         return "Simulator model for " + this.grammar.getId();
     }
-
-    /** Returns a counter registering all kinds of counts for the currently loaded GTS. */
-    public GTSCounter getGTSCounter() {
-        return this.gtsCounter;
-    }
-
-    private final GTSCounter gtsCounter = new GTSCounter();
 
     /**
      * Starts a transaction.
