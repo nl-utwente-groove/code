@@ -1787,6 +1787,25 @@ overload that does `iterables.map(Iterable::iterator).toList()`
 transition sets eagerly, which resurrects every cache, rebuilds every stub set and
 `KeySet` transition map, and pins them all via the retained list: an O(N) burst that
 defeats the soft-reference policy for the whole GTS. Make the nested iterator lazy.
+*Done 2026-11-25* on branch `lazy-gts-transition-iteration` off master (tip dbef21e05,
+detached for review): `NestedIterator.newInstance(Stream)` takes an iterable from the
+stream when it gets to it. Measured with a probe outside the harness (explore, collect,
+get the first transition, collect, iterate the rest; `-Xmx4g -XX:+UseParallelGC
+-XX:SoftRefLRUPolicyMSPerMB=0`, JDK 27, three JVMs per build, alternating) on
+`car-platooning` `start-05` (110,366 states, 369,601 transitions): the explored GTS
+retains 31 MB; before, the first `next()` took 46 to 50 ms and the iterator then pinned
+49 MB, 1.6 times the GTS itself; after, 4 to 5 ms and nothing measurable (-3 to -4 MB,
+the noise of the baseline). One pass takes the same time in both builds (58 to 62
+against 53 to 57 ms), so this is a memory fix only: about 130 bytes per transition that
+a walk over the transitions no longer holds at once. The users are the LTS export
+(`WriterExporter`, `GTSFragment.view`), the LTS panel (`LTSGraphViewModel.reloadGraph`)
+and `GTSCounter`; none of them is on the exploration path, so no harness row sees it.
+Behaviour change: the node set is no longer read out up front, so a state added during
+the iteration now fails it (`TreeHashSet` iterators are fail-fast) instead of being
+missed; the two Simulator-side users iterate the node set themselves just before, and
+the export runs after the exploration. Tests:
+`NestedIteratorTest`, `TransitionSetTest` (both fail without the fix). Not measured: the
+smallest heap in which an export of a large GTS completes, before and after.
 
 **3.6 `MatchCollector` pins the parent's transition map.** Medium (memory, inference) /
 medium / medium. `lts/MatchCollector.java:68,390`: the collector holds
@@ -2517,8 +2536,9 @@ the exploration thread itself, uncontended.
    certificate map, the interning edge probe. Each is small and independently measurable.
    3.1 done (item 4); 3.2 fixed on master in 19dbd4194, time-neutral (see there); 3.3
    done 2026-10-21 on branch `nac-probe-edge`, time-neutral, leak bounded and removed
-   (see there). Left: 3.5, 3.6, 3.8 to 3.10 (cache pinning and tooling costs, to be
-   judged on `retMB` and `gc ms` of the large rows), 3.4.
+   (see there); 3.5 done 2026-11-25 on branch `lazy-gts-transition-iteration`, a memory
+   fix outside the exploration path (see there). Left: 3.6, 3.8 to 3.10 (cache pinning
+   and tooling costs, to be judged on `retMB` and `gc ms` of the large rows), 3.4.
 9. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
    `Search` reuse, NAC context maps, algebra reflection, `Valuator` lambdas, match-set
    sizing.

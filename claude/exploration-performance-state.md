@@ -88,8 +88,11 @@ and outcomes" in the note).
    for after-run access, 2.7 a robustness fix, 2.6 not worth a commit. Section 2 is
    closed. Section 3: 3.3 done 2026-10-21 on branch `nac-probe-edge` off master
    (ce8f0e842, detached for review): lookup-only `HostFactory.findEdge`, time-neutral,
-   leak bounded (one probe per absent content) and removed; figures under 3.3. Left in
-   section 3: 3.5, 3.6, 3.8 to 3.10, 3.4.
+   leak bounded (one probe per absent content) and removed; figures under 3.3. 3.5 done
+   2026-11-25 on branch `lazy-gts-transition-iteration` off master (dbef21e05, detached
+   for review): the transition set of a GTS is iterated state by state; the iterator
+   used to pin 49 MB on a 31 MB GTS, time-neutral; figures under 3.5. Left in
+   section 3: 3.6, 3.8 to 3.10, 3.4.
 5. Done 2026-10-21: As-and-Bs cannot fill the long tier's minutes (intermediate
    `b`-edge densities tried, all over 3 M states; 4 KB retained per state caps a stored
    run at some 40 s in 8 GB; the unstored depth-first tree is collector-bound and its
@@ -97,10 +100,11 @@ and outcomes" in the note).
    stored breadth-first to depth 18 (883591 states, 29 s), in the long tier for
    its heap. **New finding 3.14** (unstored bounded DFS discovers a cache-dependent
    number of states; stored runs deterministic under cache loss): filed as gh #928 (2026-10-30).
-   **Fixed 2026-11-24** on branch `unstored-dfs-state-count` off master, awaiting review
+   **Fixed 2026-11-24** on branch `unstored-dfs-state-count`, on master since
+   2026-11-25 (76cd4bb99), issue closed
    (cause: parent-match reuse against a closed unstored parent whose cache was
    collected; all earlier unstored As-and-Bs counts were too low; details at the end of
-   3.14). After it is merged into master and master into this branch: unstored
+   3.14). Once master is merged into this branch (not done yet): unstored
    multi-rule rows can be pinned, at the new counts (`start-4-3` depth 5: 6,572,509,
    depth 6: 94,891,993), and the depth-5 row is worth timing as a time-sized row.
 
