@@ -29,11 +29,13 @@ import nl.utwente.groove.cli.Generator;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.ExploreResult.Lasso;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
@@ -177,6 +179,35 @@ public class LTLTest {
             return exploration.getResult();
         } catch (FormatException e) {
             throw Exceptions.illegalState("%s", e);
+        }
+    }
+
+    /**
+     * Tests model checking on the fly, which explores every state by a
+     * nested strategy of its own: the result and the state space must be
+     * those of model checking the explored state space, and the nested
+     * strategy must not have marked the states of the GTS as known (which,
+     * done once per state, is quadratic in the number of states).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testOnTheFly() throws Exception {
+        prepare("circular-buffer");
+        int stateCount = this.gts.nodeCount();
+        int transitionCount = this.gts.edgeCount();
+        // a property that holds, so that the product is explored in full
+        ExploreType exploreType
+            = new LTLExploreType(LTLExploreType.Kind.PLAIN, "G !nosuchrule", null);
+        GTS fresh = exploreType.newGTS(Groove.loadGrammar("junit/samples/circular-buffer"));
+        Exploration exploration = exploreType.newExploration(fresh, null);
+        exploration.play();
+        Assert.assertTrue(exploration.getResult().isEmpty());
+        assertEquals(stateCount, fresh.nodeCount());
+        assertEquals(transitionCount, fresh.edgeCount());
+        for (GraphState state : fresh.nodeSet()) {
+            Assert
+                .assertFalse("State %s is marked as known".formatted(state),
+                             state.hasFlag(Flag.KNOWN));
         }
     }
 

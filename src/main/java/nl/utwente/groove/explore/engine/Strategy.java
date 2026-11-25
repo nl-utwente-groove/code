@@ -25,6 +25,7 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.match.MatchBoundException;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * A strategy defines an order in which the states of a graph transition system
@@ -74,10 +75,43 @@ public abstract class Strategy {
      * so that any enclosing strategy or exploration also halts
      */
     final public void play() throws MatchBoundException {
+        play(true);
+    }
+
+    /**
+     * Plays out this strategy as a step in the play of another strategy on
+     * the same GTS, until the halt condition kicks in, the thread is
+     * interrupted or the strategy is exhausted.
+     * In contrast to {@link #play()}, this does not mark the states of the
+     * GTS as known, which is linear in the size of the GTS: for a strategy
+     * that is nested once per state, that makes the enclosing play quadratic.
+     * The marks that the enclosing strategy set when it started are still
+     * there, on the states that no nested play has explored since. The states
+     * added to the GTS after that have none, so this play does not continue
+     * into them through transitions it finds present. That is only sound if
+     * there is nothing to continue into: every earlier nested play must have
+     * run to completion, leaving none of the states it added for a later one
+     * to explore.
+     * @throws MatchBoundException if the match bound was exceeded during
+     * exploration; see {@link #play()}
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    final public void playNested() throws MatchBoundException {
+        play(false);
+    }
+
+    /**
+     * Plays out this strategy.
+     * @param collectKnown if {@code true}, the states of the GTS are
+     * first marked as known
+     */
+    private void play(boolean collectKnown) throws MatchBoundException {
         var gts = this.gts;
         assert gts != null : "GTS not initialised";
         prepare(gts, this.startState);
-        collectKnownStates(gts);
+        if (collectKnown) {
+            collectKnownStates(gts);
+        }
         this.interrupted = false;
         try {
             while (!this.halt.getAsBoolean() && hasNext() && !testInterrupted()) {

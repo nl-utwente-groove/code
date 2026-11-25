@@ -412,7 +412,10 @@ public class LTLStrategy extends Strategy {
     private void exploreGraphState(GraphState state) {
         if (!state.isClosed()) {
             this.stateStrategy.setState(state);
-            this.stateStrategy.play();
+            // nested, since this happens once per state: the single-state
+            // exploration completes the transient successors it adds, so
+            // no later one has to continue into them
+            this.stateStrategy.playNested();
         }
     }
 
