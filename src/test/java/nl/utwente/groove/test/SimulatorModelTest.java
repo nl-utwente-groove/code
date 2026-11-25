@@ -43,6 +43,7 @@ import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GTSCounter;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
@@ -127,6 +128,25 @@ public class SimulatorModelTest {
     static private final int FERRYMAN_STATES = 114;
     /** Known transition count of {@link #GTS_FIXTURE}. */
     static private final int FERRYMAN_TRANSITIONS = 198;
+
+    /**
+     * Tests that the model keeps no statistics of the GTS it holds: a
+     * {@link GTSCounter} hooked onto the GTS is kept up to date during every
+     * exploration, which costs time and an entry per open state, for figures
+     * that nothing in the Simulator reads.
+     */
+    @Test
+    public void testGtsHasNoCounter() throws IOException {
+        SimulatorModel model = new SimulatorModel(option -> false);
+        var store = new SystemStore(new File(GTS_FIXTURE), false);
+        store.reload();
+        model.setGrammar(store);
+        assertTrue(model.resetGTS());
+        GTS gts = model.getGTS();
+        assertNotNull(gts);
+        assertFalse(gts.getGTSListeners().stream().anyMatch(l -> l instanceof GTSCounter),
+                    "The GTS of a simulator model should not have a counter");
+    }
 
     /**
      * Drives the GTS/state/match selection layer headlessly: creates a GTS,
