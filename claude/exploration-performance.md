@@ -1897,7 +1897,8 @@ interrupted explorations leak them for the run. Track only the count. Also
 `Flag.values()` is cloned per state at `:47,72,115`; `GTS.java:1039` shows the cached
 `FLAG_ARRAY` pattern.
 *Done 2026-11-25* on branch `simulator-unused-gts-counter` off master (b3b9d4197,
-awaiting review; the GUI tests were not run), by a different remedy than suggested. The
+awaiting review; the GUI tests pass, 23 tests in 8 classes), by a different remedy than
+suggested. The
 pin is as described but small. Probe on `car-platooning` `start-05` (breadth-first, soft
 references cleared at every collection, heap after a forced collection every 20,000
 states, two JVMs each, reproducible to 0.1 MB): the map has exactly one entry per open

@@ -105,7 +105,7 @@ and outcomes" in the note).
    stored run, 25 % of an unstored bounded one at the Generator's default verbosity);
    3.9 on `simulator-unused-gts-counter` (b3b9d4197; `SimulatorModel` kept a
    `GTSCounter` that nothing reads, removed there; touches `gui/`, and the GUI tests
-   were not run, which needs Arend's go-ahead since they open windows); 3.10 on
+   pass, 23 tests in 8 classes, run with Arend's go-ahead); 3.10 on
    `ltl-nested-state-exploration` (70e9e989d; the known-state walk is harmless in the
    Simulator but ran once per state in LTL model checking, 42.7 to 2.6 s at 110,366
    states, through `Strategy.playNested()`). Left in section 3: 3.4.
