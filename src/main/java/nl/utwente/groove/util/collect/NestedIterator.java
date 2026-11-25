@@ -84,8 +84,15 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
         return new NestedIterator<>(Arrays.stream(iterables).map(Iterable::iterator).toList());
     }
 
-    /** Creates a new iterator from a stream of iterables. */
+    /**
+     * Creates a new iterator from a stream of iterables.
+     * The stream is consumed lazily: an iterable is only taken from the stream,
+     * and asked for its iterator, once the preceding ones are exhausted. This
+     * matters if the iterables are expensive to produce or to hold on to, as are
+     * the transition sets of the states of a GTS. The other side of this is that
+     * the source of the stream should not be modified while the iteration lasts.
+     */
     static public <T> Iterator<T> newInstance(Stream<Iterable<? extends T>> iterables) {
-        return new NestedIterator<>(iterables.map(Iterable::iterator).toList());
+        return new NestedIterator<>(iterables.map(Iterable::iterator).iterator());
     }
 }
