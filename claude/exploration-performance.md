@@ -1863,6 +1863,32 @@ Medium / small / medium. `explore/util/StatisticsReporter.java:487-490`, registe
 `DeltaHostGraph` of every added state just to average node/edge counts, including states
 never explored and states whose cache is collapsed before exploration. Gate behind
 `Verbosity.HIGH` or compute lazily at report time.
+*Done 2026-11-25* on branch `statistics-graph-counter-gate` off master (c43b9ae78,
+awaiting review), for a narrower case than the finding states. For a stored exploration
+the counter costs nothing: `GTS.addState` puts the state in the state set first, whose
+`getCode` builds the graph to compute the certificate (or the hash of the node and edge
+sets under equality collapse), so the graph is there when the listeners are notified.
+Probe on `car-platooning` `start-05`: all 110,366 added states had their graph when the
+counter was reached, and run time and allocation are level with and without it (1.9 to
+2.2 s, 5.4 to 5.6 GB, three JVMs each). The cost is real where nothing else builds the
+graph: without persistence there is no state set, and a state beyond the bound is added
+but never explored (`StackPool.add` drops it), so on a grammar without property rules
+the counter was the only reason the graphs of the leaves were built. `Generator` at its
+default verbosity, depth-first without persistence, four JVMs per build, alternating:
+`generate-binary-tree` to bound 9 (4,037,914 states) 14.7 to 15.5 s before and 11.0 to
+11.9 s after (a profile of the old build has 32 % of the samples under
+`GraphCounter.addUpdate`); As-and-Bs (`start`) to bound 5 (1,327,204 states) 3.7 to
+4.3 s before and 3.5 to 3.9 s after. A grammar with property rules does not gain, since
+`checkInitConstraints` matches them when the state is added (`car-platooning` to bound 7,
+7.5 M states: 56 to 58 s with and without a counting listener). The fix registers the
+counter at high verbosity only, the one level that prints its two averages, and omits
+them from a report when nothing was counted; the run log of the `Generator` records the
+high-verbosity statistics at any console verbosity, so the `Generator` constructs the
+reporter at high verbosity when it is logging (with `-v 0 -l` the log used to say
+`NaN`). Rejected: counting at close time, when the graph exists anyway, since that
+changes the average from the discovered to the explored states for every run that stops
+early. Test: `StatisticsReporterTest` (fails without the fix). No harness row sees
+this: the harness does not use the reporter.
 
 **3.9 `lts.GTSCounter` pins every non-full state (GUI only).** Medium / small / high.
 `lts/GTSCounter.java:81,190`: a `HashMap<GraphState,List<RuleTransition>>` holds strong
@@ -1870,11 +1896,63 @@ references to each non-full state and its incoming transitions until it goes FUL
 interrupted explorations leak them for the run. Track only the count. Also
 `Flag.values()` is cloned per state at `:47,72,115`; `GTS.java:1039` shows the cached
 `FLAG_ARRAY` pattern.
+*Done 2026-11-25* on branch `simulator-unused-gts-counter` off master (b3b9d4197,
+awaiting review; the GUI tests were not run), by a different remedy than suggested. The
+pin is as described but small. Probe on `car-platooning` `start-05` (breadth-first, soft
+references cleared at every collection, heap after a forced collection every 20,000
+states, two JVMs each, reproducible to 0.1 MB): the map has exactly one entry per open
+state (6,097, 15,791, 12,664, 12,821 and 4,864 at the five samples, with 10,694 to
+46,516 transitions in the lists), and the heap held with the counter is 52.5, 108.3,
+104.5, 110.9 and 83.3 MB against 51.5, 105.7, 102.4, 109.0 and 82.6 MB without: 0.7 to
+2.6 MB, 1 to 2.5 %, about 165 bytes per open state next to the 6 KB the frontier holds
+for it, and 0.1 MB when the run is complete. An interrupted exploration keeps the
+entries until the GTS is replaced (`setGTS` clears the map), but the GTS holds those
+states anyway, so this is no leak beyond the lifetime of the GTS. In time the counter as
+a whole costs about 5 %: 1.92 to 1.99 s per warm run with it (one of six at 2.31 s)
+against 1.76 to 1.88 s without (three JVMs each, alternating); how much of that is the
+map and the `Flag.values()` clones was not separated, because of what turned up next:
+`SimulatorModel.getGTSCounter()` has no caller, in the Simulator or in the yFiles unit,
+and has had none since the code came into this repository. The Simulator maintained the
+counter for nobody. The fix removes the field, the accessor and the registration from
+`SimulatorModel`, which takes the whole cost away; `GTSCounter` itself is unchanged and
+is now used by `RecipeTest` only, so its map and its clones no longer matter. Test:
+`SimulatorModelTest.testGtsHasNoCounter` (fails without the fix). Not measured: the
+cost inside the Simulator itself, where the exploration also pays for the copy mode
+and the display.
 
 **3.10 `Strategy.collectKnownStates` walks the whole GTS on every `play()`.** Low (CLI)
 to medium (GUI) / small / high. `explore/engine/Strategy.java:80,132-136`; the GUI
 re-invokes `play()` on a large GTS every time the user continues exploring. Skip when
 the GTS holds only the start state, or keep a "known up to number n" watermark.
+*Done 2026-11-25* on branch `ltl-nested-state-exploration` off master (70e9e989d,
+awaiting review), for a caller the finding does not name. The walk itself is harmless
+where the finding looks for it: probe on `car-platooning` `start-05` (110,366 states),
+1.2 to 2.3 ms per walk once warm (14 ms the first time), against 64 to 153 ms for the
+traversal of the finished GTS that the flags enable when an exploration is continued,
+and 0.9 ms for a single-state exploration (`ExploreStateStrategy`, one per click in the
+Simulator), nearly all of it the walk. The caller that pays is LTL model checking:
+`LTLStrategy` explores every state of the product through an `ExploreStateStrategy` of
+its own, played once per state, so checking on the fly walked the whole GTS per state
+and was quadratic. A property that holds (`G !nosuchrule`, so that the product is
+explored in full), two JVMs per build, alternating: 110,366 states 42.6 to 42.8 s
+before and 2.4 to 2.7 s after, which is what the plain exploration takes; 4,881 states
+(`start-04`) 0.45 to 0.51 s before and 0.39 to 0.42 s after; states, transitions and
+verdict identical. The fix is `Strategy.playNested()`, which plays without the walk,
+used by `LTLStrategy` for its single-state explorations. The flags set by the enclosing
+play stay in force, so states that were in the GTS before the check are continued into
+as before; the states added during the check have no flag, which is sound because the
+flag only matters for a state that is explored while it already has outgoing
+transitions to targets that need exploring, and a single-state exploration closes its
+state and completes the transient successors it adds. Neither suggestion of the finding
+was taken: a GTS that holds only the start state is already cheap to walk, and a
+watermark needs a per-state epoch or a record of the states a play touched. Skipping
+the walk in `ExploreStateStrategy` altogether was rejected: going by the code (not
+tried), exploring a state in the Simulator would then no longer continue into a
+transient successor added by applying a match by hand. Test: `LTLTest.testOnTheFly`
+(fails without the fix). Not covered by a test: a model check on a GTS with open
+transient states left by an interrupted exploration. The coverage gap "LTL model
+checking" under "Coverage" is what hid this: no harness row runs the nested depth-first
+strategies.
 
 **3.11 `Factory` dependency tracking leaks every rule application into the `Grammar`.**
 High (memory, unbounded) / small / verified by measurement. `util/Factory.java:46-55,
@@ -2565,8 +2643,14 @@ the exploration thread itself, uncontended.
    (see there); 3.5 done 2026-11-25 on branch `lazy-gts-transition-iteration`, a memory
    fix outside the exploration path (see there); 3.6 measured 2026-11-25, 1 to 3 % of
    the held heap on grammars with property rules, dropped as not worth its footprint
-   (see there). Left: 3.8 to 3.10 (cache pinning
-   and tooling costs, to be judged on `retMB` and `gc ms` of the large rows), 3.4.
+   (see there). 3.8 to 3.10 done 2026-11-25, each on its own branch off master and
+   awaiting review, and each different from what the finding said (see there): 3.8
+   costs nothing in a stored run and up to a quarter of an unstored bounded one
+   (`statistics-graph-counter-gate`); 3.9 is a counter the Simulator kept for nobody,
+   about 5 % of an exploration (`simulator-unused-gts-counter`); 3.10 is harmless in the
+   Simulator and made LTL model checking quadratic, 42.7 against 2.6 s at 110,366 states
+   (`ltl-nested-state-exploration`). None of the three shows on a harness row. Left:
+   3.4.
 9. Section 4 (allocation churn) as opportunity permits, largest expected payoff first:
    `Search` reuse, NAC context maps, algebra reflection, `Valuator` lambdas, match-set
    sizing.

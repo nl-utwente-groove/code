@@ -13,7 +13,7 @@ order of attack", then the finding the next item names).
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
 master merged in up to `3068fc23e` (2026-09-28, and again since, last on 2026-11-25 up
-to `dbef21e05`; the next items are findings 3.8 to 3.10, then 3.4; the latest quick-tier baseline, at `1726ed599`, a fresh quick-tier baseline at that merge
+to `dbef21e05`; the next item is finding 3.4, then section 4; the latest quick-tier baseline, at `1726ed599`, a fresh quick-tier baseline at that merge
 is in the note, stitched from two JVMs after another session disturbed the first run). Everything the branch set out to build is
 done and recorded in the note: the harness with its three tiers and the random-access
 switch; the grammar set (15 grammars, 58 rows); the quick-tier baseline (2026-09-23, re-run
@@ -98,7 +98,17 @@ and outcomes" in the note).
    the measured variant is deleted (figures and the variant's design under 3.6).
    Side observation, not a finding yet: the breadth-first frontier holds roughly 6 KB per
    open state strongly (114.5 MB at 40,000 states of car-platooning `start-05` against
-   31 MB for the finished GTS). Left in section 3: 3.8 to 3.10, 3.4.
+   31 MB for the finished GTS). 3.8 to 3.10 done 2026-11-25, each on its own branch off
+   master, gated (default suite, null check; determinism and smoke for 3.8 and 3.10)
+   and detached for review, figures under the findings: 3.8 on
+   `statistics-graph-counter-gate` (c43b9ae78; the graph counter costs nothing in a
+   stored run, 25 % of an unstored bounded one at the Generator's default verbosity);
+   3.9 on `simulator-unused-gts-counter` (b3b9d4197; `SimulatorModel` kept a
+   `GTSCounter` that nothing reads, removed there; touches `gui/`, and the GUI tests
+   were not run, which needs Arend's go-ahead since they open windows); 3.10 on
+   `ltl-nested-state-exploration` (70e9e989d; the known-state walk is harmless in the
+   Simulator but ran once per state in LTL model checking, 42.7 to 2.6 s at 110,366
+   states, through `Strategy.playNested()`). Left in section 3: 3.4.
 5. Done 2026-10-21: As-and-Bs cannot fill the long tier's minutes (intermediate
    `b`-edge densities tried, all over 3 M states; 4 KB retained per state caps a stored
    run at some 40 s in 8 GB; the unstored depth-first tree is collector-bound and its
@@ -189,6 +199,18 @@ JVM per row), pin counts, one commit per grammar; only the harness reads
   to the harness command with `warmups=0 runs=1`, then `jfr view hot-methods`,
   `jfr view allocation-by-site` and `jfr print --events jdk.ExecutionSample` with an awk
   count of the first `StateCache` frame per sample give the breakdown in a minute.
+- A probe outside the harness can sit in package `nl.utwente.groove.lts` on the class
+  path, ahead of `target/classes`, and so reach package-private state such as
+  `StateCache.hasGraph()` (3.8). For an A/B of two builds, put a directory with the
+  other build's changed classes ahead of `target/classes`; after a "fails without the
+  fix" toggle, recompile before measuring (a stale `target/classes` made 3.8 look
+  level for one round).
+- A state beyond the bound of a depth-first run without persistence is added to the
+  GTS but never explored, and nothing builds its graph unless the grammar has property
+  rules or a listener asks for it (3.8).
+- A sub-agent inherits the worktree isolation of the session at the time it runs, not
+  at the time it is started: start a gate agent from inside the branch's worktree and
+  stay there until it reports, one branch at a time.
 - `PlanSearchEngine.PRINT` (a compile-time constant) prints every search plan on
   construction; flip it, run one row, flip it back. The planner is greedy and prefers
   the item that binds the fewest unbound nodes, so an edge to an already bound node
