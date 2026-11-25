@@ -76,6 +76,10 @@ public class StatisticsReporter extends AExplorationReporter {
     /**
      * Constructs a exploration statistics object at a
      * given verbosity level.
+     * @param verbosity the default verbosity of the report, which is also
+     * the highest verbosity for which the statistics are collected: a
+     * {@linkplain #getReport(Verbosity) report} at a higher level lacks
+     * the figures that are only collected for that level
      * @param preciseSpace flag determining whether space usage is reported precisely
      * (which may consume a lot of time in case of large state space)
      */
@@ -112,6 +116,12 @@ public class StatisticsReporter extends AExplorationReporter {
         this.startUsedMemory = runTime.totalMemory() - runTime.freeMemory();
         if (!this.verbosity.isLow()) {
             gts.addLTSListener(this.gtsCounter);
+        }
+        if (this.verbosity.isHigh()) {
+            // only for the level that reports its figures: the graph counter
+            // builds the graph of every added state, which nothing else does
+            // for a state that is neither stored nor explored (such as those
+            // beyond the bound of an exploration without persistence)
             gts.addLTSListener(this.graphCounter);
         }
         // clear any previous report
@@ -280,6 +290,10 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(HIGH, "%nGraph element count%n");
         emit(HIGH, intFormat, "Factory nodes:", factory.getNodeCount());
         emit(HIGH, intFormat, "Factory edges:", factory.getEdgeCount());
+        if (this.graphCounter.getStateCount() == 0) {
+            // the graphs were not counted (see start)
+            return;
+        }
         // divide by the counter's own state count: the GTS counts reflect
         // only the retained states, which under persistence=none is a
         // fraction of what was discovered and counted

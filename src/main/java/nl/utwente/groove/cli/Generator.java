@@ -55,6 +55,7 @@ import nl.utwente.groove.lts.LTSLabels;
 import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Resources;
+import nl.utwente.groove.util.Verbosity;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -485,7 +486,11 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         // the statistics are collected once, and emitted by the console
         // and run log reporters; these come last, to ensure that any
         // messages from the other reporters are included
-        StatisticsReporter statistics = new StatisticsReporter(getVerbosity(), isLogging());
+        // the run log records the high-verbosity statistics, whatever the
+        // verbosity of the console
+        StatisticsReporter statistics = new StatisticsReporter(isLogging()
+            ? Verbosity.HIGH
+            : getVerbosity(), isLogging());
         result.add(statistics);
         result.add(new ConsoleReporter(context, getVerbosity(), statistics));
         if (isLogging()) {
