@@ -20,12 +20,15 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * An iterator obtained by <i>flattening</i> other iterators. The inner
  * iterators are accessed one by one, whenever the previous is exhausted.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class NestedIterator<T> extends AbstractNestedIterator<T> {
     /**
      * Constructs a nested iterator from a given list of iterators.

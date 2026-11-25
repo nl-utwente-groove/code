@@ -19,6 +19,9 @@ package nl.utwente.groove.util.collect;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * An iterator that is constructed from a top-level iteration that yields
  * elements which are themselves iterators. The top-level iteration works
@@ -29,10 +32,15 @@ import java.util.NoSuchElementException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 abstract public class AbstractNestedIterator<T> implements Iterator<T> {
     @Override
     public void remove() {
-        this.latestProductiveInnerIter.remove();
+        var iter = this.latestProductiveInnerIter;
+        if (iter == null) {
+            throw new IllegalStateException();
+        }
+        iter.remove();
     }
 
     @Override
@@ -46,8 +54,10 @@ abstract public class AbstractNestedIterator<T> implements Iterator<T> {
     @Override
     public T next() {
         if (hasNext()) {
-            this.latestProductiveInnerIter = this.currentInnerIter;
-            return this.currentInnerIter.next();
+            var iter = this.currentInnerIter;
+            assert iter != null : "Guaranteed by hasNext()";
+            this.latestProductiveInnerIter = iter;
+            return iter.next();
         } else {
             throw new NoSuchElementException();
         }
@@ -74,17 +84,18 @@ abstract public class AbstractNestedIterator<T> implements Iterator<T> {
      *
      */
     private boolean currentIterHasNext() {
-        return this.currentInnerIter != null && this.currentInnerIter.hasNext();
+        var iter = this.currentInnerIter;
+        return iter != null && iter.hasNext();
     }
 
     /**
      * The current inner iterator; i.e., the latest element returned by
      * <tt>nextIterator()</tt>
      */
-    private Iterator<? extends T> currentInnerIter;
+    private @Nullable Iterator<? extends T> currentInnerIter;
     /**
      * The inner iterator from which the latest call to <tt>next()</tt> has
      * obtained its value.
      */
-    private Iterator<? extends T> latestProductiveInnerIter;
+    private @Nullable Iterator<? extends T> latestProductiveInnerIter;
 }
