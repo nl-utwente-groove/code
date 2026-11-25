@@ -24,8 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -36,12 +40,15 @@ import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.lts.AbstractGraphState;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.test.MasterSeedGuard;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -71,9 +78,12 @@ public class PersistenceTest {
     /** Location of the sample grammars. */
     static private final String INPUT_DIR = "junit/samples";
 
+    /** The depth of the bound in {@link #BOUND}. */
+    static private final int DEPTH = 6;
+
     /** Depth bound making the tree unfolding of the (cyclic) ferryman
      * grammar finite. */
-    static private final String BOUND = "cost=uniform bound=cost:6";
+    static private final String BOUND = "cost=uniform bound=cost:" + DEPTH;
 
     /**
      * Tests that without persistence, the GTS afterwards contains the trace
@@ -146,6 +156,105 @@ public class PersistenceTest {
                      "Unpersisted exploration should retain the same traces");
         assertTrue(first.getNextStateNr() >= allGts.nodeCount(),
                    "The tree unfolding cannot be smaller than the collapsed state space");
+    }
+
+    /**
+     * Tests that the unpersisted exploration discovers exactly the tree
+     * unfolding of the state space up to the depth bound: one state for
+     * every path of modifying transitions from the start state of the
+     * stored state space that the bound admits, since a collapsed state
+     * has the same matches as the discovered ones it stands for. This pins the count down from an independent source; that it
+     * does not depend on the lifetime of the state caches is tested by
+     * {@link nl.utwente.groove.test.DeterminismTest} (gh #928).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testNoneDiscoversUnfolding() throws Exception {
+        Grammar grammar = loadGrammar("ferryman");
+        GTS allGts = explore(grammar, "").getGTS();
+        // the bound limits the states that are explored, so their successors,
+        // one step beyond it, are still discovered
+        long expected = countPaths(allGts.startState(), DEPTH + 1);
+        for (String order : new String[] {"", "next=newest "}) {
+            String config = "persistence=none " + order + BOUND;
+            GTS gts = explore(grammar, config).getGTS();
+            assertEquals(expected, gts.getNextStateNr(),
+                         "Config '%s' should discover the tree unfolding".formatted(config));
+        }
+    }
+
+    /**
+     * Returns the number of paths of at most a given length from a given
+     * state of a stored state space, counting only the transitions of
+     * modifying rules: the others lead back to their source state, also in
+     * an unpersisted exploration.
+     */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private long countPaths(GraphState state, int length) {
+        long result = 1;
+        if (length > 0) {
+            for (var trans : state.getRuleTransitions()) {
+                if (trans.getAction().isModifying()) {
+                    result += countPaths(trans.target(), length - 1);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Tests that the errors on the graph of an error state do not depend on
+     * the liveness of the state's cache. When the graph of such a state is
+     * rebuilt, its property errors are derived from the state's outgoing
+     * transitions, which an unstored state does not keep outside its cache;
+     * so there the cache has to stay (gh #928). In the fixture, the single
+     * rule application leads to a state that violates one of two invariants
+     * and satisfies a forbidden property.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    public void testErrorsSurviveCacheLoss() throws Exception {
+        Grammar grammar = loadGrammar("property-errors");
+        for (String config : new String[] {"", "persistence=none"}) {
+            Randomness.setMasterSeed(42);
+            GTS gts = new GTS(grammar);
+            // collected here rather than taken from the GTS, which an unstored
+            // exploration only enters the retained states into
+            List<AbstractGraphState> errorStates = new ArrayList<>();
+            gts.addLTSListener(new GTSListener() {
+                @Override
+                public void statusUpdate(GTS source, GraphState state, int change) {
+                    if (Flag.FULL.test(change) && state.isError()) {
+                        errorStates.add((AbstractGraphState) state);
+                    }
+                }
+            });
+            ExploreTypeConverter
+                .toExploreType(ExploreConfig.parse(config))
+                .newExploration(gts, null)
+                .play();
+            assertEquals(1, errorStates.size(),
+                         "Config '%s' should find one error state".formatted(config));
+            AbstractGraphState state = errorStates.get(0);
+            Set<String> errors = errorTexts(state);
+            assertEquals(Set
+                .of("Graph fails to satisfy invariant property 'unmarked'",
+                    "Graph satisfies forbidden property 'is-marked'"), errors,
+                         "Config '%s': errors of state %s".formatted(config, state));
+            // what a garbage collection may do to the state at any time
+            state.clearCache();
+            assertEquals(errors, errorTexts(state),
+                         "Config '%s': errors of state %s after losing its cache"
+                             .formatted(config, state));
+        }
+    }
+
+    /** Returns the texts of the errors on the graph of a given state. */
+    @AIGenerated("Claude Fable 5.2, 2026-11")
+    private Set<String> errorTexts(GraphState state) {
+        Set<String> result = new TreeSet<>();
+        state.getGraph().getErrors().forEach(e -> result.add(e.toString()));
+        return result;
     }
 
     /**
