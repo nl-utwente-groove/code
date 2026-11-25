@@ -93,9 +93,8 @@ and outcomes" in the note).
    for review): the transition set of a GTS is iterated state by state; the iterator
    used to pin 49 MB on a 31 MB GTS, time-neutral; figures under 3.5. 3.6 measured
    2026-11-25: the collector's pin is real only on grammars with property rules and
-   costs 1 to 3 % of the held heap there; variant on branch
-   `match-collector-parent-map` off master (66feef1c6, one commit, not gated,
-   detached), recommended not to merge, Arend to decide (delete the branch if not).
+   costs 1 to 3 % of the held heap there; dropped by Arend's decision, the branch of
+   the measured variant is deleted (figures and the variant's design under 3.6).
    Side observation, not a finding yet: the breadth-first frontier holds roughly 6 KB per
    open state strongly (114.5 MB at 40,000 states of car-platooning `start-05` against
    31 MB for the finished GTS). Left in section 3: 3.8 to 3.10, 3.4.
